@@ -1,0 +1,25 @@
+{
+  "errors": {
+    "notFound": " {{url}} عذرا هذا  الرابط غير موجود ",
+    "serverError": "خطأ في الخادم الداخلي",
+    "entityNotFount":"{{replacer}} هذا الكائن غير موجود",
+      "entityWithEmialExist":"هذا الكائن بهذا البريد موجود بالفعل",
+      "entityWithNameExist":"Entity With This name Already Exist ",
+      "entityWithPhoneExist":"Entity With This phoneNumber Already Exist ",
+      "attNotFound":"Attributes Not Found",
+      "attNotFoundWithReplacer":"Attributes Not Found {{replacer}}",
+      "wrongCredentials":"wrong credentials",
+     
+      "fail":"فشل",
+      "error":"خطأ",
+      "unAuthorized":"Session Expired",
+      "wrongOtp":"wrong otp",
+      "otpExpired":"otp is expired"
+  },
+
+  "responses":{
+    "yourOtpHavePassedSuccess":"your otp have passed successfully",
+   
+"succes":"تمت العملية بنجاح"
+  }
+}

@@ -1,0 +1,26 @@
+import { upload } from "./utils/upload";
+import { Application, Request, Response } from "express";
+import userRoute from "./modules/users/versions.routes";
+import authRoute from "./modules/auth/versions.routes";
+import storeRoute from "./modules/stores/versions.routes";
+import catRoute from "./modules/categories/versions.routes";
+import brandRoute from "./modules/brands/versions.routes";
+import attributesRoute from "./modules/attributes/versions.routes";
+import productsRoute from "./modules/products/versions.routes";
+import uploadsRoute from "./modules/uploads/versions.routes";
+import cartsRoute from "./modules/carts/versions.routes";
+export const injectRoutes = (app: Application): void => {
+  // Basic route
+  app.get("/", (req: Request, res: Response) => {
+    res.json({ message: "Hello from MasterTech!" });
+  });
+  app.use("/users", userRoute);
+  app.use("/auth", authRoute);
+  app.use("/stores", storeRoute);
+  app.use("/categories", catRoute);
+  app.use("/brands", brandRoute);
+  app.use("/attributes", attributesRoute);
+  app.use("/products", productsRoute);
+  app.use("/upload", uploadsRoute);
+  app.use("/carts", cartsRoute);
+};

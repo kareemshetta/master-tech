@@ -1,0 +1,115 @@
+import { FindAndCountOptions, FindOptions } from "sequelize";
+import { ICategory } from "../../../../utils/shared.types";
+import { BrandRepository } from "../brands.repository";
+import { ValidationError } from "../../../../utils/appError";
+import Joi from "joi";
+
+export class BrandService {
+  private static instance: BrandService | null = null;
+  private repo: BrandRepository;
+
+  private constructor() {
+    this.repo = BrandRepository.getInstance();
+  }
+
+  public static getInstance(): BrandService {
+    if (!BrandService.instance) {
+      BrandService.instance = new BrandService();
+    }
+    return BrandService.instance;
+  }
+
+  public async create(data: ICategory) {
+    return this.repo.create(data);
+  }
+
+  public async delete(catId: string) {
+    return this.repo.delete({ where: { id: catId } });
+  }
+
+  public async findOneByIdOrThrowError(
+    catId: string,
+    options: FindOptions = {}
+  ) {
+    return this.repo.findOneByIdOrThrowError(catId, options);
+  }
+
+  public async findOne(options: FindOptions = {}) {
+    return this.repo.findOne(options);
+  }
+
+  public async getAll(options: FindAndCountOptions = {}) {
+    return this.repo.findAndCountAll(options);
+  }
+
+  public validateCreate(data: ICategory) {
+    const schema = Joi.object({
+      image: Joi.string()
+        .trim()
+        .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
+        .messages({
+          "string.base": "Image must be a string.",
+          "string.empty": "Image cannot be empty.",
+          "string.pattern.base":
+            "Image must have a valid file extension (jpg, jpeg, png, HEIF, svg).",
+          "any.required": "Image is required and cannot be null.",
+        })
+        .allow(null, ""),
+
+      name: Joi.string().trim().max(255).required().messages({
+        "string.base": "Store name must be a string.",
+        "string.empty": "Store name cannot be empty.",
+        "string.max": "Store name cannot exceed 255 characters.",
+        "any.required": "Store name is required and cannot be null.",
+      }),
+    });
+
+    const { error } = schema.validate(data);
+    if (error) {
+      throw new ValidationError(error.message);
+    }
+    return;
+  }
+
+  public validateUpdate(data: Partial<ICategory>) {
+    const schema = Joi.object({
+      image: Joi.string()
+        .trim()
+        .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
+        .messages({
+          "string.base": "Image must be a string.",
+          "string.pattern.base":
+            "Image must have a valid file extension (jpg, jpeg, png, HEIF, svg).",
+        })
+        .allow(null, ""),
+
+      name: Joi.string().trim().max(255).messages({
+        "string.base": "name must be a string.",
+        "string.max": "name cannot exceed 255 characters.",
+      }),
+    });
+
+    const { error } = schema.validate(data);
+    if (error) {
+      throw new ValidationError(error.message);
+    }
+    return;
+  }
+
+  public validateGetAllQuery(query: { search?: any; storeIds?: any }) {
+    const schema = Joi.object({
+      search: Joi.string().trim().max(255).allow("").messages({
+        "string.base": "Search term must be a string.",
+        "string.max": "Search term cannot exceed 255 characters.",
+      }),
+    });
+
+    const { error } = schema.validate(query);
+    if (error) {
+      throw new ValidationError(error.message);
+    }
+    return;
+  }
+}
+
+export default BrandService;

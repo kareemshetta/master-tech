@@ -1,0 +1,23 @@
+{
+  "errors": {
+    "notFound": "Can't find {{url}} on this server!",
+    "serverError": "Internal Server Error",
+     "entityNotFount":"This Entity Is Not Found {{replacer}}",
+     "entityWithEmialExist":"Entity With This Email Already Exist ",
+     "entityWithNameExist":"Entity With This name Already Exist ",
+     "entityWithPhoneExist":"Entity With This phoneNumber Already Exist ",
+     "attNotFound":"Attributes Not Found ",
+     "attNotFoundWithReplacer":"Attributes Not Found {{replacer}}",
+      "fail":"fail",
+      "error":"error",
+      "wrongCredentials":"wrong credentials",
+      "yourOtpHavePassedSuccess":"your otp have passed successfully",
+      "unAuthorized":"Session Expired",
+      "wrongOtp":"wrong otp",
+      "otpExpired":"otp is expired"
+  }
+  , "responses":{
+    "yourOtpHavePassedSuccess":"your otp have passed successfully",
+    "succes":"succes"
+      }
+}
