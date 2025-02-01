@@ -21,14 +21,14 @@ const sequelize = new Sequelize(dbName, dbUsername, dbPassword, {
   },
   dialect: dbDialect,
 
-  // dialectOptions: {
-  //   // ssl: process.env.DATABASE_URL ? true : false,
-  //   ssl: {
-  //     require: true, // This will require SSL
-  //     rejectUnauthorized: false,
-  //     ca: fs.readFileSync("./ca.pem").toString(),
-  //   },
-  // },
+  dialectOptions: {
+    // ssl: process.env.DATABASE_URL ? true : false,
+    ssl: {
+      require: true, // This will require SSL
+      rejectUnauthorized: false,
+      ca: fs.readFileSync("./ca.pem").toString(),
+    },
+  },
   logging: false,
 });
 
