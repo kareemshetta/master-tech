@@ -13,6 +13,8 @@ import("./../../models/product_attributes.model");
 import("./../../models/product_skus.model");
 import("./../../models/carts.model");
 import("./../../models/cartItem.model");
+import("./../../models/orders.model");
+import("./../../models/orderItem.model");
 
 // store_sub_stores association
 import("./../../models/store_sub_stores.association");
@@ -36,7 +38,8 @@ import("./../../models/users_cart.association");
 import("./../../models/cart_cartitem.associations");
 // cart_item_sku_association
 import("./../../models/cartItem_sku.associations");
-
+// order_item_association
+import("./../../models/orders_ordersItem.associations");
 export const initialize = async (app: Application): Promise<void> => {
   try {
     await sequelize.authenticate();

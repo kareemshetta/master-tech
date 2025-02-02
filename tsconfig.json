@@ -11,6 +11,6 @@
       "forceConsistentCasingInFileNames": true,
       // "types": ["node", "mkdirp"]
     },
-    "include": ["src/**/*"],
+    "include": ["src/**/*","src/config/db/ca.pem"],
     "exclude": ["node_modules"]
   }

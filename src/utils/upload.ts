@@ -18,31 +18,31 @@ const region = process.env.AWS_S3_REGION || "";
 const bucketName = process.env.AWS_S3_BUCKET_NAME || "";
 
 // Configure AWS S3 client
-export const s3 = new S3Client({
-  region: region,
-  credentials: {
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
-  },
-});
+// export const s3 = new S3Client({
+//   region: region,
+//   credentials: {
+//     accessKeyId: accessKeyId,
+//     secretAccessKey: secretAccessKey,
+//   },
+// });
 
-const s3Storage = multerS3({
-  s3: s3,
-  bucket: bucketName,
-  acl: "public-read",
-  metadata: function (req, file, cb) {
-    cb(null, { fieldName: file.fieldname });
-  },
+// const s3Storage = multerS3({
+//   s3: s3,
+//   bucket: bucketName,
+//   acl: "public-read",
+//   metadata: function (req, file, cb) {
+//     cb(null, { fieldName: file.fieldname });
+//   },
 
-  key: function (req, file, cb) {
-    const timestamp = Date.now();
-    const randomSuffix = Math.floor(Math.random() * 10000);
-    const fileName = `uploads/image-${timestamp}-${randomSuffix}${path.extname(
-      file.originalname
-    )}`;
-    cb(null, fileName);
-  },
-});
+//   key: function (req, file, cb) {
+//     const timestamp = Date.now();
+//     const randomSuffix = Math.floor(Math.random() * 10000);
+//     const fileName = `uploads/image-${timestamp}-${randomSuffix}${path.extname(
+//       file.originalname
+//     )}`;
+//     cb(null, fileName);
+//   },
+// });
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     cb(null, "uploads/");
@@ -74,7 +74,7 @@ const fileFilter = (req: Request, file: any, cb: any) => {
 };
 
 export const uploadImages = multer({
-  storage: s3Storage,
+  storage: storage,
   fileFilter: fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB limit
 });
@@ -140,76 +140,76 @@ export const fileValidation = {
   ],
 };
 
-export const uploadAny = (customValidation: string[]) => {
-  const fileFilter = (req: Request, file: any, cb: any) => {
-    if (customValidation.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(
-        new UnprocessableEntityError(
-          `In-valid file format only these formats are allowed ${customValidation.join(
-            "-"
-          )}`
-        )
-      );
-    }
-  };
+// export const uploadAny = (customValidation: string[]) => {
+//   const fileFilter = (req: Request, file: any, cb: any) => {
+//     if (customValidation.includes(file.mimetype)) {
+//       cb(null, true);
+//     } else {
+//       cb(
+//         new UnprocessableEntityError(
+//           `In-valid file format only these formats are allowed ${customValidation.join(
+//             "-"
+//           )}`
+//         )
+//       );
+//     }
+//   };
 
-  return multer({
-    storage: s3Storage,
-    fileFilter: fileFilter,
-    limits: { fileSize: 20 * 1024 * 1024 }, // 5 MB limit
-  });
-};
+//   return multer({
+//     storage: s3Storage,
+//     fileFilter: fileFilter,
+//     limits: { fileSize: 20 * 1024 * 1024 }, // 5 MB limit
+//   });
+// };
 
-export async function removeImageFromS3(imageKey: string) {
-  try {
-    const deleteCommand = new DeleteObjectCommand({
-      Bucket: bucketName,
-      Key: imageKey,
-    });
-    console.log(`Image ${imageKey} deleted from ${bucketName} bucket.`);
-    return await s3.send(deleteCommand);
-  } catch (error) {
-    console.error(
-      `Error deleting image ${imageKey} from ${bucketName} bucket:`,
-      error
-    );
-    throw error;
-  }
-}
+// export async function removeImageFromS3(imageKey: string) {
+//   try {
+//     const deleteCommand = new DeleteObjectCommand({
+//       Bucket: bucketName,
+//       Key: imageKey,
+//     });
+//     console.log(`Image ${imageKey} deleted from ${bucketName} bucket.`);
+//     return await s3.send(deleteCommand);
+//   } catch (error) {
+//     console.error(
+//       `Error deleting image ${imageKey} from ${bucketName} bucket:`,
+//       error
+//     );
+//     throw error;
+//   }
+// }
 
-export async function removeImagesFromS3(imageKeys: string[]) {
-  try {
-    const deleteCommand = new DeleteObjectsCommand({
-      Bucket: bucketName,
-      Delete: {
-        Objects: imageKeys.map((key) => ({ Key: key })),
-      },
-    });
+// export async function removeImagesFromS3(imageKeys: string[]) {
+//   try {
+//     const deleteCommand = new DeleteObjectsCommand({
+//       Bucket: bucketName,
+//       Delete: {
+//         Objects: imageKeys.map((key) => ({ Key: key })),
+//       },
+//     });
 
-    const response = await s3.send(deleteCommand);
-    console.log(
-      `Deleted ${response.Deleted?.length} images from ${bucketName} bucket.`
-    );
+//     const response = await s3.send(deleteCommand);
+//     console.log(
+//       `Deleted ${response.Deleted?.length} images from ${bucketName} bucket.`
+//     );
 
-    // Check for any errors in the DeleteObjectsCommand response
-    if (response.Errors && response.Errors.length > 0) {
-      response.Errors.forEach((error) => {
-        if (error.Code === "NoSuchKey") {
-          console.log(
-            `Image ${error.Key} not found in ${bucketName} bucket. It may have already been deleted.`
-          );
-        } else {
-          console.error(
-            `Error deleting image ${error.Key} from ${bucketName} bucket:`,
-            error
-          );
-        }
-      });
-    }
-  } catch (error) {
-    console.error(`Error deleting images from ${bucketName} bucket:`, error);
-    throw error;
-  }
-}
+//     // Check for any errors in the DeleteObjectsCommand response
+//     if (response.Errors && response.Errors.length > 0) {
+//       response.Errors.forEach((error) => {
+//         if (error.Code === "NoSuchKey") {
+//           console.log(
+//             `Image ${error.Key} not found in ${bucketName} bucket. It may have already been deleted.`
+//           );
+//         } else {
+//           console.error(
+//             `Error deleting image ${error.Key} from ${bucketName} bucket:`,
+//             error
+//           );
+//         }
+//       });
+//     }
+//   } catch (error) {
+//     console.error(`Error deleting images from ${bucketName} bucket:`, error);
+//     throw error;
+//   }
+// }

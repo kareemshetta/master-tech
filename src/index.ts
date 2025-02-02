@@ -1,4 +1,4 @@
-import express, { Express, Request, Response } from "express";
+import express, { Express } from "express";
 import i18next from "./config/i18n";
 import middleware from "i18next-http-middleware";
 import { notFoundHandler } from "./middlewares/notFound.middleware";
@@ -8,7 +8,7 @@ import "./config/passport/passport.config";
 import morgan from "morgan";
 import passport from "passport";
 import { injectRoutes } from "./routes";
-import Joi from "joi";
+
 const app: Express = express();
 
 // Middleware to parse JSON bodies
