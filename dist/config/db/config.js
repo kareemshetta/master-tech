@@ -1,11 +1,7 @@
 "use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_1 = require("sequelize");
 require("dotenv/config");
-const fs_1 = __importDefault(require("fs"));
 // import "../../../ca.pem";
 const dbName = process.env.DATABASE_NAME;
 const dbUsername = process.env.DATABASE_USERNAME;
@@ -28,7 +24,7 @@ const sequelize = new sequelize_1.Sequelize(dbName, dbUsername, dbPassword, {
         ssl: {
             require: true, // This will require SSL
             rejectUnauthorized: false,
-            ca: fs_1.default.readFileSync("./ca.pem").toString(),
+            ca: Buffer.from(process.env.DATABASE_CA, "base64"),
         },
     },
     logging: false,

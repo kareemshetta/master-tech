@@ -26,7 +26,7 @@ const sequelize = new Sequelize(dbName, dbUsername, dbPassword, {
     ssl: {
       require: true, // This will require SSL
       rejectUnauthorized: false,
-      ca: fs.readFileSync("./ca.pem").toString(),
+      ca: Buffer.from(process.env.DATABASE_CA!, "base64"),
     },
   },
   logging: false,
