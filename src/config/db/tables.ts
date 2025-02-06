@@ -1,5 +1,5 @@
 import sequelize from "./config";
-
+import os from "os";
 import { Application } from "express"; // Import the Application type from Express
 // Update the path to your Sequelize configuration file
 import("./../../models/users.model");
@@ -18,6 +18,9 @@ import("./../../models/orderItem.model");
 
 // store_sub_stores association
 import("./../../models/store_sub_stores.association");
+
+// store_Admins association
+import("./../../models/admins_stores.association");
 // product_screen association
 import("./../../models/product_screen.association");
 // product_processor association
@@ -45,15 +48,15 @@ export const initialize = async (app: Application): Promise<void> => {
     await sequelize.authenticate();
     console.log("Connection to  database has been established successfully.");
 
-    await sequelize.sync({
-      alter: true,
-      // logging: console.log
-    });
+    // await sequelize.sync({
+    //   alter: true,
+    //   // logging: console.log
+    // });
     console.log("All models were synchronized successfully.");
 
     const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     app.listen(port, () =>
-      console.log(`⚡️Server is running at http://localhost:${port}`)
+      console.log(`⚡️Server is running at ${os.hostname()}:${port}`)
     );
   } catch (e) {
     console.error("Error during initialization:", e);

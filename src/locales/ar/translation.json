@@ -9,7 +9,7 @@
       "attNotFound":"Attributes Not Found",
       "attNotFoundWithReplacer":"Attributes Not Found {{replacer}}",
       "wrongCredentials":"wrong credentials",
-     
+     "forbiden":"انت لا تمتلك الصلاحية الكافية لاستخدام هذا الخدمة",
       "fail":"فشل",
       "error":"خطأ",
       "unAuthorized":"Session Expired",

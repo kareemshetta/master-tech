@@ -9,6 +9,7 @@ import attributesRoute from "./modules/attributes/versions.routes";
 import productsRoute from "./modules/products/versions.routes";
 import uploadsRoute from "./modules/uploads/versions.routes";
 import cartsRoute from "./modules/carts/versions.routes";
+import adminsRoute from "./modules/admins/versions.routes";
 import path from "path";
 export const injectRoutes = (app: Application): void => {
   // Basic route
@@ -18,6 +19,7 @@ export const injectRoutes = (app: Application): void => {
 
   app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
   app.use("/users", userRoute);
+  app.use("/admins", adminsRoute);
   app.use("/auth", authRoute);
   app.use("/stores", storeRoute);
   app.use("/categories", catRoute);

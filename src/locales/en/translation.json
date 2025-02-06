@@ -11,6 +11,8 @@
       "fail":"fail",
       "error":"error",
       "wrongCredentials":"wrong credentials",
+      "forbiden":"you don't have the necessary permissions to use this service",
+
       "yourOtpHavePassedSuccess":"your otp have passed successfully",
       "unAuthorized":"Session Expired",
       "wrongOtp":"wrong otp",

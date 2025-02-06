@@ -51,7 +51,25 @@ export class UserController {
 
   async update(req: any) {
     const { id } = req.params;
-    // Implementation commented out in original code
+    validateUUID(id, "invalid User id");
+    const body = req.body as Iuser;
+
+    this.service.validateUpdateAdmin(body);
+    const found = await this.service.findOne({
+      where: { email: body.email?.toLowerCase(), id: { [Op.ne]: id } },
+    });
+
+    if (found) {
+      throw new AppError("entityWithEmialExist", 409);
+    }
+
+    const user = await this.service.findOneByIdOrThrowError(id);
+    const updated = (
+      await user.update(body, { returning: true })
+    ).toJSON() as Iuser;
+
+    delete updated.password;
+    return updated;
   }
 
   async getOne(req: any) {

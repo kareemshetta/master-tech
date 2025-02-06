@@ -15,7 +15,9 @@ export interface Iuser {
   cartId?: string;
 }
 
-export interface IAdmin extends Iuser {}
+export interface IAdmin extends Iuser {
+  storeId?: string;
+}
 
 export interface IStore {
   image?: string;

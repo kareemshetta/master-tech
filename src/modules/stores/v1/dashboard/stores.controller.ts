@@ -8,6 +8,7 @@ import { FindOptions, Op } from "sequelize";
 import Store from "../../../../models/stores.model";
 import User from "../../../../models/users.model";
 import sequelize from "../../../../config/db/config";
+import Admin from "../../../../models/admins.model";
 
 export class StoreController {
   private static instance: StoreController | null = null;
@@ -104,6 +105,10 @@ export class StoreController {
           model: Store,
           attributes: ["id", "name", "phoneNumber"],
           as: "parentStore",
+        },
+        {
+          model: Admin,
+          attributes: ["id", "firstName", "lastName", "email", "phoneNumber"],
         },
       ],
     });

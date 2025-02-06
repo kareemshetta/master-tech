@@ -40,7 +40,7 @@ export class AuthController {
   async signUp(req: Request) {
     const body = req.body as IAdmin;
 
-    this.service.validateCreateUser(body);
+    this.service.validateCreateAdmin(body);
     const found = await this.service.findOne({
       where: { email: body.email?.toLowerCase() },
     });
@@ -62,7 +62,7 @@ export class AuthController {
   async login(req: Request) {
     const body = req.body as IAdmin;
 
-    this.service.validateLoginUser(body);
+    this.service.validateLoginAdmin(body);
     const found: IAdmin | undefined = (
       await this.service.findOne({
         where: { email: body.email?.toLowerCase() },

@@ -2,7 +2,7 @@ import passport from "passport";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
 import User from "../../models/users.model";
 import Admin from "../../models/admins.model";
-import { Iuser } from "../../utils/shared.types";
+import { IAdmin, Iuser } from "../../utils/shared.types";
 import { AppError } from "../../utils/appError";
 import { UserStatus } from "../../utils/enums";
 import { log } from "console";
@@ -18,8 +18,6 @@ passport.use(
   "jwt",
   new JwtStrategy(jwtOptions, async (payload, done) => {
     try {
-      console.log(payload);
-
       const user: Iuser | undefined = (
         await User.findByPk(payload.id, {
           include: [{ model: Cart, attributes: ["id"] }],
@@ -55,11 +53,21 @@ passport.use(
   "jwt-admin",
   new JwtStrategy(jwtOptions, async (payload, done) => {
     try {
-      const admin = await Admin.findByPk(payload.id);
-      if (admin) {
-        return done(null, admin);
+      const admin = (await Admin.findByPk(payload.id))?.toJSON() as IAdmin;
+      if (!admin) {
+        const appError = new AppError("unAuthorized", 401);
+        return done(appError, false);
       }
-      return done(null, false);
+
+      // Check if admin is active/enabled
+
+      if (admin.status == UserStatus.Suspended) {
+        const error = new AppError("unAuthorized", 401);
+
+        return done(error, false);
+      }
+
+      return done(null, admin);
     } catch (error) {
       return done(error, false);
     }
