@@ -14,6 +14,7 @@ const versions_routes_6 = __importDefault(require("./modules/attributes/versions
 const versions_routes_7 = __importDefault(require("./modules/products/versions.routes"));
 const versions_routes_8 = __importDefault(require("./modules/uploads/versions.routes"));
 const versions_routes_9 = __importDefault(require("./modules/carts/versions.routes"));
+const versions_routes_10 = __importDefault(require("./modules/admins/versions.routes"));
 const path_1 = __importDefault(require("path"));
 const injectRoutes = (app) => {
     // Basic route
@@ -22,6 +23,7 @@ const injectRoutes = (app) => {
     });
     app.use("/uploads", express_1.default.static(path_1.default.join(__dirname, "../uploads")));
     app.use("/users", versions_routes_1.default);
+    app.use("/admins", versions_routes_10.default);
     app.use("/auth", versions_routes_2.default);
     app.use("/stores", versions_routes_3.default);
     app.use("/categories", versions_routes_4.default);

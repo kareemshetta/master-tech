@@ -18,7 +18,6 @@ const jwtOptions = {
 // Strategy for mobile users
 passport_1.default.use("jwt", new passport_jwt_1.Strategy(jwtOptions, async (payload, done) => {
     try {
-        console.log(payload);
         const user = (await users_model_1.default.findByPk(payload.id, {
             include: [{ model: carts_model_1.default, attributes: ["id"] }],
         }))?.toJSON();
@@ -44,11 +43,17 @@ passport_1.default.use("jwt", new passport_jwt_1.Strategy(jwtOptions, async (pay
 // Strategy for admin users
 passport_1.default.use("jwt-admin", new passport_jwt_1.Strategy(jwtOptions, async (payload, done) => {
     try {
-        const admin = await admins_model_1.default.findByPk(payload.id);
-        if (admin) {
-            return done(null, admin);
+        const admin = (await admins_model_1.default.findByPk(payload.id))?.toJSON();
+        if (!admin) {
+            const appError = new appError_1.AppError("unAuthorized", 401);
+            return done(appError, false);
         }
-        return done(null, false);
+        // Check if admin is active/enabled
+        if (admin.status == enums_1.UserStatus.Suspended) {
+            const error = new appError_1.AppError("unAuthorized", 401);
+            return done(error, false);
+        }
+        return done(null, admin);
     }
     catch (error) {
         return done(error, false);

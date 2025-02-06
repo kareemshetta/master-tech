@@ -10,6 +10,7 @@ const appError_1 = require("../../../../utils/appError");
 const sequelize_1 = require("sequelize");
 const stores_model_1 = __importDefault(require("../../../../models/stores.model"));
 const config_1 = __importDefault(require("../../../../config/db/config"));
+const admins_model_1 = __importDefault(require("../../../../models/admins.model"));
 class StoreController {
     constructor() {
         this.storeService = stores_service_1.StoreService.getInstance();
@@ -85,6 +86,10 @@ class StoreController {
                     model: stores_model_1.default,
                     attributes: ["id", "name", "phoneNumber"],
                     as: "parentStore",
+                },
+                {
+                    model: admins_model_1.default,
+                    attributes: ["id", "firstName", "lastName", "email", "phoneNumber"],
                 },
             ],
         });

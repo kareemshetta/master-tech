@@ -29,7 +29,7 @@ class AuthController {
     }
     async signUp(req) {
         const body = req.body;
-        this.service.validateCreateUser(body);
+        this.service.validateCreateAdmin(body);
         const found = await this.service.findOne({
             where: { email: body.email?.toLowerCase() },
         });
@@ -47,7 +47,7 @@ class AuthController {
     }
     async login(req) {
         const body = req.body;
-        this.service.validateLoginUser(body);
+        this.service.validateLoginAdmin(body);
         const found = (await this.service.findOne({
             where: { email: body.email?.toLowerCase() },
             attributes: { exclude: ["updatedAt", "role"] },

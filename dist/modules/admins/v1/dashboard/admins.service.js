@@ -10,7 +10,7 @@ const constant_1 = require("../../../../utils/constant");
 const appError_1 = require("../../../../utils/appError");
 class AdminService {
     constructor() {
-        this.userRepository = admins_repository_1.default.getInstance();
+        this.AdminRepository = admins_repository_1.default.getInstance();
     }
     static getInstance() {
         if (!AdminService.instance) {
@@ -19,21 +19,21 @@ class AdminService {
         return AdminService.instance;
     }
     async create(data) {
-        return this.userRepository.create(data);
+        return this.AdminRepository.create(data);
     }
-    async delete(userId) {
-        return this.userRepository.delete({ where: { id: userId } });
+    async delete(AdminId) {
+        return this.AdminRepository.delete({ where: { id: AdminId } });
     }
     async findOneByIdOrThrowError(trainerId, options = {}) {
-        return this.userRepository.findOneByIdOrThrowError(trainerId, options);
+        return this.AdminRepository.findOneByIdOrThrowError(trainerId, options);
     }
     async findOne(options = {}) {
-        return this.userRepository.findOne(options);
+        return this.AdminRepository.findOne(options);
     }
     async getAll(options = {}) {
-        return this.userRepository.findAndCountAll(options);
+        return this.AdminRepository.findAndCountAll(options);
     }
-    validateCreateUser(data) {
+    validateCreateAdmin(data) {
         const schema = joi_1.default.object({
             image: joi_1.default.string()
                 .trim()
@@ -83,6 +83,7 @@ class AdminService {
                 "string.pattern.base": "Password must contain at least one uppercase letter, one lowercase letter, and one special character.",
                 "any.required": "Password is required and cannot be null.",
             }),
+            storeId: joi_1.default.string().uuid().required(),
         });
         const { error } = schema.validate(data);
         if (error) {
@@ -90,7 +91,65 @@ class AdminService {
         }
         return;
     }
-    validateLoginUser(data) {
+    validateUpdateAdmin(data) {
+        const schema = joi_1.default.object({
+            image: joi_1.default.string()
+                .trim()
+                .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
+                .messages({
+                "string.base": "image must be a string.",
+                "string.empty": "image cannot be empty.",
+                "string.uri": "image must be a valid URI.",
+                "string.pattern.base": "image must have a valid file extension (jpg, jpeg, png).",
+                "any.required": "image is required and cannot be null.",
+            })
+                .required(),
+            firstName: joi_1.default.string().trim().max(50).min(1).required(),
+            lastName: joi_1.default.string().trim().max(50).min(1).required(),
+            email: joi_1.default.string().max(255).email().required(),
+            phoneNumber: joi_1.default.string()
+                .regex(constant_1.PHONE_NUMBER_VALIDATION)
+                .required()
+                .messages({
+                "string.base": "phoneNumber must be a string.",
+                "string.empty": "phoneNumber cannot be empty.",
+                "string.pattern.base": "Please enter a valid Phone Number.",
+                "any.required": "phoneNumber is required and cannot be null.",
+            }),
+            gender: joi_1.default.string().valid("MALE", "FEMALE", "OTHER").allow(""),
+            birthDate: joi_1.default.date().iso().allow(""),
+            password: joi_1.default.string()
+                .regex(constant_1.PASSWORD_VALIDATION)
+                .min(8)
+                .messages({
+                "string.base": "Password must be a string.",
+                "string.empty": "Password cannot be empty.",
+                "string.min": "Password must be at least 8 characters long.",
+                "string.pattern.base": "Password must contain at least one uppercase letter, one lowercase letter, and one special character.",
+                "any.required": "Password is required and cannot be null.",
+            })
+                .allow(null),
+            confirmPassword: joi_1.default.string()
+                .equal(joi_1.default.ref("password"))
+                .regex(constant_1.PASSWORD_VALIDATION)
+                .allow(null)
+                .min(8)
+                .messages({
+                "string.base": "Password must be a string.",
+                "string.empty": "Password cannot be empty.",
+                "string.min": "Password must be at least 8 characters long.",
+                "string.pattern.base": "Password must contain at least one uppercase letter, one lowercase letter, and one special character.",
+                "any.required": "Password is required and cannot be null.",
+            }),
+            // storeId: Joi.string().uuid().required(),
+        });
+        const { error } = schema.validate(data);
+        if (error) {
+            throw new appError_1.ValidationError(error.message);
+        }
+        return;
+    }
+    validateLoginAdmin(data) {
         const schema = joi_1.default.object({
             email: joi_1.default.string().max(255).email().required(),
             password: joi_1.default.string()

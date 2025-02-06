@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.UserController = void 0;
 const handle_sort_pagination_1 = require("../../../../utils/handle-sort-pagination");
 const generalFunctions_1 = require("../../../../utils/generalFunctions");
+const sequelize_1 = require("sequelize");
 const appError_1 = require("../../../../utils/appError");
 const users_service_1 = __importDefault(require("./users.service"));
 class UserController {
@@ -41,7 +42,19 @@ class UserController {
     }
     async update(req) {
         const { id } = req.params;
-        // Implementation commented out in original code
+        (0, generalFunctions_1.validateUUID)(id, "invalid User id");
+        const body = req.body;
+        this.service.validateUpdateAdmin(body);
+        const found = await this.service.findOne({
+            where: { email: body.email?.toLowerCase(), id: { [sequelize_1.Op.ne]: id } },
+        });
+        if (found) {
+            throw new appError_1.AppError("entityWithEmialExist", 409);
+        }
+        const user = await this.service.findOneByIdOrThrowError(id);
+        const updated = (await user.update(body, { returning: true })).toJSON();
+        delete updated.password;
+        return updated;
     }
     async getOne(req) {
         const { id } = req.params;

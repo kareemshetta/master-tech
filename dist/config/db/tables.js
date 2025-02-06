@@ -38,6 +38,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.initialize = void 0;
 const config_1 = __importDefault(require("./config"));
+const os_1 = __importDefault(require("os"));
 // Update the path to your Sequelize configuration file
 Promise.resolve().then(() => __importStar(require("./../../models/users.model")));
 Promise.resolve().then(() => __importStar(require("./../../models/admins.model")));
@@ -54,6 +55,8 @@ Promise.resolve().then(() => __importStar(require("./../../models/orders.model")
 Promise.resolve().then(() => __importStar(require("./../../models/orderItem.model")));
 // store_sub_stores association
 Promise.resolve().then(() => __importStar(require("./../../models/store_sub_stores.association")));
+// store_Admins association
+Promise.resolve().then(() => __importStar(require("./../../models/admins_stores.association")));
 // product_screen association
 Promise.resolve().then(() => __importStar(require("./../../models/product_screen.association")));
 // product_processor association
@@ -80,13 +83,13 @@ const initialize = async (app) => {
     try {
         await config_1.default.authenticate();
         console.log("Connection to  database has been established successfully.");
-        await config_1.default.sync({
-            alter: true,
-            // logging: console.log
-        });
+        // await sequelize.sync({
+        //   alter: true,
+        //   // logging: console.log
+        // });
         console.log("All models were synchronized successfully.");
         const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
-        app.listen(port, () => console.log(`⚡️Server is running at http://localhost:${port}`));
+        app.listen(port, () => console.log(`⚡️Server is running at ${os_1.default.hostname()}:${port}`));
     }
     catch (e) {
         console.error("Error during initialization:", e);
