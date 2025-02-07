@@ -1,4 +1,4 @@
-import { IAdmin } from "../../../../utils/shared.types";
+import { IAdmin, IProduct } from "../../../../utils/shared.types";
 
 import { handlePaginationSort } from "../../../../utils/handle-sort-pagination";
 import { validateUUID } from "../../../../utils/generalFunctions";
@@ -7,7 +7,7 @@ import { Request, Response } from "express";
 import { AppError } from "../../../../utils/appError";
 import AdminService from "./admins.service";
 import StoreService from "../../../stores/v1/dashboard/stores.service";
-import { Op } from "sequelize";
+import { FindAndCountOptions, FindOptions, Op, where } from "sequelize";
 
 export class AdminController {
   private static instance: AdminController | null = null;
@@ -26,14 +26,19 @@ export class AdminController {
     return AdminController.instance;
   }
 
-  async getAll(req: any) {
+  async getAll(req: Request) {
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
-    return this.service.getAll({
+    let storeId = req.user?.storeId;
+    let options: Record<string, any> = {
       attributes: ["id", "firstName", "lastName", "email", "phoneNumber"],
       offset,
       limit,
+      where: {},
       order: [[orderBy, order]],
-    });
+    };
+    if (req.user?.role != "superAdmin" && storeId)
+      options.where!.storeId = storeId;
+    return this.service.getAll(options);
   }
 
   async create(req: Request) {

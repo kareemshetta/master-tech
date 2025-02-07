@@ -10,6 +10,8 @@ import productsRoute from "./modules/products/versions.routes";
 import uploadsRoute from "./modules/uploads/versions.routes";
 import cartsRoute from "./modules/carts/versions.routes";
 import adminsRoute from "./modules/admins/versions.routes";
+import ordersRoute from "./modules/orders/versions.routes";
+
 import path from "path";
 export const injectRoutes = (app: Application): void => {
   // Basic route
@@ -28,4 +30,5 @@ export const injectRoutes = (app: Application): void => {
   app.use("/products", productsRoute);
   app.use("/upload", uploadsRoute);
   app.use("/carts", cartsRoute);
+  app.use("/orders", ordersRoute);
 };

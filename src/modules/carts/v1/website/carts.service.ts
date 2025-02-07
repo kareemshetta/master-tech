@@ -74,6 +74,10 @@ export class CartService {
     );
   }
 
+  public async getCart(options: FindOptions) {
+    return this.cartRepo.findOne(options);
+  }
+
   public validateCreateItem(data: Iuser) {
     const schema = Joi.object({
       cartId: Joi.string().uuid().required(),

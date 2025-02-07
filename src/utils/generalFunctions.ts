@@ -43,6 +43,12 @@ export const generateSecureOTP = (length: number = 5): string => {
     .join("");
 };
 
+export const generateOrderId = (length: number = 8): string => {
+  const prefix = "#ORD";
+  const randomHex = crypto.randomBytes(length).toString("hex").toUpperCase();
+  return `${prefix}-${randomHex}`;
+};
+
 export function isNowGreaterThanBy15Minutes(targetDate: Date): boolean {
   const now = new Date(); // Current date and time
   const fifteenMinutesLater = new Date(targetDate.getTime() + 15 * 60 * 1000); // Add 15 minutes to the target date

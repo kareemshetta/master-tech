@@ -451,11 +451,11 @@ export class PrdouctService {
         "number.empty": "Discount cannot be empty.",
         "any.required": "Discount is required and cannot be null.",
       }),
-      storeId: Joi.string().uuid().required().messages({
-        "string.base": "storeId must be a string.",
-        "string.empty": "storeId cannot be empty.",
-        "any.required": "storeId is required and cannot be null.",
-      }),
+      // storeId: Joi.string().uuid().required().messages({
+      //   "string.base": "storeId must be a string.",
+      //   "string.empty": "storeId cannot be empty.",
+      //   "any.required": "storeId is required and cannot be null.",
+      // }),
       images: Joi.array().items(
         Joi.string()
           .trim()

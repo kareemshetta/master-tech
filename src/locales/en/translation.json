@@ -16,7 +16,10 @@
       "yourOtpHavePassedSuccess":"your otp have passed successfully",
       "unAuthorized":"Session Expired",
       "wrongOtp":"wrong otp",
-      "otpExpired":"otp is expired"
+      "otpExpired":"otp is expired",
+      "cartIsEmpty":"cart is empty"
+
+      
   }
   , "responses":{
     "yourOtpHavePassedSuccess":"your otp have passed successfully",

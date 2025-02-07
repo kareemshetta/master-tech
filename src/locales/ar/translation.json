@@ -14,7 +14,8 @@
       "error":"خطأ",
       "unAuthorized":"Session Expired",
       "wrongOtp":"wrong otp",
-      "otpExpired":"otp is expired"
+      "otpExpired":"otp is expired",
+      "cartIsEmpty":"السلة فارغة"
   },
 
   "responses":{

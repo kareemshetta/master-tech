@@ -1,12 +1,13 @@
 import { Router } from "express";
 
 import asyncWrapper from "../../../../utils/async-wrapper";
-import { ProductView } from "./products.view";
+import { OrderView } from "./orders.view";
 import { authenticateAdmin } from "../../../../middlewares/auth.middleware";
+import { authorizeSuperAdmin } from "../../../../middlewares/authorize.midddleware";
 const router = Router();
-const view = ProductView.getInstance();
-router.use(asyncWrapper(authenticateAdmin));
-router.post("/", asyncWrapper(view.create));
+const view = OrderView.getInstance();
+router.use(asyncWrapper(authenticateAdmin), asyncWrapper(authorizeSuperAdmin));
+
 router.get("/", asyncWrapper(view.getAll));
 router.get("/:id", asyncWrapper(view.getOneById));
 router.put("/:id", asyncWrapper(view.update));

@@ -13,7 +13,6 @@ router
 
 router
   .route("/:id")
-
   .get(asyncWrapper(view.getOneById))
   .delete(asyncWrapper(view.deleteOne));
 

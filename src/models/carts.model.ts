@@ -19,6 +19,11 @@ Cart.init(
         key: "id",
       },
     },
+    totalAmount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0.0,
+    },
   },
   {
     sequelize,

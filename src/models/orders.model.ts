@@ -1,6 +1,7 @@
 import { DataTypes, Model } from "sequelize";
 import User from "./users.model";
 import sequelize from "../config/db/config";
+import { generateOrderId } from "../utils/generalFunctions";
 
 class Order extends Model {}
 
@@ -52,6 +53,11 @@ Order.init(
     shippingAddress: {
       type: DataTypes.JSON,
       allowNull: false,
+    },
+    shortId: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: generateOrderId(8),
     },
     paymentStatus: {
       type: DataTypes.ENUM,

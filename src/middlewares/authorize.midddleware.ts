@@ -13,7 +13,7 @@ export const authorizeSuperAdmin = (
 
 export const isSameUser = (req: Request, res: Response, next: NextFunction) => {
   const { id } = req.params;
-  console.log(id, req.user);
+
   if (req.user && (req.user.id == id || req.user.role === "superAdmin"))
     return next();
 

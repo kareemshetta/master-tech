@@ -202,7 +202,18 @@ export class ProductController {
 
         {
           model: ProductSku,
-          attributes: ["id", "sku", "price", "quantity"],
+          attributes: [
+            "id",
+            "sku",
+            "price",
+            "quantity",
+            [
+              sequelize.literal(
+                'ROUND(CAST("price" AS DECIMAL) * (1 - (CAST("Product"."discount" AS DECIMAL) / 100)), 2)'
+              ),
+              "priceAfterDiscount",
+            ],
+          ],
           as: "skus",
           include: [
             {

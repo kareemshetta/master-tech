@@ -18,6 +18,10 @@ import UserService from "../../../users/v1/dashboard/users.service";
 import { date } from "joi";
 import { sendEmail } from "../../../../utils/communication-functions";
 import Cart from "../../../../models/carts.model";
+import CartItem from "../../../../models/cartItem.model";
+import Product from "../../../../models/products.model";
+import { ProductSku } from "../../../../models/product_skus.model";
+import ProductAttribute from "../../../../models/product_attributes.model";
 
 export class AuthController {
   private static instance: AuthController | null = null;
@@ -89,8 +93,50 @@ export class AuthController {
     const found: Iuser | undefined = (
       await this.service.findOne({
         where: { email: body.email?.toLowerCase() },
-        attributes: { exclude: ["updatedAt", "role"] },
-        include: [{ model: Cart, attributes: ["id"] }],
+        attributes: {
+          exclude: [
+            "updatedAt",
+            "role",
+            "createdAt",
+            "deletedAt",
+            "updatedAt",
+            "otp",
+            "status",
+            "otpChangedAt",
+            "otpCreatedAt",
+          ],
+        },
+        include: [
+          {
+            model: Cart,
+            attributes: ["id"],
+            include: [
+              {
+                model: CartItem,
+                attributes: ["id", "quantity", "price"],
+                include: [
+                  { model: Product, attributes: ["id", "name", "description"] },
+                  {
+                    model: ProductSku,
+                    attributes: ["sku", "price"],
+                    include: [
+                      {
+                        model: ProductAttribute,
+                        attributes: ["type", "value"],
+                        as: "color",
+                      },
+                      {
+                        model: ProductAttribute,
+                        attributes: ["type", "value"],
+                        as: "storage",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       })
     )?.toJSON();
 

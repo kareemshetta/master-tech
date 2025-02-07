@@ -124,7 +124,7 @@ export interface MulterRequest extends Request {
 export interface ICart {
   id?: string;
   userId?: string;
-
+  cart_items?: ICartItem[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -138,6 +138,28 @@ export interface ICartItem {
   sku?: any;
 
   quantity?: number;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface IOrderItem extends ICartItem {
+  orderId?: string;
+  order?: any;
+}
+
+export interface IOrder {
+  id?: string;
+  userId?: string;
+  firstName?: string;
+  lastName?: string;
+  phoneNumber?: string;
+  email?: string;
+  status?: string;
+  totalAmount?: number | string;
+  shippingAddress?: string;
+  paymentStatus?: string;
+  orderItems?: IOrderItem[];
+  shortId?: string;
   createdAt?: string;
   updatedAt?: string;
 }

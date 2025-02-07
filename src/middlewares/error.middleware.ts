@@ -11,7 +11,7 @@ export const errorHandler = (
   err.status = err.status || "error";
 
   if (err) {
-    console.log(typeof err, err instanceof AppError);
+    // console.log(typeof err, err instanceof AppError);
     const message =
       err instanceof AppError
         ? req.t(`errors.${err.message}`, { replacer: err.replacer })

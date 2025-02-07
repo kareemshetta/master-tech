@@ -1,15 +1,14 @@
 import { Router } from "express";
 
 import asyncWrapper from "../../../../utils/async-wrapper";
-import { ProductView } from "./products.view";
-import { authenticateAdmin } from "../../../../middlewares/auth.middleware";
+import { OrderView } from "./orders.view";
+import { authenticateUser } from "../../../../middlewares/auth.middleware";
 const router = Router();
-const view = ProductView.getInstance();
-router.use(asyncWrapper(authenticateAdmin));
+const view = OrderView.getInstance();
+router.use(asyncWrapper(authenticateUser));
 router.post("/", asyncWrapper(view.create));
 router.get("/", asyncWrapper(view.getAll));
 router.get("/:id", asyncWrapper(view.getOneById));
 router.put("/:id", asyncWrapper(view.update));
-router.delete("/:id", asyncWrapper(view.deleteOne));
 
 export default router;

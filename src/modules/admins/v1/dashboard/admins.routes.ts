@@ -12,12 +12,12 @@ router.use(asyncWrapper(authenticateAdmin));
 router
   .route("/")
   .post(asyncWrapper(authorizeSuperAdmin), asyncWrapper(view.createAdmin))
-  .get(asyncWrapper(authorizeSuperAdmin), asyncWrapper(view.getAll));
+  .get(asyncWrapper(view.getAll));
 
 router
   .route("/:id")
   .get(asyncWrapper(isSameUser), asyncWrapper(view.getOneById))
   .put(asyncWrapper(isSameUser), asyncWrapper(view.update))
-  .delete(asyncWrapper(authorizeSuperAdmin), asyncWrapper(view.deleteOne));
+  .delete(asyncWrapper(isSameUser), asyncWrapper(view.deleteOne));
 
 export default router;
