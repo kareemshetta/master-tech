@@ -47,6 +47,9 @@ class CartService {
             userId,
         }, options);
     }
+    async getCart(options) {
+        return this.cartRepo.findOne(options);
+    }
     validateCreateItem(data) {
         const schema = joi_1.default.object({
             cartId: joi_1.default.string().uuid().required(),

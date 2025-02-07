@@ -11,6 +11,10 @@ const appError_1 = require("../../../../utils/appError");
 const users_service_1 = __importDefault(require("../../../users/v1/dashboard/users.service"));
 const communication_functions_1 = require("../../../../utils/communication-functions");
 const carts_model_1 = __importDefault(require("../../../../models/carts.model"));
+const cartItem_model_1 = __importDefault(require("../../../../models/cartItem.model"));
+const products_model_1 = __importDefault(require("../../../../models/products.model"));
+const product_skus_model_1 = require("../../../../models/product_skus.model");
+const product_attributes_model_1 = __importDefault(require("../../../../models/product_attributes.model"));
 class AuthController {
     constructor() {
         this.service = users_service_1.default.getInstance();
@@ -65,8 +69,50 @@ class AuthController {
         this.service.validateLoginUser(body);
         const found = (await this.service.findOne({
             where: { email: body.email?.toLowerCase() },
-            attributes: { exclude: ["updatedAt", "role"] },
-            include: [{ model: carts_model_1.default, attributes: ["id"] }],
+            attributes: {
+                exclude: [
+                    "updatedAt",
+                    "role",
+                    "createdAt",
+                    "deletedAt",
+                    "updatedAt",
+                    "otp",
+                    "status",
+                    "otpChangedAt",
+                    "otpCreatedAt",
+                ],
+            },
+            include: [
+                {
+                    model: carts_model_1.default,
+                    attributes: ["id"],
+                    include: [
+                        {
+                            model: cartItem_model_1.default,
+                            attributes: ["id", "quantity", "price"],
+                            include: [
+                                { model: products_model_1.default, attributes: ["id", "name", "description"] },
+                                {
+                                    model: product_skus_model_1.ProductSku,
+                                    attributes: ["sku", "price"],
+                                    include: [
+                                        {
+                                            model: product_attributes_model_1.default,
+                                            attributes: ["type", "value"],
+                                            as: "color",
+                                        },
+                                        {
+                                            model: product_attributes_model_1.default,
+                                            attributes: ["type", "value"],
+                                            as: "storage",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
         }))?.toJSON();
         if (!found) {
             throw new appError_1.AppError("wrongCredentials", 401);

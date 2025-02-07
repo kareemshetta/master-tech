@@ -36,7 +36,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.hashPassword = exports.generateSecureOTP = exports.getNotIncludedIds = exports.checkArraysWithSet = exports.comparePassword = exports.generateToken = exports.isUUID = void 0;
+exports.hashPassword = exports.generateOrderId = exports.generateSecureOTP = exports.getNotIncludedIds = exports.checkArraysWithSet = exports.comparePassword = exports.generateToken = exports.isUUID = void 0;
 exports.validateArrayOfUUID = validateArrayOfUUID;
 exports.validateUUID = validateUUID;
 exports.isNowGreaterThanBy15Minutes = isNowGreaterThanBy15Minutes;
@@ -83,6 +83,12 @@ const generateSecureOTP = (length = 5) => {
         .join("");
 };
 exports.generateSecureOTP = generateSecureOTP;
+const generateOrderId = (length = 8) => {
+    const prefix = "#ORD";
+    const randomHex = crypto_1.default.randomBytes(length).toString("hex").toUpperCase();
+    return `${prefix}-${randomHex}`;
+};
+exports.generateOrderId = generateOrderId;
 function isNowGreaterThanBy15Minutes(targetDate) {
     const now = new Date(); // Current date and time
     const fifteenMinutesLater = new Date(targetDate.getTime() + 15 * 60 * 1000); // Add 15 minutes to the target date

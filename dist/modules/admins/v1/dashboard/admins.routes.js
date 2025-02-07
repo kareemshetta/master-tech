@@ -14,10 +14,10 @@ router.use((0, async_wrapper_1.default)(auth_middleware_1.authenticateAdmin));
 router
     .route("/")
     .post((0, async_wrapper_1.default)(authorize_midddleware_1.authorizeSuperAdmin), (0, async_wrapper_1.default)(view.createAdmin))
-    .get((0, async_wrapper_1.default)(authorize_midddleware_1.authorizeSuperAdmin), (0, async_wrapper_1.default)(view.getAll));
+    .get((0, async_wrapper_1.default)(view.getAll));
 router
     .route("/:id")
     .get((0, async_wrapper_1.default)(authorize_midddleware_1.isSameUser), (0, async_wrapper_1.default)(view.getOneById))
     .put((0, async_wrapper_1.default)(authorize_midddleware_1.isSameUser), (0, async_wrapper_1.default)(view.update))
-    .delete((0, async_wrapper_1.default)(authorize_midddleware_1.authorizeSuperAdmin), (0, async_wrapper_1.default)(view.deleteOne));
+    .delete((0, async_wrapper_1.default)(authorize_midddleware_1.isSameUser), (0, async_wrapper_1.default)(view.deleteOne));
 exports.default = router;

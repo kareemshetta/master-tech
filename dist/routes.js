@@ -15,6 +15,7 @@ const versions_routes_7 = __importDefault(require("./modules/products/versions.r
 const versions_routes_8 = __importDefault(require("./modules/uploads/versions.routes"));
 const versions_routes_9 = __importDefault(require("./modules/carts/versions.routes"));
 const versions_routes_10 = __importDefault(require("./modules/admins/versions.routes"));
+const versions_routes_11 = __importDefault(require("./modules/orders/versions.routes"));
 const path_1 = __importDefault(require("path"));
 const injectRoutes = (app) => {
     // Basic route
@@ -32,5 +33,6 @@ const injectRoutes = (app) => {
     app.use("/products", versions_routes_7.default);
     app.use("/upload", versions_routes_8.default);
     app.use("/carts", versions_routes_9.default);
+    app.use("/orders", versions_routes_11.default);
 };
 exports.injectRoutes = injectRoutes;

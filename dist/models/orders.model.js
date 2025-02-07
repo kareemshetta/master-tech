@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_1 = require("sequelize");
 const users_model_1 = __importDefault(require("./users.model"));
 const config_1 = __importDefault(require("../config/db/config"));
+const generalFunctions_1 = require("../utils/generalFunctions");
 class Order extends sequelize_1.Model {
 }
 Order.init({
@@ -53,6 +54,11 @@ Order.init({
     shippingAddress: {
         type: sequelize_1.DataTypes.JSON,
         allowNull: false,
+    },
+    shortId: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+        defaultValue: (0, generalFunctions_1.generateOrderId)(8),
     },
     paymentStatus: {
         type: sequelize_1.DataTypes.ENUM,

@@ -10,7 +10,6 @@ const authorizeSuperAdmin = (req, res, next) => {
 exports.authorizeSuperAdmin = authorizeSuperAdmin;
 const isSameUser = (req, res, next) => {
     const { id } = req.params;
-    console.log(id, req.user);
     if (req.user && (req.user.id == id || req.user.role === "superAdmin"))
         return next();
     throw new appError_1.AppError("forbiden", 403);

@@ -154,7 +154,16 @@ class ProductController {
                 },
                 {
                     model: product_skus_model_1.ProductSku,
-                    attributes: ["id", "sku", "price", "quantity"],
+                    attributes: [
+                        "id",
+                        "sku",
+                        "price",
+                        "quantity",
+                        [
+                            config_1.default.literal('ROUND(CAST("price" AS DECIMAL) * (1 - (CAST("Product"."discount" AS DECIMAL) / 100)), 2)'),
+                            "priceAfterDiscount",
+                        ],
+                    ],
                     as: "skus",
                     include: [
                         {

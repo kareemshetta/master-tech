@@ -22,6 +22,11 @@ Cart.init({
             key: "id",
         },
     },
+    totalAmount: {
+        type: sequelize_1.DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0.0,
+    },
 }, {
     sequelize: config_1.default,
     modelName: "carts",

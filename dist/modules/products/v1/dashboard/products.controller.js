@@ -35,7 +35,13 @@ class ProductController {
     }
     async create(req) {
         const storeData = req.body;
+        let storeId = req.user?.storeId;
         // Validate the incoming data
+        if (storeId && storeData.storeId && storeId !== storeData.storeId) {
+            throw new appError_1.AppError("forbiden", 403);
+        }
+        if (req.user?.role !== "superAdmin")
+            storeData.storeId = storeId;
         this.service.validateCreate(storeData);
         const foundOneWithSameName = await this.service.findOne({
             where: { name: storeData.name },
@@ -68,12 +74,16 @@ class ProductController {
     }
     async update(req) {
         const { id } = req.params;
+        const storeId = req.user?.storeId;
         const updateData = req.body;
         // Validate the update data
         updateData.id = id;
         this.service.validateUpdate(updateData);
         // Find the product first
-        const product = await this.service.findOneByIdOrThrowError(id);
+        const product = (await this.service.findOneByIdOrThrowError(id)).toJSON();
+        if (req.user?.role !== "superAdmin" && product.storeId !== storeId) {
+            throw new appError_1.AppError("forbiden", 403);
+        }
         if (updateData.name) {
             const foundOneWithSameName = await this.service.findOne({
                 where: { name: updateData.name, id: { [sequelize_1.Op.ne]: id } },
@@ -111,8 +121,12 @@ class ProductController {
     }
     async delete(req) {
         const { id } = req.params;
-        (0, generalFunctions_1.validateUUID)(id, "invalid trainer id");
-        await this.service.findOneByIdOrThrowError(id);
+        let storeId = req.user?.storeId;
+        (0, generalFunctions_1.validateUUID)(id, "invalid product id");
+        const product = (await this.service.findOneByIdOrThrowError(id)).toJSON();
+        if (req.user?.role !== "superAdmin" && product.storeId !== storeId) {
+            throw new appError_1.AppError("forbiden", 403);
+        }
         // Delete the product
         return this.service.delete(id);
     }
@@ -153,7 +167,16 @@ class ProductController {
                 },
                 {
                     model: product_skus_model_1.ProductSku,
-                    attributes: ["id", "sku", "price", "quantity"],
+                    attributes: [
+                        "id",
+                        "sku",
+                        "price",
+                        "quantity",
+                        [
+                            config_1.default.literal('ROUND(CAST("price" AS DECIMAL) * (1 - (CAST("Product"."discount" AS DECIMAL) / 100)), 2)'),
+                            "priceAfterDiscount",
+                        ],
+                    ],
                     as: "skus",
                     include: [
                         {
@@ -179,6 +202,7 @@ class ProductController {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         let { search, maxPrice, minPrice, brandIds, categoryIds, battery, ram } = req.query;
+        let storeId = req.user?.storeId;
         this.service.validateGetAllStoresQuery({
             search,
             maxPrice,
@@ -210,6 +234,8 @@ class ProductController {
                 { model: categories_model_1.default, attributes: ["name"] },
             ],
         };
+        if (storeId)
+            options.where.storeId = storeId;
         if (maxPrice && minPrice) {
             options.where.basePrice = {
                 [sequelize_1.Op.between]: [Number(minPrice), Number(maxPrice)],

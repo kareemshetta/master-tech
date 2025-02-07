@@ -7,7 +7,7 @@ req, res, next) => {
     err.statusCode = err.statusCode || 500;
     err.status = err.status || "error";
     if (err) {
-        console.log(typeof err, err instanceof appError_1.AppError);
+        // console.log(typeof err, err instanceof AppError);
         const message = err instanceof appError_1.AppError
             ? req.t(`errors.${err.message}`, { replacer: err.replacer })
             : err.message;

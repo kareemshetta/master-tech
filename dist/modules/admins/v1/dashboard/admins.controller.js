@@ -23,12 +23,17 @@ class AdminController {
     }
     async getAll(req) {
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        return this.service.getAll({
+        let storeId = req.user?.storeId;
+        let options = {
             attributes: ["id", "firstName", "lastName", "email", "phoneNumber"],
             offset,
             limit,
+            where: {},
             order: [[orderBy, order]],
-        });
+        };
+        if (req.user?.role != "superAdmin" && storeId)
+            options.where.storeId = storeId;
+        return this.service.getAll(options);
     }
     async create(req) {
         const body = req.body;
