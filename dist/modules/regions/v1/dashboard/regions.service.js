@@ -35,10 +35,16 @@ class RegionService {
     validateCreate(data) {
         const schema = joi_1.default.object({
             name: joi_1.default.string().trim().max(255).required().messages({
-                "string.base": "Store name must be a string.",
-                "string.empty": "Store name cannot be empty.",
-                "string.max": "Store name cannot exceed 255 characters.",
-                "any.required": "Store name is required and cannot be null.",
+                "string.base": "name must be a string.",
+                "string.empty": "name cannot be empty.",
+                "string.max": "name cannot exceed 255 characters.",
+                "any.required": "name is required and cannot be null.",
+            }),
+            nameAr: joi_1.default.string().trim().max(255).required().messages({
+                "string.base": " nameAr must be a string.",
+                "string.empty": " nameAr cannot be empty.",
+                "string.max": " nameAr cannot exceed 255 characters.",
+                "any.required": " nameAr is required and cannot be null.",
             }),
             cityId: joi_1.default.string().trim().uuid().required().messages({
                 "string.base": "City id must be a string.",
@@ -54,9 +60,17 @@ class RegionService {
     }
     validateUpdate(data) {
         const schema = joi_1.default.object({
-            name: joi_1.default.string().trim().max(255).messages({
-                "string.base": "Store name must be a string.",
-                "string.max": "Store name cannot exceed 255 characters.",
+            name: joi_1.default.string().trim().max(255).required().messages({
+                "string.base": "name must be a string.",
+                "string.empty": "name cannot be empty.",
+                "string.max": "name cannot exceed 255 characters.",
+                "any.required": "name is required and cannot be null.",
+            }),
+            nameAr: joi_1.default.string().trim().max(255).required().messages({
+                "string.base": " nameAr must be a string.",
+                "string.empty": " nameAr cannot be empty.",
+                "string.max": " nameAr cannot exceed 255 characters.",
+                "any.required": " nameAr is required and cannot be null.",
             }),
             cityId: joi_1.default.string().trim().uuid().required().messages({
                 "string.base": "City id must be a string.",

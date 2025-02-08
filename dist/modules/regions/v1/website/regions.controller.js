@@ -67,20 +67,41 @@ class RegionController {
     }
     async getOne(req) {
         const { id } = req.params;
+        const { lng } = req.query;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
         const region = await this.service.findOneByIdOrThrowError(id, {
-            attributes: ["id", "name", "cityId"],
-            include: [{ model: cities_model_1.default, attributes: ["id", "name"] }],
+            attributes: [
+                "id",
+                [config_1.default.col(`regions."${nameColumn}"`), "name"],
+                "cityId",
+            ],
+            include: [
+                {
+                    model: cities_model_1.default,
+                    attributes: ["id", [config_1.default.col(`"${nameColumn}"`), "name"]],
+                },
+            ],
         });
         return region;
     }
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, cityId } = req.query;
+        let { search, cityId, lng } = req.query;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
         this.service.validateGetAllStoresQuery({ search });
         const options = {
-            attributes: ["id", "name", "cityId"],
-            include: [{ model: cities_model_1.default, attributes: ["id", "name"] }],
+            attributes: [
+                "id",
+                [config_1.default.col(`regions."${nameColumn}"`), "name"],
+                "cityId",
+            ],
+            include: [
+                {
+                    model: cities_model_1.default,
+                    attributes: ["id", [config_1.default.col(`"${nameColumn}"`), "name"]],
+                },
+            ],
             offset,
             limit,
             order: [[orderBy, order]],
@@ -95,7 +116,7 @@ class RegionController {
             search = search.toString().replace(/\+/g, "").trim();
             options.where.name = {
                 [sequelize_1.Op.or]: [
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col("regions.name")), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`regions."${nameColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };
         }

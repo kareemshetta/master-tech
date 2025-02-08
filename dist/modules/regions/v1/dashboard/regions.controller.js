@@ -34,6 +34,12 @@ class RegionController {
         if (foundOneWithSameName) {
             throw new appError_1.AppError("entityWithNameExist", 409);
         }
+        const foundOneWithSameNameAr = await this.service.findOne({
+            where: { nameAr: storeData.nameAr },
+        });
+        if (foundOneWithSameNameAr) {
+            throw new appError_1.AppError("entityWithNameExist", 409);
+        }
         // Create the region
         const region = await this.service.create(storeData);
         return region;
@@ -54,6 +60,14 @@ class RegionController {
                 throw new appError_1.AppError("entityWithNameExist", 409);
             }
         }
+        if (updateData.nameAr) {
+            const foundOneWithSameName = await this.service.findOne({
+                where: { nameAr: updateData.nameAr, id: { [sequelize_1.Op.ne]: id } },
+            });
+            if (foundOneWithSameName) {
+                throw new appError_1.AppError("entityWithNameExist", 409);
+            }
+        }
         // Find the region first
         const region = await this.service.findOneByIdOrThrowError(id);
         // Update the region
@@ -68,19 +82,29 @@ class RegionController {
     async getOne(req) {
         const { id } = req.params;
         const region = await this.service.findOneByIdOrThrowError(id, {
-            attributes: ["id", "name", "cityId"],
-            include: [{ model: cities_model_1.default, attributes: ["id", "name"] }],
+            attributes: ["id", "name", "nameAr", "cityId"],
+            include: [{ model: cities_model_1.default, attributes: ["id", "name", "nameAr"] }],
         });
         return region;
     }
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, cityId } = req.query;
+        let { search, cityId, lng } = req.query;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
         this.service.validateGetAllStoresQuery({ search });
         const options = {
-            attributes: ["id", "name", "cityId"],
-            include: [{ model: cities_model_1.default, attributes: ["id", "name"] }],
+            attributes: [
+                "id",
+                [config_1.default.col(`regions."${nameColumn}"`), "name"],
+                "cityId",
+            ],
+            include: [
+                {
+                    model: cities_model_1.default,
+                    attributes: ["id", [config_1.default.col(`"${nameColumn}"`), "name"]],
+                },
+            ],
             offset,
             limit,
             order: [[orderBy, order]],
@@ -95,7 +119,7 @@ class RegionController {
             search = search.toString().replace(/\+/g, "").trim();
             options.where.name = {
                 [sequelize_1.Op.or]: [
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col("regions.name")), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`regions."${nameColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };
         }

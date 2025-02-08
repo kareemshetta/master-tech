@@ -59,18 +59,21 @@ class CityController {
     }
     async getStore(req) {
         const { id } = req.params;
+        const { lng } = req.query;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
         const city = await this.service.findOneByIdOrThrowError(id, {
-            attributes: ["id", "name"],
+            attributes: ["id", [config_1.default.col(`cities."${nameColumn}"`), "name"]],
         });
         return city;
     }
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search } = req.query;
+        let { search, lng } = req.query;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
         this.service.validateGetAllStoresQuery({ search });
         const options = {
-            attributes: ["id", "name"],
+            attributes: ["id", [config_1.default.col(`cities."${nameColumn}"`), "name"]],
             offset,
             limit,
             order: [[orderBy, order]],
@@ -78,11 +81,9 @@ class CityController {
         };
         if (search) {
             search = search.toString().replace(/\+/g, "").trim();
-            options.where.name = {
-                [sequelize_1.Op.or]: [
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col("cities.name")), "LIKE", "%" + search.toLowerCase() + "%"),
-                ],
-            };
+            options.where = config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`cities."${nameColumn}"`)), {
+                [sequelize_1.Op.like]: `%${search.toLowerCase()}%`,
+            });
         }
         const date = await this.service.getAll(options);
         return date;

@@ -93,7 +93,7 @@ const initialize = async (app) => {
         //   alter: true,
         //   // logging: console.log
         // });
-        // console.log("All models were synchronized successfully.");
+        console.log("All models were synchronized successfully.");
         const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
         app.listen(port, () => console.log(`⚡️Server is running at ${os_1.default.hostname()}:${port}`));
     }

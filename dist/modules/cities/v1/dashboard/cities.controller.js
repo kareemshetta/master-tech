@@ -31,6 +31,12 @@ class CityController {
         if (foundOneWithSameName) {
             throw new appError_1.AppError("entityWithNameExist", 409);
         }
+        const foundOneWithSameNameAr = await this.service.findOne({
+            where: { nameAr: storeData.nameAr },
+        });
+        if (foundOneWithSameNameAr) {
+            throw new appError_1.AppError("entityWithNameExist", 409);
+        }
         // Create the city
         const city = await this.service.create(storeData);
         return city;
@@ -43,6 +49,14 @@ class CityController {
         if (updateData.name) {
             const foundOneWithSameName = await this.service.findOne({
                 where: { name: updateData.name, id: { [sequelize_1.Op.ne]: id } },
+            });
+            if (foundOneWithSameName) {
+                throw new appError_1.AppError("entityWithNameExist", 409);
+            }
+        }
+        if (updateData.nameAr) {
+            const foundOneWithSameName = await this.service.findOne({
+                where: { nameAr: updateData.nameAr, id: { [sequelize_1.Op.ne]: id } },
             });
             if (foundOneWithSameName) {
                 throw new appError_1.AppError("entityWithNameExist", 409);
@@ -69,17 +83,18 @@ class CityController {
     async getStore(req) {
         const { id } = req.params;
         const city = await this.service.findOneByIdOrThrowError(id, {
-            attributes: ["id", "name"],
+            attributes: ["id", "name", "nameAr"],
         });
         return city;
     }
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search } = req.query;
+        let { search, lng } = req.query;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
         this.service.validateGetAllStoresQuery({ search });
         const options = {
-            attributes: ["id", "name"],
+            attributes: ["id", [config_1.default.col(`cities."${nameColumn}"`), "name"]],
             offset,
             limit,
             order: [[orderBy, order]],
@@ -87,11 +102,9 @@ class CityController {
         };
         if (search) {
             search = search.toString().replace(/\+/g, "").trim();
-            options.where.name = {
-                [sequelize_1.Op.or]: [
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col("cities.name")), "LIKE", "%" + search.toLowerCase() + "%"),
-                ],
-            };
+            options.where = config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`cities."${nameColumn}"`)), {
+                [sequelize_1.Op.like]: `%${search.toLowerCase()}%`,
+            });
         }
         const date = await this.service.getAll(options);
         return date;

@@ -17,6 +17,10 @@ Region.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
+    nameAr: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
 }, {
     sequelize: config_1.default,
     modelName: "regions",
