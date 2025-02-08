@@ -12,7 +12,7 @@ class UserView {
         this.createUser = this.createUser.bind(this);
         this.getOneById = this.getOneById.bind(this);
         this.getAll = this.getAll.bind(this);
-        // this.update = this.update.bind(this);
+        this.update = this.update.bind(this);
         this.deleteOne = this.deleteOne.bind(this);
     }
     static getInstance() {
