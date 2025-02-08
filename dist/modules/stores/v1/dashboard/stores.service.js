@@ -62,7 +62,13 @@ class StoreService {
                 "string.base": "Phone number must be a string.",
             }),
             parentId: joi_1.default.string().uuid().trim().allow(null).messages({
-                "string.base": "Phone number must be a string.",
+                "string.base": "PparentId must be a string.",
+            }),
+            cityId: joi_1.default.string().uuid().trim().allow(null).messages({
+                "string.base": "cityId must be a string.",
+            }),
+            regionId: joi_1.default.string().uuid().trim().allow(null).messages({
+                "string.base": "cityId must be a string.",
             }),
         });
         const { error } = schema.validate(data);
@@ -98,6 +104,12 @@ class StoreService {
             parentId: joi_1.default.string().uuid().trim().allow(null).messages({
                 "string.base": "Phone number must be a string.",
             }),
+            cityId: joi_1.default.string().uuid().trim().allow(null).messages({
+                "string.base": "cityId must be a string.",
+            }),
+            regionId: joi_1.default.string().uuid().trim().allow(null).messages({
+                "string.base": "cityId must be a string.",
+            }),
         });
         const { error } = schema.validate(data);
         if (error) {
@@ -110,6 +122,12 @@ class StoreService {
             search: joi_1.default.string().trim().max(255).allow("").messages({
                 "string.base": "Search term must be a string.",
                 "string.max": "Search term cannot exceed 255 characters.",
+            }),
+            cityId: joi_1.default.string().uuid().trim().allow(null).messages({
+                "string.base": "cityId must be a string.",
+            }),
+            regionId: joi_1.default.string().uuid().trim().allow(null).messages({
+                "string.base": "cityId must be a string.",
             }),
             storeIds: joi_1.default.string()
                 .custom((value, helpers) => {

@@ -11,9 +11,15 @@ const sequelize_1 = require("sequelize");
 const stores_model_1 = __importDefault(require("../../../../models/stores.model"));
 const config_1 = __importDefault(require("../../../../config/db/config"));
 const admins_model_1 = __importDefault(require("../../../../models/admins.model"));
+const cities_service_1 = __importDefault(require("../../../cities/v1/dashboard/cities.service"));
+const regions_model_1 = __importDefault(require("../../../../models/regions.model"));
+const regions_service_1 = __importDefault(require("../../../regions/v1/dashboard/regions.service"));
+const cities_model_1 = __importDefault(require("../../../../models/cities.model"));
 class StoreController {
     constructor() {
         this.storeService = stores_service_1.StoreService.getInstance();
+        this.cityService = cities_service_1.default.getInstance();
+        this.regionService = regions_service_1.default.getInstance();
     }
     static getInstance() {
         if (!StoreController.instance) {
@@ -25,6 +31,10 @@ class StoreController {
         const storeData = req.body;
         // Validate the incoming data
         this.storeService.validateCreateStore(storeData);
+        storeData.cityId &&
+            (await this.cityService.findOneByIdOrThrowError(storeData.cityId));
+        storeData.regionId &&
+            (await this.regionService.findOneByIdOrThrowError(storeData.regionId));
         const foundOneWithSameName = await this.storeService.findOne({
             where: { name: storeData.name },
         });
@@ -46,6 +56,10 @@ class StoreController {
         const updateData = req.body;
         // Validate the update data
         this.storeService.validateUpdateStore(updateData);
+        updateData.cityId &&
+            (await this.cityService.findOneByIdOrThrowError(updateData.cityId));
+        updateData.regionId &&
+            (await this.regionService.findOneByIdOrThrowError(updateData.regionId));
         if (updateData.name) {
             const foundOneWithSameName = await this.storeService.findOne({
                 where: { name: updateData.name, id: { [sequelize_1.Op.ne]: id } },
@@ -91,6 +105,14 @@ class StoreController {
                     model: admins_model_1.default,
                     attributes: ["id", "firstName", "lastName", "email", "phoneNumber"],
                 },
+                {
+                    model: cities_model_1.default,
+                    attributes: ["id", "name"],
+                },
+                {
+                    model: regions_model_1.default,
+                    attributes: ["id", "name"],
+                },
             ],
         });
         return store;
@@ -98,8 +120,13 @@ class StoreController {
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, storeIds } = req.query;
-        this.storeService.validateGetAllStoresQuery({ search, storeIds });
+        let { search, storeIds, cityId, regionId } = req.query;
+        this.storeService.validateGetAllStoresQuery({
+            search,
+            storeIds,
+            cityId,
+            regionId,
+        });
         const options = {
             offset,
             limit,
@@ -118,6 +145,12 @@ class StoreController {
         if (storeIds) {
             storeIds = storeIds.toString().split(",");
             options.where.parentId = { [sequelize_1.Op.in]: storeIds };
+        }
+        if (cityId) {
+            options.where.cityId = cityId;
+        }
+        if (regionId) {
+            options.where.regionId = regionId;
         }
         const date = await this.storeService.getAll(options);
         return date;

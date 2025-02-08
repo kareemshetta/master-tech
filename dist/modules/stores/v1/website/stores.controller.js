@@ -9,6 +9,8 @@ const handle_sort_pagination_1 = require("../../../../utils/handle-sort-paginati
 const sequelize_1 = require("sequelize");
 const stores_model_1 = __importDefault(require("../../../../models/stores.model"));
 const config_1 = __importDefault(require("../../../../config/db/config"));
+const cities_model_1 = __importDefault(require("../../../../models/cities.model"));
+const regions_model_1 = __importDefault(require("../../../../models/regions.model"));
 class StoreController {
     constructor() {
         this.storeService = stores_service_1.StoreService.getInstance();
@@ -25,13 +27,21 @@ class StoreController {
             include: [
                 {
                     model: stores_model_1.default,
-                    attributes: ["id", "name", "phoneNumber", "location"],
+                    attributes: ["id", "name", "phoneNumber"],
                     as: "subStores",
                 },
                 {
                     model: stores_model_1.default,
-                    attributes: ["id", "name", "phoneNumber", "location"],
+                    attributes: ["id", "name", "phoneNumber"],
                     as: "parentStore",
+                },
+                {
+                    model: cities_model_1.default,
+                    attributes: ["id", "name"],
+                },
+                {
+                    model: regions_model_1.default,
+                    attributes: ["id", "name"],
                 },
             ],
         });
@@ -40,8 +50,13 @@ class StoreController {
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, storeIds } = req.query;
-        this.storeService.validateGetAllStoresQuery({ search, storeIds });
+        let { search, storeIds, cityId, regionId } = req.query;
+        this.storeService.validateGetAllStoresQuery({
+            search,
+            storeIds,
+            cityId,
+            regionId,
+        });
         const options = {
             offset,
             limit,
@@ -60,6 +75,12 @@ class StoreController {
         if (storeIds) {
             storeIds = storeIds.toString().split(",");
             options.where.parentId = { [sequelize_1.Op.in]: storeIds };
+        }
+        if (cityId) {
+            options.where.cityId = cityId;
+        }
+        if (regionId) {
+            options.where.regionId = regionId;
         }
         const date = await this.storeService.getAll(options);
         return date;
