@@ -73,7 +73,7 @@ export class CityController {
 
   public async getStore(req: Request) {
     const { id } = req.params;
-    const { lng } = req.query;
+    const lng = req.language;
     const nameColumn = lng === "ar" ? "nameAr" : "name";
     const city = await this.service.findOneByIdOrThrowError(id, {
       attributes: ["id", [sequelize.col(`cities."${nameColumn}"`), "name"]],
@@ -85,7 +85,8 @@ export class CityController {
   public async getAllStores(req: Request) {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
-    let { search, lng } = req.query;
+    let { search } = req.query;
+    const lng = req.language;
     const nameColumn = lng === "ar" ? "nameAr" : "name";
     this.service.validateGetAllStoresQuery({ search });
     const options: any = {
