@@ -67,7 +67,7 @@ class RegionController {
     }
     async getOne(req) {
         const { id } = req.params;
-        const { lng } = req.query;
+        const lng = req.language;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
         const region = await this.service.findOneByIdOrThrowError(id, {
             attributes: [
@@ -87,7 +87,9 @@ class RegionController {
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, cityId, lng } = req.query;
+        console.log("language", req.language);
+        let { search, cityId } = req.query;
+        const lng = req.language;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
         this.service.validateGetAllStoresQuery({ search });
         const options = {

@@ -90,7 +90,8 @@ class RegionController {
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, cityId, lng } = req.query;
+        let { search, cityId } = req.query;
+        const lng = req.language;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
         this.service.validateGetAllStoresQuery({ search });
         const options = {
