@@ -52,12 +52,12 @@ export class ProductController {
     if (req.user?.role !== "superAdmin") storeData.storeId = storeId;
     this.service.validateCreate(storeData);
 
-    const foundOneWithSameName = await this.service.findOne({
-      where: { name: storeData.name },
-    });
-    if (foundOneWithSameName) {
-      throw new AppError("entityWithNameExist", 409);
-    }
+    // const foundOneWithSameName = await this.service.findOne({
+    //   where: { name: storeData.name },
+    // });
+    // if (foundOneWithSameName) {
+    //   throw new AppError("entityWithNameExist", 409);
+    // }
 
     await this.brandService.findOneByIdOrThrowError(storeData.brandId!);
     await this.CategoreyService.findOneByIdOrThrowError(storeData.categoryId!);
@@ -111,14 +111,14 @@ export class ProductController {
     if (req.user?.role !== "superAdmin" && product.storeId !== storeId) {
       throw new AppError("forbiden", 403);
     }
-    if (updateData.name) {
-      const foundOneWithSameName = await this.service.findOne({
-        where: { name: updateData.name, id: { [Op.ne]: id } },
-      });
-      if (foundOneWithSameName) {
-        throw new AppError("entityWithNameExist", 409);
-      }
-    }
+    // if (updateData.name) {
+    //   const foundOneWithSameName = await this.service.findOne({
+    //     where: { name: updateData.name, id: { [Op.ne]: id } },
+    //   });
+    //   if (foundOneWithSameName) {
+    //     throw new AppError("entityWithNameExist", 409);
+    //   }
+    // }
     if (updateData.brandId)
       await this.brandService.findOneByIdOrThrowError(updateData.brandId!);
     if (updateData.categoryId)
@@ -183,7 +183,9 @@ export class ProductController {
       attributes: [
         "id",
         "name",
+        "nameAr",
         "description",
+        "descriptionAr",
         "basePrice",
         "discount",
         [
@@ -242,9 +244,13 @@ export class ProductController {
             },
           ],
         },
-        { model: Brand, attributes: ["name"] },
-        { model: Category, attributes: ["name"] },
-        { model: Store, attributes: ["id", "name", "image"], as: "store" },
+        { model: Brand, attributes: ["name", "nameAr"] },
+        { model: Category, attributes: ["name", "nameAr"] },
+        {
+          model: Store,
+          attributes: ["id", "name", "nameAr", "image"],
+          as: "store",
+        },
       ],
     });
 
@@ -257,6 +263,9 @@ export class ProductController {
     let { search, maxPrice, minPrice, brandIds, categoryIds, battery, ram } =
       req.query;
     let storeId = req.user?.storeId;
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
     this.service.validateGetAllStoresQuery({
       search,
       maxPrice,
@@ -265,13 +274,15 @@ export class ProductController {
       ram,
     });
     const options: any = {
+      logging: console.log,
       attributes: [
         "id",
-        "name",
+        [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
+        [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
         "basePrice",
         "battery",
         "ram",
-        "description",
+
         "image",
         "discount",
         [
@@ -286,8 +297,23 @@ export class ProductController {
       order: [[orderBy, order]],
       where: {},
       include: [
-        { model: Store, attributes: ["id", "name", "image"], as: "store" },
-        { model: Category, attributes: ["name"] },
+        {
+          model: Store,
+          attributes: [
+            "id",
+            [sequelize.literal(`store."${nameColumn}"`), "name"],
+            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+            "image",
+          ],
+          as: "store",
+        },
+        {
+          model: Category,
+          attributes: [
+            [sequelize.literal(`category."${nameColumn}"`), "name"],
+            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+          ],
+        },
       ],
     };
     if (storeId) options.where.storeId = storeId;
@@ -313,12 +339,18 @@ export class ProductController {
       options.where.name = {
         [Op.or]: [
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("products.name")),
+            sequelize.fn(
+              "LOWER",
+              sequelize.literal(`"Product"."${nameColumn}"`)
+            ),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col(`products."description"`)),
+            sequelize.fn(
+              "LOWER",
+              sequelize.literal(`"Product"."${descriptionColumn}"`)
+            ),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),

@@ -163,12 +163,15 @@ export class ProductController {
 
   public async get(req: Request) {
     const { id } = req.params;
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
 
     const product = await this.service.findOneByIdOrThrowError(id, {
       attributes: [
         "id",
-        "name",
-        "description",
+        [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
+        [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
         "basePrice",
         "discount",
         [
@@ -228,9 +231,23 @@ export class ProductController {
             },
           ],
         },
-        { model: Brand, attributes: ["name"] },
-        { model: Category, attributes: ["name"] },
-        { model: Store, attributes: ["id", "name", "image"], as: "store" },
+        {
+          model: Brand,
+          attributes: [[sequelize.literal(`brand."${nameColumn}"`), "name"]],
+        },
+        {
+          model: Category,
+          attributes: [[sequelize.literal(`category."${nameColumn}"`), "name"]],
+        },
+        {
+          model: Store,
+          attributes: [
+            "id",
+            [sequelize.literal(`store."${nameColumn}"`), "name"],
+            "image",
+          ],
+          as: "store",
+        },
       ],
     });
 
@@ -242,6 +259,10 @@ export class ProductController {
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
     let { search, maxPrice, minPrice, brandIds, categoryIds, battery, ram } =
       req.query;
+    let storeId = req.user?.storeId;
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
     this.service.validateGetAllStoresQuery({
       search,
       maxPrice,
@@ -250,13 +271,15 @@ export class ProductController {
       ram,
     });
     const options: any = {
+      logging: console.log,
       attributes: [
         "id",
-        "name",
+        [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
+        [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
         "basePrice",
         "battery",
         "ram",
-        "description",
+
         "image",
         "discount",
         [
@@ -271,10 +294,27 @@ export class ProductController {
       order: [[orderBy, order]],
       where: {},
       include: [
-        { model: Store, attributes: ["id", "name", "image"], as: "store" },
-        { model: Category, attributes: ["name"] },
+        {
+          model: Store,
+          attributes: [
+            "id",
+            [sequelize.literal(`store."${nameColumn}"`), "name"],
+            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+            "image",
+          ],
+          as: "store",
+        },
+        {
+          model: Category,
+          attributes: [
+            [sequelize.literal(`category."${nameColumn}"`), "name"],
+            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+          ],
+        },
       ],
     };
+    if (storeId) options.where.storeId = storeId;
+
     if (maxPrice && minPrice) {
       options.where.basePrice = {
         [Op.between]: [Number(minPrice), Number(maxPrice)],
@@ -296,12 +336,18 @@ export class ProductController {
       options.where.name = {
         [Op.or]: [
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("products.name")),
+            sequelize.fn(
+              "LOWER",
+              sequelize.literal(`"Product"."${nameColumn}"`)
+            ),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col(`products."description"`)),
+            sequelize.fn(
+              "LOWER",
+              sequelize.literal(`"Product"."${descriptionColumn}"`)
+            ),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),

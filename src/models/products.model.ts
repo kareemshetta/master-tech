@@ -13,7 +13,14 @@ Product.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    nameAr: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     description: {
+      type: DataTypes.TEXT,
+    },
+    descriptionAr: {
       type: DataTypes.TEXT,
     },
     basePrice: {
