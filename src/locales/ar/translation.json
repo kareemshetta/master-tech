@@ -15,7 +15,8 @@
       "unAuthorized":"Session Expired",
       "wrongOtp":"wrong otp",
       "otpExpired":"otp is expired",
-      "cartIsEmpty":"السلة فارغة"
+      "cartIsEmpty":"السلة فارغة",
+      "cityHasRegions":"هذه المدينة لديها منطقات"
   },
 
   "responses":{

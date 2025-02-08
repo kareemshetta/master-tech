@@ -77,7 +77,13 @@ export class StoreService {
         "string.base": "Phone number must be a string.",
       }),
       parentId: Joi.string().uuid().trim().allow(null).messages({
-        "string.base": "Phone number must be a string.",
+        "string.base": "PparentId must be a string.",
+      }),
+      cityId: Joi.string().uuid().trim().allow(null).messages({
+        "string.base": "cityId must be a string.",
+      }),
+      regionId: Joi.string().uuid().trim().allow(null).messages({
+        "string.base": "cityId must be a string.",
       }),
     });
 
@@ -120,6 +126,12 @@ export class StoreService {
       parentId: Joi.string().uuid().trim().allow(null).messages({
         "string.base": "Phone number must be a string.",
       }),
+      cityId: Joi.string().uuid().trim().allow(null).messages({
+        "string.base": "cityId must be a string.",
+      }),
+      regionId: Joi.string().uuid().trim().allow(null).messages({
+        "string.base": "cityId must be a string.",
+      }),
     });
 
     const { error } = schema.validate(data);
@@ -129,13 +141,23 @@ export class StoreService {
     return;
   }
 
-  public validateGetAllStoresQuery(query: { search?: any; storeIds?: any }) {
+  public validateGetAllStoresQuery(query: {
+    search?: any;
+    storeIds?: any;
+    cityId?: any;
+    regionId?: any;
+  }) {
     const schema = Joi.object({
       search: Joi.string().trim().max(255).allow("").messages({
         "string.base": "Search term must be a string.",
         "string.max": "Search term cannot exceed 255 characters.",
       }),
-
+      cityId: Joi.string().uuid().trim().allow(null).messages({
+        "string.base": "cityId must be a string.",
+      }),
+      regionId: Joi.string().uuid().trim().allow(null).messages({
+        "string.base": "cityId must be a string.",
+      }),
       storeIds: Joi.string()
         .custom((value: string, helpers) => {
           if (!value) return value;

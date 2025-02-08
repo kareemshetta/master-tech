@@ -8,6 +8,8 @@ import { FindOptions, Op } from "sequelize";
 import Store from "../../../../models/stores.model";
 import User from "../../../../models/users.model";
 import sequelize from "../../../../config/db/config";
+import City from "../../../../models/cities.model";
+import Region from "../../../../models/regions.model";
 
 export class StoreController {
   private static instance: StoreController | null = null;
@@ -31,13 +33,22 @@ export class StoreController {
       include: [
         {
           model: Store,
-          attributes: ["id", "name", "phoneNumber", "location"],
+          attributes: ["id", "name", "phoneNumber"],
           as: "subStores",
         },
         {
           model: Store,
-          attributes: ["id", "name", "phoneNumber", "location"],
+          attributes: ["id", "name", "phoneNumber"],
           as: "parentStore",
+        },
+
+        {
+          model: City,
+          attributes: ["id", "name"],
+        },
+        {
+          model: Region,
+          attributes: ["id", "name"],
         },
       ],
     });
@@ -48,8 +59,13 @@ export class StoreController {
   public async getAllStores(req: Request) {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
-    let { search, storeIds } = req.query;
-    this.storeService.validateGetAllStoresQuery({ search, storeIds });
+    let { search, storeIds, cityId, regionId } = req.query;
+    this.storeService.validateGetAllStoresQuery({
+      search,
+      storeIds,
+      cityId,
+      regionId,
+    });
     const options: any = {
       offset,
       limit,
@@ -79,7 +95,12 @@ export class StoreController {
       storeIds = storeIds.toString().split(",");
       options.where.parentId = { [Op.in]: storeIds };
     }
-
+    if (cityId) {
+      options.where.cityId = cityId;
+    }
+    if (regionId) {
+      options.where.regionId = regionId;
+    }
     const date = await this.storeService.getAll(options);
 
     return date;

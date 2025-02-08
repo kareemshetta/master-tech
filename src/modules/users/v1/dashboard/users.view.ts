@@ -11,7 +11,7 @@ export class UserView {
     this.createUser = this.createUser.bind(this);
     this.getOneById = this.getOneById.bind(this);
     this.getAll = this.getAll.bind(this);
-    // this.updateBill = this.updateBill.bind(this);
+    // this.update = this.update.bind(this);
     this.deleteOne = this.deleteOne.bind(this);
   }
 
@@ -22,9 +22,9 @@ export class UserView {
     return UserView.instance;
   }
   async createUser(req: Request, res: Response) {
-    const trainer = await this.controller.create(req);
+    const user = await this.controller.create(req);
     res.send({
-      data: trainer,
+      data: user,
       message: req.t("responses.succes"),
     });
   }
@@ -45,17 +45,13 @@ export class UserView {
     });
   }
 
-  //   async updateBill(req: Request, res: Response) {
-  //     try {
-  //       const trainer = await this.controller.update(req);
-  //       res.send({
-  //         data: trainer,
-  //         message: "Success updating the srevice request bill.",
-  //       });
-  //     } catch (error: any) {
-  //       throw new AppError(error);
-  //     }
-  //   }
+  async update(req: Request, res: Response) {
+    const user = await this.controller.update(req);
+    res.send({
+      data: user,
+      message: req.t("responses.succes"),
+    });
+  }
 
   async deleteOne(req: Request, res: Response) {
     const user = await this.controller.deleteOne(req);
@@ -69,7 +65,7 @@ export class UserView {
   //     try {
   //       //   const bills = await controller.expor(req);
   //       //   const tableColumns = ["name"];
-  //       //   const sheetColumns = ["trainer name"];
+  //       //   const sheetColumns = ["user name"];
   //       //   const sheet = generateExcelBuffer(
   //       //     tableColumns,
   //       //     sheetColumns,

@@ -31,6 +31,10 @@ export interface IStore {
   parentId?: string;
   subStores?: IStore[];
   parentStore?: IStore;
+  cityId?: string;
+  regionId?: string;
+  city?: ICity;
+  region?: IRegion;
 }
 
 export interface ICategory {
@@ -162,4 +166,21 @@ export interface IOrder {
   shortId?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface ICity {
+  name?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  regions?: IRegion[];
+  id?: string;
+}
+
+export interface IRegion {
+  name?: string;
+  cityId?: string;
+  city?: ICity;
+  createdAt?: string;
+  updatedAt?: string;
+  id?: string;
 }

@@ -11,6 +11,8 @@ import uploadsRoute from "./modules/uploads/versions.routes";
 import cartsRoute from "./modules/carts/versions.routes";
 import adminsRoute from "./modules/admins/versions.routes";
 import ordersRoute from "./modules/orders/versions.routes";
+import citiesRoute from "./modules/cities/versions.routes";
+import regionsRoute from "./modules/regions/versions.routes";
 
 import path from "path";
 export const injectRoutes = (app: Application): void => {
@@ -31,4 +33,6 @@ export const injectRoutes = (app: Application): void => {
   app.use("/upload", uploadsRoute);
   app.use("/carts", cartsRoute);
   app.use("/orders", ordersRoute);
+  app.use("/cities", citiesRoute);
+  app.use("/regions", regionsRoute);
 };

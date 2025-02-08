@@ -9,13 +9,21 @@ import Store from "../../../../models/stores.model";
 import User from "../../../../models/users.model";
 import sequelize from "../../../../config/db/config";
 import Admin from "../../../../models/admins.model";
+import CityService from "../../../cities/v1/dashboard/cities.service";
+import Region from "../../../../models/regions.model";
+import RegionService from "../../../regions/v1/dashboard/regions.service";
+import City from "../../../../models/cities.model";
 
 export class StoreController {
   private static instance: StoreController | null = null;
   private storeService: StoreService;
+  private cityService: CityService;
+  private regionService: RegionService;
 
   private constructor() {
     this.storeService = StoreService.getInstance();
+    this.cityService = CityService.getInstance();
+    this.regionService = RegionService.getInstance();
   }
 
   public static getInstance(): StoreController {
@@ -30,6 +38,12 @@ export class StoreController {
 
     // Validate the incoming data
     this.storeService.validateCreateStore(storeData);
+
+    storeData.cityId &&
+      (await this.cityService.findOneByIdOrThrowError(storeData.cityId));
+
+    storeData.regionId &&
+      (await this.regionService.findOneByIdOrThrowError(storeData.regionId!));
 
     const foundOneWithSameName = await this.storeService.findOne({
       where: { name: storeData.name },
@@ -57,7 +71,11 @@ export class StoreController {
 
     // Validate the update data
     this.storeService.validateUpdateStore(updateData);
+    updateData.cityId &&
+      (await this.cityService.findOneByIdOrThrowError(updateData.cityId));
 
+    updateData.regionId &&
+      (await this.regionService.findOneByIdOrThrowError(updateData.regionId!));
     if (updateData.name) {
       const foundOneWithSameName = await this.storeService.findOne({
         where: { name: updateData.name, id: { [Op.ne]: id } },
@@ -110,6 +128,14 @@ export class StoreController {
           model: Admin,
           attributes: ["id", "firstName", "lastName", "email", "phoneNumber"],
         },
+        {
+          model: City,
+          attributes: ["id", "name"],
+        },
+        {
+          model: Region,
+          attributes: ["id", "name"],
+        },
       ],
     });
 
@@ -119,8 +145,13 @@ export class StoreController {
   public async getAllStores(req: Request) {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
-    let { search, storeIds } = req.query;
-    this.storeService.validateGetAllStoresQuery({ search, storeIds });
+    let { search, storeIds, cityId, regionId } = req.query;
+    this.storeService.validateGetAllStoresQuery({
+      search,
+      storeIds,
+      cityId,
+      regionId,
+    });
     const options: any = {
       offset,
       limit,
@@ -150,7 +181,12 @@ export class StoreController {
       storeIds = storeIds.toString().split(",");
       options.where.parentId = { [Op.in]: storeIds };
     }
-
+    if (cityId) {
+      options.where.cityId = cityId;
+    }
+    if (regionId) {
+      options.where.regionId = regionId;
+    }
     const date = await this.storeService.getAll(options);
 
     return date;

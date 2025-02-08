@@ -17,7 +17,8 @@
       "unAuthorized":"Session Expired",
       "wrongOtp":"wrong otp",
       "otpExpired":"otp is expired",
-      "cartIsEmpty":"cart is empty"
+      "cartIsEmpty":"cart is empty",
+      "cityHasRegions":"this city has regions"
 
       
   }
