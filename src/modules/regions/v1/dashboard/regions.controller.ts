@@ -40,6 +40,13 @@ export class RegionController {
       throw new AppError("entityWithNameExist", 409);
     }
 
+    const foundOneWithSameNameAr = await this.service.findOne({
+      where: { nameAr: storeData.nameAr },
+    });
+    if (foundOneWithSameNameAr) {
+      throw new AppError("entityWithNameExist", 409);
+    }
+
     // Create the region
     const region = await this.service.create(storeData);
 
@@ -66,6 +73,15 @@ export class RegionController {
       }
     }
 
+    if (updateData.nameAr) {
+      const foundOneWithSameName = await this.service.findOne({
+        where: { nameAr: updateData.nameAr, id: { [Op.ne]: id } },
+      });
+      if (foundOneWithSameName) {
+        throw new AppError("entityWithNameExist", 409);
+      }
+    }
+
     // Find the region first
     const region = await this.service.findOneByIdOrThrowError(id);
 
@@ -86,8 +102,8 @@ export class RegionController {
     const { id } = req.params;
 
     const region = await this.service.findOneByIdOrThrowError(id, {
-      attributes: ["id", "name", "cityId"],
-      include: [{ model: City, attributes: ["id", "name"] }],
+      attributes: ["id", "name", "nameAr", "cityId"],
+      include: [{ model: City, attributes: ["id", "name", "nameAr"] }],
     });
 
     return region;
@@ -96,11 +112,21 @@ export class RegionController {
   public async getAllStores(req: Request) {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
-    let { search, cityId } = req.query;
+    let { search, cityId, lng } = req.query;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
     this.service.validateGetAllStoresQuery({ search });
     const options: any = {
-      attributes: ["id", "name", "cityId"],
-      include: [{ model: City, attributes: ["id", "name"] }],
+      attributes: [
+        "id",
+        [sequelize.col(`regions."${nameColumn}"`), "name"],
+        "cityId",
+      ],
+      include: [
+        {
+          model: City,
+          attributes: ["id", [sequelize.col(`"${nameColumn}"`), "name"]],
+        },
+      ],
       offset,
       limit,
       order: [[orderBy, order]],
@@ -117,7 +143,7 @@ export class RegionController {
       options.where.name = {
         [Op.or]: [
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("regions.name")),
+            sequelize.fn("LOWER", sequelize.col(`regions."${nameColumn}"`)),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),

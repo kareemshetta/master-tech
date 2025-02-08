@@ -170,6 +170,7 @@ export interface IOrder {
 
 export interface ICity {
   name?: string;
+  nameAr?: string;
   createdAt?: string;
   updatedAt?: string;
   regions?: IRegion[];
@@ -178,6 +179,7 @@ export interface ICity {
 
 export interface IRegion {
   name?: string;
+  nameAr?: string;
   cityId?: string;
   city?: ICity;
   createdAt?: string;

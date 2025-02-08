@@ -84,10 +84,20 @@ export class RegionController {
 
   public async getOne(req: Request) {
     const { id } = req.params;
-
+    const { lng } = req.query;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
     const region = await this.service.findOneByIdOrThrowError(id, {
-      attributes: ["id", "name", "cityId"],
-      include: [{ model: City, attributes: ["id", "name"] }],
+      attributes: [
+        "id",
+        [sequelize.col(`regions."${nameColumn}"`), "name"],
+        "cityId",
+      ],
+      include: [
+        {
+          model: City,
+          attributes: ["id", [sequelize.col(`"${nameColumn}"`), "name"]],
+        },
+      ],
     });
 
     return region;
@@ -96,11 +106,21 @@ export class RegionController {
   public async getAllStores(req: Request) {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
-    let { search, cityId } = req.query;
+    let { search, cityId, lng } = req.query;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
     this.service.validateGetAllStoresQuery({ search });
     const options: any = {
-      attributes: ["id", "name", "cityId"],
-      include: [{ model: City, attributes: ["id", "name"] }],
+      attributes: [
+        "id",
+        [sequelize.col(`regions."${nameColumn}"`), "name"],
+        "cityId",
+      ],
+      include: [
+        {
+          model: City,
+          attributes: ["id", [sequelize.col(`"${nameColumn}"`), "name"]],
+        },
+      ],
       offset,
       limit,
       order: [[orderBy, order]],
@@ -117,7 +137,7 @@ export class RegionController {
       options.where.name = {
         [Op.or]: [
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("regions.name")),
+            sequelize.fn("LOWER", sequelize.col(`regions."${nameColumn}"`)),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),

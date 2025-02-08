@@ -15,13 +15,20 @@ City.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    nameAr: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     sequelize,
     modelName: "cities",
     paranoid: true,
     timestamps: true,
-    indexes: [{ fields: ["name"], name: "city_name_idx" }],
+    indexes: [
+      { fields: ["name"], name: "city_name_idx" },
+      { fields: ["nameAr"], name: "city_nameAr_idx" },
+    ],
   }
 );
 

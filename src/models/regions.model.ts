@@ -15,6 +15,10 @@ Region.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    nameAr: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     sequelize,
