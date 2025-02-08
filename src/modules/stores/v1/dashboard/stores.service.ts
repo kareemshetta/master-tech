@@ -62,6 +62,12 @@ export class StoreService {
         "string.max": "Store name cannot exceed 255 characters.",
         "any.required": "Store name is required and cannot be null.",
       }),
+      nameAr: Joi.string().trim().max(255).required().messages({
+        "string.base": "Store nameAr must be a string.",
+        "string.empty": "Store nameAr cannot be empty.",
+        "string.max": "Store nameAr cannot exceed 255 characters.",
+        "any.required": "Store nameAr is required and cannot be null.",
+      }),
 
       location: Joi.string().trim().max(255).allow("").messages({
         "string.base": "Location must be a string.",
@@ -71,6 +77,10 @@ export class StoreService {
       description: Joi.string().trim().max(1000).allow("").messages({
         "string.base": "Description must be a string.",
         "string.max": "Description cannot exceed 1000 characters.",
+      }),
+      descriptionAr: Joi.string().trim().max(1000).allow("").messages({
+        "string.base": "DescriptionAr must be a string.",
+        "string.max": "DescriptionAr cannot exceed 1000 characters.",
       }),
 
       phoneNumber: Joi.string().trim().allow("").messages({
@@ -109,6 +119,10 @@ export class StoreService {
         "string.base": "Store name must be a string.",
         "string.max": "Store name cannot exceed 255 characters.",
       }),
+      nameAr: Joi.string().trim().max(255).messages({
+        "string.base": "Store nameAr must be a string.",
+        "string.max": "Store nameAr cannot exceed 255 characters.",
+      }),
 
       location: Joi.string().trim().max(255).allow("").messages({
         "string.base": "Location must be a string.",
@@ -118,6 +132,10 @@ export class StoreService {
       description: Joi.string().trim().max(1000).allow("").messages({
         "string.base": "Description must be a string.",
         "string.max": "Description cannot exceed 1000 characters.",
+      }),
+      descriptionAr: Joi.string().trim().max(1000).allow("").messages({
+        "string.base": "DescriptionAr must be a string.",
+        "string.max": "DescriptionAr cannot exceed 1000 characters.",
       }),
 
       phoneNumber: Joi.string().trim().allow("").messages({

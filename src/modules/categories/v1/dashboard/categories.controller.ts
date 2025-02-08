@@ -74,7 +74,9 @@ export class CategoryController {
   public async getStore(req: Request) {
     const { id } = req.params;
 
-    const cat = await this.catService.findOneByIdOrThrowError(id, {});
+    const cat = await this.catService.findOneByIdOrThrowError(id, {
+      attributes: ["id", "name", "nameAr", "description", "image"],
+    });
 
     return cat;
   }
@@ -83,8 +85,17 @@ export class CategoryController {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
     let { search } = req.query;
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+
     this.catService.validateGetAllStoresQuery({ search });
     const options: any = {
+      attributes: [
+        "id",
+        [sequelize.col(`categories."${nameColumn}"`), "name"],
+        "description",
+        "image",
+      ],
       offset,
       limit,
       order: [[orderBy, order]],
@@ -96,7 +107,7 @@ export class CategoryController {
       options.where.name = {
         [Op.or]: [
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("categories.name")),
+            sequelize.fn("LOWER", sequelize.col(`categories."${nameColumn}"`)),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),

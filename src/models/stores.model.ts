@@ -19,11 +19,18 @@ Store.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    nameAr: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     location: {
       type: DataTypes.STRING,
     },
 
     description: {
+      type: DataTypes.STRING,
+    },
+    descriptionAr: {
       type: DataTypes.STRING,
     },
 
@@ -41,9 +48,13 @@ Store.init(
   },
   {
     sequelize,
+    paranoid: true,
     modelName: "stores",
     indexes: [
       { fields: ["name"], name: "store_name_idx" },
+      { fields: ["description"], name: "store_description_idx" },
+      { fields: ["descriptionAr"], name: "store_descriptionAr_idx" },
+      { fields: ["nameAr"], name: "store_nameAr_idx" },
       { fields: ["phoneNumber"], name: "store_phone_idx" },
     ],
   }

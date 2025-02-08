@@ -22,8 +22,10 @@ export interface IAdmin extends Iuser {
 export interface IStore {
   image?: string;
   name?: string;
+  nameAr?: string;
   location?: string;
   description?: string;
+  descriptionAr?: string;
   phoneNumber?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -40,7 +42,7 @@ export interface IStore {
 export interface ICategory {
   image?: string;
   name?: string;
-
+  nameAr?: string;
   description?: string;
 
   createdAt?: string;
@@ -51,6 +53,7 @@ export interface ICategory {
 export interface IBrand {
   image?: string;
   name?: string;
+  nameAr?: string;
 
   createdAt?: string;
   updatedAt?: string;

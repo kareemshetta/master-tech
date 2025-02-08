@@ -19,13 +19,20 @@ Brand.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
+    nameAr: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
   },
   {
     sequelize,
     modelName: "brands",
     paranoid: true,
     timestamps: true,
-    indexes: [{ fields: ["name"], name: "brand_name_idx" }],
+    indexes: [
+      { fields: ["name"], name: "brand_name_idx" },
+      { fields: ["nameAr"], name: "brand_nameAr_idx" },
+    ],
   }
 );
 

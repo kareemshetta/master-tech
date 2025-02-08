@@ -32,6 +32,12 @@ export class BrandController {
     if (foundOneWithSameName) {
       throw new AppError("entityWithNameExist", 409);
     }
+    const foundOneWithSameNameAr = await this.service.findOne({
+      where: { name: storeData.nameAr },
+    });
+    if (foundOneWithSameNameAr) {
+      throw new AppError("entityWithNameExist", 409);
+    }
 
     // Create the brand
     const brand = await this.service.create(storeData);
@@ -49,6 +55,14 @@ export class BrandController {
     if (updateData.name) {
       const foundOneWithSameName = await this.service.findOne({
         where: { name: updateData.name, id: { [Op.ne]: id } },
+      });
+      if (foundOneWithSameName) {
+        throw new AppError("entityWithNameExist", 409);
+      }
+    }
+    if (updateData.nameAr) {
+      const foundOneWithSameName = await this.service.findOne({
+        where: { name: updateData.nameAr, id: { [Op.ne]: id } },
       });
       if (foundOneWithSameName) {
         throw new AppError("entityWithNameExist", 409);
@@ -74,7 +88,9 @@ export class BrandController {
   public async getStore(req: Request) {
     const { id } = req.params;
 
-    const brand = await this.service.findOneByIdOrThrowError(id, {});
+    const brand = await this.service.findOneByIdOrThrowError(id, {
+      attributes: ["id", "name", "nameAr", "image"],
+    });
 
     return brand;
   }
@@ -83,8 +99,15 @@ export class BrandController {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
     let { search } = req.query;
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
     this.service.validateGetAllQuery({ search });
     const options: any = {
+      attributes: [
+        "id",
+        [sequelize.col(`brands."${nameColumn}"`), "name"],
+        "image",
+      ],
       offset,
       limit,
       order: [[orderBy, order]],
@@ -96,7 +119,7 @@ export class BrandController {
       options.where.name = {
         [Op.or]: [
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("brands.name")),
+            sequelize.fn("LOWER", sequelize.col(`brands."${nameColumn}"`)),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),

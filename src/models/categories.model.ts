@@ -19,7 +19,10 @@ Category.init(
       type: DataTypes.STRING,
       allowNull: false,
     },
-
+    nameAr: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     description: {
       allowNull: true,
       type: DataTypes.STRING,
@@ -32,6 +35,7 @@ Category.init(
     timestamps: true,
     indexes: [
       { fields: ["name"], name: "category_name_idx" },
+      { fields: ["nameAr"], name: "category_nameAr_idx" },
       { fields: ["description"], name: "category_description_idx" },
     ],
   }

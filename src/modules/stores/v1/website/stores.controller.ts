@@ -28,27 +28,46 @@ export class StoreController {
 
   public async getStore(req: Request) {
     const { id } = req.params;
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
 
     const store = await this.storeService.findOneByIdOrThrowError(id, {
+      attributes: [
+        "id",
+        [sequelize.col(`stores."${nameColumn}"`), "name"],
+        [sequelize.col(`stores."${descriptionColumn}"`), "description"],
+        "location",
+        "image",
+        "phoneNumber",
+      ],
       include: [
         {
           model: Store,
-          attributes: ["id", "name", "phoneNumber"],
+          attributes: [
+            "id",
+            [sequelize.col(`${nameColumn}"`), "name"],
+            "phoneNumber",
+          ],
           as: "subStores",
         },
         {
           model: Store,
-          attributes: ["id", "name", "phoneNumber"],
+          attributes: [
+            "id",
+            [sequelize.col(`${nameColumn}"`), "name"],
+            "phoneNumber",
+          ],
           as: "parentStore",
         },
 
         {
           model: City,
-          attributes: ["id", "name"],
+          attributes: ["id", [sequelize.col(`${nameColumn}"`), "name"]],
         },
         {
           model: Region,
-          attributes: ["id", "name"],
+          attributes: ["id", [sequelize.col(`${nameColumn}"`), "name"]],
         },
       ],
     });
@@ -60,6 +79,10 @@ export class StoreController {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
     let { search, storeIds, cityId, regionId } = req.query;
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+
     this.storeService.validateGetAllStoresQuery({
       search,
       storeIds,
@@ -67,6 +90,14 @@ export class StoreController {
       regionId,
     });
     const options: any = {
+      attributes: [
+        "id",
+        [sequelize.col(`stores."${nameColumn}"`), "name"], // nameAr or name ( depends on the language of the stores. ), "name"],
+        [sequelize.col(`stores."${descriptionColumn}"`), "description"], // nameAr or name ( depends on the language of the stores. ), "name"],
+        "phoneNumber",
+        "location",
+        "image",
+      ],
       offset,
       limit,
       order: [[orderBy, order]],
@@ -78,7 +109,15 @@ export class StoreController {
       options.where.name = {
         [Op.or]: [
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("stores.name")),
+            sequelize.fn("LOWER", sequelize.col(`stores."${nameColumn}"`)),
+            "LIKE",
+            "%" + search.toLowerCase() + "%"
+          ),
+          sequelize.where(
+            sequelize.fn(
+              "LOWER",
+              sequelize.col(`stores."${descriptionColumn}"`)
+            ),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),

@@ -116,12 +116,12 @@ export class StoreController {
       include: [
         {
           model: Store,
-          attributes: ["id", "name", "phoneNumber"],
+          attributes: ["id", "name", "nameAr", "phoneNumber"],
           as: "subStores",
         },
         {
           model: Store,
-          attributes: ["id", "name", "phoneNumber"],
+          attributes: ["id", "name", "nameAr", "phoneNumber"],
           as: "parentStore",
         },
         {
@@ -130,11 +130,11 @@ export class StoreController {
         },
         {
           model: City,
-          attributes: ["id", "name"],
+          attributes: ["id", "name", "nameAr"],
         },
         {
           model: Region,
-          attributes: ["id", "name"],
+          attributes: ["id", "name", "nameAr"],
         },
       ],
     });
@@ -146,6 +146,10 @@ export class StoreController {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
     let { search, storeIds, cityId, regionId } = req.query;
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+
     this.storeService.validateGetAllStoresQuery({
       search,
       storeIds,
@@ -153,6 +157,14 @@ export class StoreController {
       regionId,
     });
     const options: any = {
+      attributes: [
+        "id",
+        [sequelize.col(`stores."${nameColumn}"`), "name"], // nameAr or name ( depends on the language of the stores. ), "name"],
+        [sequelize.col(`stores."${descriptionColumn}"`), "description"], // nameAr or name ( depends on the language of the stores. ), "name"],
+        "phoneNumber",
+        "image",
+        "location",
+      ],
       offset,
       limit,
       order: [[orderBy, order]],
@@ -164,7 +176,15 @@ export class StoreController {
       options.where.name = {
         [Op.or]: [
           sequelize.where(
-            sequelize.fn("LOWER", sequelize.col("stores.name")),
+            sequelize.fn("LOWER", sequelize.col(`stores."${nameColumn}"`)),
+            "LIKE",
+            "%" + search.toLowerCase() + "%"
+          ),
+          sequelize.where(
+            sequelize.fn(
+              "LOWER",
+              sequelize.col(`stores."${descriptionColumn}"`)
+            ),
             "LIKE",
             "%" + search.toLowerCase() + "%"
           ),
