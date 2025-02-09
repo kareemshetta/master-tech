@@ -12,7 +12,7 @@ const router = (0, express_1.Router)();
 const view = brands_view_1.BrandView.getInstance();
 router.use((0, async_wrapper_1.default)(auth_middleware_1.authenticateAdmin));
 router.post("/", (0, async_wrapper_1.default)(authorize_midddleware_1.authorizeSuperAdmin), (0, async_wrapper_1.default)(view.createBrand));
-router.get("/", (0, async_wrapper_1.default)(authorize_midddleware_1.authorizeSuperAdmin), (0, async_wrapper_1.default)(view.getAll));
+router.get("/", (0, async_wrapper_1.default)(view.getAll));
 router.get("/:id", (0, async_wrapper_1.default)(view.getOneById));
 router.put("/:id", (0, async_wrapper_1.default)(authorize_midddleware_1.authorizeSuperAdmin), (0, async_wrapper_1.default)(view.update));
 router.delete("/:id", (0, async_wrapper_1.default)(authorize_midddleware_1.authorizeSuperAdmin), (0, async_wrapper_1.default)(view.deleteOne));
