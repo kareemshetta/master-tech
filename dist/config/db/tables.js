@@ -55,6 +55,7 @@ Promise.resolve().then(() => __importStar(require("./../../models/orders.model")
 Promise.resolve().then(() => __importStar(require("./../../models/orderItem.model")));
 Promise.resolve().then(() => __importStar(require("./../../models/cities.model")));
 Promise.resolve().then(() => __importStar(require("./../../models/regions.model")));
+Promise.resolve().then(() => __importStar(require("./../../models/user_products_favourite.model")));
 // store_sub_stores association
 Promise.resolve().then(() => __importStar(require("./../../models/store_sub_stores.association")));
 // store_Admins association
@@ -85,6 +86,8 @@ Promise.resolve().then(() => __importStar(require("./../../models/orders_ordersI
 Promise.resolve().then(() => __importStar(require("./../../models/cities_regions.associtation")));
 // store_region_association
 Promise.resolve().then(() => __importStar(require("./../../models/stores_region_city.associations")));
+// user_products_favourite_association
+Promise.resolve().then(() => __importStar(require("./../../models/products_user_favourite.association")));
 const initialize = async (app) => {
     try {
         await config_1.default.authenticate();
@@ -93,7 +96,7 @@ const initialize = async (app) => {
         //   alter: true,
         //   // logging: console.log
         // });
-        console.log("All models were synchronized successfully.");
+        // console.log("All models were synchronized successfully.");
         const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
         app.listen(port, () => console.log(`⚡️Server is running at ${os_1.default.hostname()}:${port}`));
     }

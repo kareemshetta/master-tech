@@ -11,6 +11,7 @@ class ProductView {
         this.getAll = this.getAll.bind(this);
         this.update = this.update.bind(this);
         this.deleteOne = this.deleteOne.bind(this);
+        this.toggleFavourite = this.toggleFavourite.bind(this);
     }
     static getInstance() {
         if (!ProductView.instance) {
@@ -36,6 +37,13 @@ class ProductView {
         const users = await this.controller.getAll(req);
         res.send({
             data: users,
+            message: req.t("responses.succes"),
+        });
+    }
+    async toggleFavourite(req, res) {
+        const isFavourite = await this.controller.toggleFavourite(req);
+        res.send({
+            data: { isFavourite },
             message: req.t("responses.succes"),
         });
     }

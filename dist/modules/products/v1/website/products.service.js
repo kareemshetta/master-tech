@@ -12,6 +12,7 @@ const joi_1 = __importDefault(require("joi"));
 const appError_1 = require("../../../../utils/appError");
 const attributes_repository_1 = __importDefault(require("../../../attributes/v1/attributes.repository"));
 const config_1 = __importDefault(require("../../../../config/db/config"));
+const user_product_favourite_repository_1 = __importDefault(require("../../../users/v1/user_product_favourite.repository"));
 class PrdouctService {
     constructor() {
         this.productRepo = products_repository_1.default.getInstance();
@@ -19,6 +20,7 @@ class PrdouctService {
         this.attributesRepo = attributes_repository_1.default.getInstance();
         this.processorRepo = product_processor_repository_1.default.getInstance();
         this.skuRepo = product_sku_repository_1.default.getInstance();
+        this.favouriteRepo = user_product_favourite_repository_1.default.getInstance();
     }
     static getInstance() {
         if (!PrdouctService.instance) {
@@ -97,7 +99,11 @@ class PrdouctService {
                 where: { id: id },
                 transaction,
             });
-            await this.skuRepo.delete({ where: { productId: id }, transaction });
+            await this.skuRepo.delete({
+                where: { productId: id },
+                transaction,
+                force: true,
+            });
             await transaction.commit();
             return deleted;
         }
@@ -107,14 +113,38 @@ class PrdouctService {
             throw err;
         }
     }
-    async findOneByIdOrThrowError(catId, options = {}) {
-        return this.productRepo.findOneByIdOrThrowError(catId, options);
+    async findOneByIdOrThrowError(id, options = {}) {
+        return this.productRepo.findOneByIdOrThrowError(id, options);
     }
     async findOne(options = {}) {
         return this.productRepo.findOne(options);
     }
     async getAll(options = {}) {
         return this.productRepo.findAndCountAll(options);
+    }
+    async toggleFavourite(data) {
+        const { userId, productId } = data;
+        const favorite = await this.favouriteRepo.findOne({
+            where: { userId, productId },
+            paranoid: false, // This will include soft-deleted records
+        });
+        if (favorite) {
+            if (favorite.deletedAt) {
+                // If it was soft-deleted, restore it
+                await favorite.restore();
+                return true;
+            }
+            else {
+                // If it exists and is not deleted, soft-delete it
+                await favorite.destroy();
+                return false;
+            }
+        }
+        else {
+            // If no record exists at all, create a new one
+            await this.favouriteRepo.create({ userId, productId });
+            return true;
+        }
     }
     validateCreate(data) {
         const schema = joi_1.default.object({
@@ -202,14 +232,24 @@ class PrdouctService {
                 "any.required": "Battery is required and cannot be null.",
             }),
             name: joi_1.default.string().trim().max(255).required().messages({
-                "string.base": "Store name must be a string.",
-                "string.empty": "Store name cannot be empty.",
-                "string.max": "Store name cannot exceed 255 characters.",
-                "any.required": "Store name is required and cannot be null.",
+                "string.base": "name must be a string.",
+                "string.empty": "name cannot be empty.",
+                "string.max": "name cannot exceed 255 characters.",
+                "any.required": "name is required and cannot be null.",
+            }),
+            nameAr: joi_1.default.string().trim().max(255).required().messages({
+                "string.base": "nameAr must be a string.",
+                "string.empty": "nameAr cannot be empty.",
+                "string.max": "nameAr cannot exceed 255 characters.",
+                "any.required": "nameAr is required and cannot be null.",
             }),
             description: joi_1.default.string().trim().max(1000).allow("").messages({
                 "string.base": "Description must be a string.",
                 "string.max": "Description cannot exceed 1000 characters.",
+            }),
+            descriptionAr: joi_1.default.string().trim().max(1000).allow("").messages({
+                "string.base": "DescriptionAr must be a string.",
+                "string.max": "DescriptionAr cannot exceed 1000 characters.",
             }),
             basePrice: joi_1.default.number().required().messages({
                 "number.base": "Base price must be a number.",
@@ -371,14 +411,24 @@ class PrdouctService {
                 "any.required": "Battery is required and cannot be null.",
             }),
             name: joi_1.default.string().trim().max(255).required().messages({
-                "string.base": "Store name must be a string.",
-                "string.empty": "Store name cannot be empty.",
-                "string.max": "Store name cannot exceed 255 characters.",
-                "any.required": "Store name is required and cannot be null.",
+                "string.base": "name must be a string.",
+                "string.empty": "name cannot be empty.",
+                "string.max": "name cannot exceed 255 characters.",
+                "any.required": "name is required and cannot be null.",
+            }),
+            nameAr: joi_1.default.string().trim().max(255).required().messages({
+                "string.base": "nameAr must be a string.",
+                "string.empty": "nameAr cannot be empty.",
+                "string.max": "nameAr cannot exceed 255 characters.",
+                "any.required": "nameAr is required and cannot be null.",
             }),
             description: joi_1.default.string().trim().max(1000).allow("").messages({
                 "string.base": "Description must be a string.",
                 "string.max": "Description cannot exceed 1000 characters.",
+            }),
+            descriptionAr: joi_1.default.string().trim().max(1000).allow("").messages({
+                "string.base": "DescriptionAr must be a string.",
+                "string.max": "DescriptionAr cannot exceed 1000 characters.",
             }),
             basePrice: joi_1.default.number().required().messages({
                 "number.base": "Base price must be a number.",
@@ -390,11 +440,11 @@ class PrdouctService {
                 "number.empty": "Discount cannot be empty.",
                 "any.required": "Discount is required and cannot be null.",
             }),
-            storeId: joi_1.default.string().uuid().required().messages({
-                "string.base": "storeId must be a string.",
-                "string.empty": "storeId cannot be empty.",
-                "any.required": "storeId is required and cannot be null.",
-            }),
+            // storeId: Joi.string().uuid().required().messages({
+            //   "string.base": "storeId must be a string.",
+            //   "string.empty": "storeId cannot be empty.",
+            //   "any.required": "storeId is required and cannot be null.",
+            // }),
             images: joi_1.default.array().items(joi_1.default.string()
                 .trim()
                 .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
