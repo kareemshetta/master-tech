@@ -88,7 +88,9 @@ export class AuthController {
 
   async login(req: Request) {
     const body = req.body as Iuser;
-
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
     this.service.validateLoginUser(body);
     const found: Iuser | undefined = (
       await this.service.findOne({
@@ -106,7 +108,17 @@ export class AuthController {
             "otpCreatedAt",
           ],
         },
+
         include: [
+          {
+            model: Product,
+            attributes: [
+              "id",
+              [sequelize.col(`"${nameColumn}"`), "name"],
+              [sequelize.col(`"${descriptionColumn}"`), "description"],
+            ],
+            through: { attributes: [] },
+          },
           {
             model: Cart,
             attributes: ["id"],
@@ -115,7 +127,14 @@ export class AuthController {
                 model: CartItem,
                 attributes: ["id", "quantity", "price"],
                 include: [
-                  { model: Product, attributes: ["id", "name", "description"] },
+                  {
+                    model: Product,
+                    attributes: [
+                      "id",
+                      [sequelize.col(`"${nameColumn}"`), "name"],
+                      [sequelize.col(`"${descriptionColumn}"`), "description"],
+                    ],
+                  },
                   {
                     model: ProductSku,
                     attributes: ["sku", "price"],
@@ -169,11 +188,60 @@ export class AuthController {
   async getOne(req: any) {
     const { id } = req.user;
     validateUUID(id, "invalid user id");
-
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
     return this.service.findOneByIdOrThrowError(id, {
       attributes: {
         exclude: ["deletedAt", "updatedAt", "password"],
       },
+      include: [
+        {
+          model: Product,
+          attributes: [
+            "id",
+            [sequelize.col(`"${nameColumn}"`), "name"],
+            [sequelize.col(`"${descriptionColumn}"`), "description"],
+          ],
+          through: { attributes: [] },
+        },
+        {
+          model: Cart,
+          attributes: ["id"],
+          include: [
+            {
+              model: CartItem,
+              attributes: ["id", "quantity", "price"],
+              include: [
+                {
+                  model: Product,
+                  attributes: [
+                    "id",
+                    [sequelize.col(`"${nameColumn}"`), "name"],
+                    [sequelize.col(`"${descriptionColumn}"`), "description"],
+                  ],
+                },
+                {
+                  model: ProductSku,
+                  attributes: ["sku", "price"],
+                  include: [
+                    {
+                      model: ProductAttribute,
+                      attributes: ["type", "value"],
+                      as: "color",
+                    },
+                    {
+                      model: ProductAttribute,
+                      attributes: ["type", "value"],
+                      as: "storage",
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+      ],
     });
   }
 
