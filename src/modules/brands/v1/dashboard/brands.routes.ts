@@ -12,7 +12,7 @@ router.post(
   asyncWrapper(authorizeSuperAdmin),
   asyncWrapper(view.createBrand)
 );
-router.get("/", asyncWrapper(authorizeSuperAdmin), asyncWrapper(view.getAll));
+router.get("/", asyncWrapper(view.getAll));
 router.get(
   "/:id",
 
