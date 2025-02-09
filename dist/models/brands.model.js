@@ -22,11 +22,18 @@ Brand.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
+    nameAr: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
 }, {
     sequelize: config_1.default,
     modelName: "brands",
     paranoid: true,
     timestamps: true,
-    indexes: [{ fields: ["name"], name: "brand_name_idx" }],
+    indexes: [
+        { fields: ["name"], name: "brand_name_idx" },
+        { fields: ["nameAr"], name: "brand_nameAr_idx" },
+    ],
 });
 exports.default = Brand;

@@ -119,11 +119,14 @@ class ProductController {
     }
     async get(req) {
         const { id } = req.params;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         const product = await this.service.findOneByIdOrThrowError(id, {
             attributes: [
                 "id",
-                "name",
-                "description",
+                [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],
+                [config_1.default.literal(`"Product"."${descriptionColumn}"`), "description"],
                 "basePrice",
                 "discount",
                 [
@@ -178,9 +181,23 @@ class ProductController {
                         },
                     ],
                 },
-                { model: brands_model_1.default, attributes: ["name"] },
-                { model: categories_model_1.default, attributes: ["name"] },
-                { model: stores_model_1.default, attributes: ["id", "name", "image"], as: "store" },
+                {
+                    model: brands_model_1.default,
+                    attributes: [[config_1.default.literal(`brand."${nameColumn}"`), "name"]],
+                },
+                {
+                    model: categories_model_1.default,
+                    attributes: [[config_1.default.literal(`category."${nameColumn}"`), "name"]],
+                },
+                {
+                    model: stores_model_1.default,
+                    attributes: [
+                        "id",
+                        [config_1.default.literal(`store."${nameColumn}"`), "name"],
+                        "image",
+                    ],
+                    as: "store",
+                },
             ],
         });
         return product;
@@ -189,6 +206,10 @@ class ProductController {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         let { search, maxPrice, minPrice, brandIds, categoryIds, battery, ram } = req.query;
+        let storeId = req.user?.storeId;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         this.service.validateGetAllStoresQuery({
             search,
             maxPrice,
@@ -197,13 +218,14 @@ class ProductController {
             ram,
         });
         const options = {
+            logging: console.log,
             attributes: [
                 "id",
-                "name",
+                [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],
+                [config_1.default.literal(`"Product"."${descriptionColumn}"`), "description"],
                 "basePrice",
                 "battery",
                 "ram",
-                "description",
                 "image",
                 "discount",
                 [
@@ -216,10 +238,27 @@ class ProductController {
             order: [[orderBy, order]],
             where: {},
             include: [
-                { model: stores_model_1.default, attributes: ["id", "name", "image"], as: "store" },
-                { model: categories_model_1.default, attributes: ["name"] },
+                {
+                    model: stores_model_1.default,
+                    attributes: [
+                        "id",
+                        [config_1.default.literal(`store."${nameColumn}"`), "name"],
+                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                        "image",
+                    ],
+                    as: "store",
+                },
+                {
+                    model: categories_model_1.default,
+                    attributes: [
+                        [config_1.default.literal(`category."${nameColumn}"`), "name"],
+                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                    ],
+                },
             ],
         };
+        if (storeId)
+            options.where.storeId = storeId;
         if (maxPrice && minPrice) {
             options.where.basePrice = {
                 [sequelize_1.Op.between]: [Number(minPrice), Number(maxPrice)],
@@ -240,8 +279,8 @@ class ProductController {
             search = search.toString().replace(/\+/g, "").trim();
             options.where.name = {
                 [sequelize_1.Op.or]: [
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col("products.name")), "LIKE", "%" + search.toLowerCase() + "%"),
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`products."description"`)), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.literal(`"Product"."${nameColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.literal(`"Product"."${descriptionColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };
         }

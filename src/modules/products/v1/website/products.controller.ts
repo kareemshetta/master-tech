@@ -1,4 +1,4 @@
-import { Op } from "sequelize";
+import { FindAttributeOptions, Op } from "sequelize";
 import { AppError } from "../../../../utils/appError";
 import { IAttributes, IProduct } from "../../../../utils/shared.types";
 import PrdouctService from "./products.service";
@@ -21,13 +21,14 @@ import Product from "../../../../models/products.model";
 import ProductAttribute from "../../../../models/product_attributes.model";
 import Screen from "../../../../models/screen.model";
 import Processor from "../../../../models/processor.model";
+import { Literal } from "sequelize/types/utils";
 export class ProductController {
   private static instance: ProductController | null = null;
   private service: PrdouctService;
   private brandService: BrandService;
   private CategoreyService: CategoryService;
   private storeService: StoreService;
-
+  // private favouriteLiteral: string|Literal;
   private constructor() {
     this.service = PrdouctService.getInstance();
     this.brandService = BrandService.getInstance();
@@ -44,16 +45,20 @@ export class ProductController {
 
   public async create(req: Request) {
     const storeData: IProduct = req.body;
-
+    let storeId = req.user?.storeId;
     // Validate the incoming data
+    if (storeId && storeData.storeId && storeId !== storeData.storeId) {
+      throw new AppError("forbiden", 403);
+    }
+    if (req.user?.role !== "superAdmin") storeData.storeId = storeId;
     this.service.validateCreate(storeData);
 
-    const foundOneWithSameName = await this.service.findOne({
-      where: { name: storeData.name },
-    });
-    if (foundOneWithSameName) {
-      throw new AppError("entityWithNameExist", 409);
-    }
+    // const foundOneWithSameName = await this.service.findOne({
+    //   where: { name: storeData.name },
+    // });
+    // if (foundOneWithSameName) {
+    //   throw new AppError("entityWithNameExist", 409);
+    // }
 
     await this.brandService.findOneByIdOrThrowError(storeData.brandId!);
     await this.CategoreyService.findOneByIdOrThrowError(storeData.categoryId!);
@@ -91,8 +96,27 @@ export class ProductController {
     return product;
   }
 
+  private getFavouriteLiteral(userId: string): [Literal, string] {
+    return [
+      sequelize.literal(`
+  CASE 
+    WHEN EXISTS (
+      SELECT 1
+      FROM "userFavorites" AS "Favourite"
+      WHERE "Favourite"."productId" = "Product"."id"
+      AND "Favourite"."userId" = '${userId}'
+      AND "Favourite"."deletedAt" IS NULL  -- Check for paranoid deleted record
+    ) THEN true
+    ELSE false
+  END
+`),
+      "isFavourite",
+    ];
+  }
+
   public async update(req: Request) {
     const { id } = req.params;
+    const storeId = req.user?.storeId;
     const updateData: Partial<IProduct> = req.body;
 
     // Validate the update data
@@ -100,15 +124,20 @@ export class ProductController {
     this.service.validateUpdate(updateData);
 
     // Find the product first
-    const product = await this.service.findOneByIdOrThrowError(id);
-    if (updateData.name) {
-      const foundOneWithSameName = await this.service.findOne({
-        where: { name: updateData.name, id: { [Op.ne]: id } },
-      });
-      if (foundOneWithSameName) {
-        throw new AppError("entityWithNameExist", 409);
-      }
+    const product = (
+      await this.service.findOneByIdOrThrowError(id)
+    ).toJSON() as IProduct;
+    if (req.user?.role !== "superAdmin" && product.storeId !== storeId) {
+      throw new AppError("forbiden", 403);
     }
+    // if (updateData.name) {
+    //   const foundOneWithSameName = await this.service.findOne({
+    //     where: { name: updateData.name, id: { [Op.ne]: id } },
+    //   });
+    //   if (foundOneWithSameName) {
+    //     throw new AppError("entityWithNameExist", 409);
+    //   }
+    // }
     if (updateData.brandId)
       await this.brandService.findOneByIdOrThrowError(updateData.brandId!);
     if (updateData.categoryId)
@@ -154,9 +183,14 @@ export class ProductController {
 
   public async delete(req: Request) {
     const { id } = req.params;
-    validateUUID(id, "invalid trainer id");
-    await this.service.findOneByIdOrThrowError(id);
-    // Delete the product
+    let storeId = req.user?.storeId;
+    validateUUID(id, "invalid product id");
+    const product = (
+      await this.service.findOneByIdOrThrowError(id)
+    ).toJSON() as IProduct;
+    if (req.user?.role !== "superAdmin" && product.storeId !== storeId) {
+      throw new AppError("forbiden", 403);
+    }
     // Delete the product
     return this.service.delete(id);
   }
@@ -164,28 +198,34 @@ export class ProductController {
   public async get(req: Request) {
     const { id } = req.params;
     const lng = req.language;
+    const userId = req.user?.id;
     const nameColumn = lng === "ar" ? "nameAr" : "name";
     const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+    // Explicitly type the array as FindAttributeOptions
+    const arr: FindAttributeOptions = [
+      "id",
+      [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
+      [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
+      "basePrice",
+      "discount",
+      [
+        sequelize.literal(
+          'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
+        ),
+        "priceAfterDiscount",
+      ],
+      "brandId",
+      "categoryId",
+      "storeId",
+      "screenId",
+      "processorId",
+    ];
+
+    // Add favorite literal conditionally
+    if (userId) arr.push(this.getFavouriteLiteral(userId) as [Literal, string]);
 
     const product = await this.service.findOneByIdOrThrowError(id, {
-      attributes: [
-        "id",
-        [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
-        [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
-        "basePrice",
-        "discount",
-        [
-          sequelize.literal(
-            'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
-          ),
-          "priceAfterDiscount",
-        ],
-        "brandId",
-        "categoryId",
-        "storeId",
-        "screenId",
-        "processorId",
-      ],
+      attributes: arr,
       include: [
         {
           model: Screen,
@@ -261,6 +301,7 @@ export class ProductController {
       req.query;
     let storeId = req.user?.storeId;
     const lng = req.language;
+    const userId = req.user?.id;
     const nameColumn = lng === "ar" ? "nameAr" : "name";
     const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
     this.service.validateGetAllStoresQuery({
@@ -271,11 +312,12 @@ export class ProductController {
       ram,
     });
     const options: any = {
-      logging: console.log,
+      // logging: console.log,
       attributes: [
         "id",
         [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
         [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
+
         "basePrice",
         "battery",
         "ram",
@@ -314,7 +356,22 @@ export class ProductController {
       ],
     };
     if (storeId) options.where.storeId = storeId;
-
+    if (userId)
+      options.attributes.push([
+        sequelize.literal(`
+    CASE 
+      WHEN EXISTS (
+        SELECT 1
+        FROM "userFavorites" AS "Favourite"
+        WHERE "Favourite"."productId" = "Product"."id"
+        AND "Favourite"."userId" = '${userId}'
+        AND "Favourite"."deletedAt" IS NULL  -- Check for paranoid deleted record
+      ) THEN true
+      ELSE false
+    END
+  `),
+        "isFavourite",
+      ]);
     if (maxPrice && minPrice) {
       options.where.basePrice = {
         [Op.between]: [Number(minPrice), Number(maxPrice)],
@@ -358,5 +415,19 @@ export class ProductController {
     const date = await this.service.getAll(options);
 
     return date;
+  }
+
+  public async toggleFavourite(req: Request) {
+    const { productId } = req.params;
+    const userId = req.user?.id;
+    validateUUID(productId, "invalid product id");
+    validateUUID(userId, "invalid user id");
+    const product = await this.service.findOneByIdOrThrowError(productId);
+
+    const isFavourite = await this.service.toggleFavourite({
+      productId,
+      userId,
+    });
+    return isFavourite;
   }
 }

@@ -23,25 +23,44 @@ class StoreController {
     }
     async getStore(req) {
         const { id } = req.params;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         const store = await this.storeService.findOneByIdOrThrowError(id, {
+            attributes: [
+                "id",
+                [config_1.default.col(`stores."${nameColumn}"`), "name"],
+                [config_1.default.col(`stores."${descriptionColumn}"`), "description"],
+                "location",
+                "image",
+                "phoneNumber",
+            ],
             include: [
                 {
                     model: stores_model_1.default,
-                    attributes: ["id", "name", "phoneNumber"],
+                    attributes: [
+                        "id",
+                        [config_1.default.col(`${nameColumn}"`), "name"],
+                        "phoneNumber",
+                    ],
                     as: "subStores",
                 },
                 {
                     model: stores_model_1.default,
-                    attributes: ["id", "name", "phoneNumber"],
+                    attributes: [
+                        "id",
+                        [config_1.default.col(`${nameColumn}"`), "name"],
+                        "phoneNumber",
+                    ],
                     as: "parentStore",
                 },
                 {
                     model: cities_model_1.default,
-                    attributes: ["id", "name"],
+                    attributes: ["id", [config_1.default.col(`${nameColumn}"`), "name"]],
                 },
                 {
                     model: regions_model_1.default,
-                    attributes: ["id", "name"],
+                    attributes: ["id", [config_1.default.col(`${nameColumn}"`), "name"]],
                 },
             ],
         });
@@ -51,6 +70,9 @@ class StoreController {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         let { search, storeIds, cityId, regionId } = req.query;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         this.storeService.validateGetAllStoresQuery({
             search,
             storeIds,
@@ -58,6 +80,14 @@ class StoreController {
             regionId,
         });
         const options = {
+            attributes: [
+                "id",
+                [config_1.default.col(`stores."${nameColumn}"`), "name"], // nameAr or name ( depends on the language of the stores. ), "name"],
+                [config_1.default.col(`stores."${descriptionColumn}"`), "description"], // nameAr or name ( depends on the language of the stores. ), "name"],
+                "phoneNumber",
+                "location",
+                "image",
+            ],
             offset,
             limit,
             order: [[orderBy, order]],
@@ -67,7 +97,8 @@ class StoreController {
             search = search.toString().replace(/\+/g, "").trim();
             options.where.name = {
                 [sequelize_1.Op.or]: [
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col("stores.name")), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`stores."${nameColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`stores."${descriptionColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                     config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`stores."phoneNumber"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };

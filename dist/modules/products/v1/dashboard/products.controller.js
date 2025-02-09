@@ -43,12 +43,12 @@ class ProductController {
         if (req.user?.role !== "superAdmin")
             storeData.storeId = storeId;
         this.service.validateCreate(storeData);
-        const foundOneWithSameName = await this.service.findOne({
-            where: { name: storeData.name },
-        });
-        if (foundOneWithSameName) {
-            throw new appError_1.AppError("entityWithNameExist", 409);
-        }
+        // const foundOneWithSameName = await this.service.findOne({
+        //   where: { name: storeData.name },
+        // });
+        // if (foundOneWithSameName) {
+        //   throw new AppError("entityWithNameExist", 409);
+        // }
         await this.brandService.findOneByIdOrThrowError(storeData.brandId);
         await this.CategoreyService.findOneByIdOrThrowError(storeData.categoryId);
         await this.storeService.findOneByIdOrThrowError(storeData.storeId);
@@ -84,14 +84,14 @@ class ProductController {
         if (req.user?.role !== "superAdmin" && product.storeId !== storeId) {
             throw new appError_1.AppError("forbiden", 403);
         }
-        if (updateData.name) {
-            const foundOneWithSameName = await this.service.findOne({
-                where: { name: updateData.name, id: { [sequelize_1.Op.ne]: id } },
-            });
-            if (foundOneWithSameName) {
-                throw new appError_1.AppError("entityWithNameExist", 409);
-            }
-        }
+        // if (updateData.name) {
+        //   const foundOneWithSameName = await this.service.findOne({
+        //     where: { name: updateData.name, id: { [Op.ne]: id } },
+        //   });
+        //   if (foundOneWithSameName) {
+        //     throw new AppError("entityWithNameExist", 409);
+        //   }
+        // }
         if (updateData.brandId)
             await this.brandService.findOneByIdOrThrowError(updateData.brandId);
         if (updateData.categoryId)
@@ -136,7 +136,9 @@ class ProductController {
             attributes: [
                 "id",
                 "name",
+                "nameAr",
                 "description",
+                "descriptionAr",
                 "basePrice",
                 "discount",
                 [
@@ -191,9 +193,13 @@ class ProductController {
                         },
                     ],
                 },
-                { model: brands_model_1.default, attributes: ["name"] },
-                { model: categories_model_1.default, attributes: ["name"] },
-                { model: stores_model_1.default, attributes: ["id", "name", "image"], as: "store" },
+                { model: brands_model_1.default, attributes: ["name", "nameAr"] },
+                { model: categories_model_1.default, attributes: ["name", "nameAr"] },
+                {
+                    model: stores_model_1.default,
+                    attributes: ["id", "name", "nameAr", "image"],
+                    as: "store",
+                },
             ],
         });
         return product;
@@ -203,6 +209,9 @@ class ProductController {
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         let { search, maxPrice, minPrice, brandIds, categoryIds, battery, ram } = req.query;
         let storeId = req.user?.storeId;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         this.service.validateGetAllStoresQuery({
             search,
             maxPrice,
@@ -211,13 +220,14 @@ class ProductController {
             ram,
         });
         const options = {
+            logging: console.log,
             attributes: [
                 "id",
-                "name",
+                [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],
+                [config_1.default.literal(`"Product"."${descriptionColumn}"`), "description"],
                 "basePrice",
                 "battery",
                 "ram",
-                "description",
                 "image",
                 "discount",
                 [
@@ -230,8 +240,23 @@ class ProductController {
             order: [[orderBy, order]],
             where: {},
             include: [
-                { model: stores_model_1.default, attributes: ["id", "name", "image"], as: "store" },
-                { model: categories_model_1.default, attributes: ["name"] },
+                {
+                    model: stores_model_1.default,
+                    attributes: [
+                        "id",
+                        [config_1.default.literal(`store."${nameColumn}"`), "name"],
+                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                        "image",
+                    ],
+                    as: "store",
+                },
+                {
+                    model: categories_model_1.default,
+                    attributes: [
+                        [config_1.default.literal(`category."${nameColumn}"`), "name"],
+                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                    ],
+                },
             ],
         };
         if (storeId)
@@ -256,8 +281,8 @@ class ProductController {
             search = search.toString().replace(/\+/g, "").trim();
             options.where.name = {
                 [sequelize_1.Op.or]: [
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col("products.name")), "LIKE", "%" + search.toLowerCase() + "%"),
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`products."description"`)), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.literal(`"Product"."${nameColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.literal(`"Product"."${descriptionColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };
         }

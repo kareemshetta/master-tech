@@ -206,14 +206,24 @@ class PrdouctService {
                 "any.required": "Battery is required and cannot be null.",
             }),
             name: joi_1.default.string().trim().max(255).required().messages({
-                "string.base": "Store name must be a string.",
-                "string.empty": "Store name cannot be empty.",
-                "string.max": "Store name cannot exceed 255 characters.",
-                "any.required": "Store name is required and cannot be null.",
+                "string.base": "name must be a string.",
+                "string.empty": "name cannot be empty.",
+                "string.max": "name cannot exceed 255 characters.",
+                "any.required": "name is required and cannot be null.",
+            }),
+            nameAr: joi_1.default.string().trim().max(255).required().messages({
+                "string.base": "nameAr must be a string.",
+                "string.empty": "nameAr cannot be empty.",
+                "string.max": "nameAr cannot exceed 255 characters.",
+                "any.required": "nameAr is required and cannot be null.",
             }),
             description: joi_1.default.string().trim().max(1000).allow("").messages({
                 "string.base": "Description must be a string.",
                 "string.max": "Description cannot exceed 1000 characters.",
+            }),
+            descriptionAr: joi_1.default.string().trim().max(1000).allow("").messages({
+                "string.base": "DescriptionAr must be a string.",
+                "string.max": "DescriptionAr cannot exceed 1000 characters.",
             }),
             basePrice: joi_1.default.number().required().messages({
                 "number.base": "Base price must be a number.",
@@ -375,14 +385,24 @@ class PrdouctService {
                 "any.required": "Battery is required and cannot be null.",
             }),
             name: joi_1.default.string().trim().max(255).required().messages({
-                "string.base": "Store name must be a string.",
-                "string.empty": "Store name cannot be empty.",
-                "string.max": "Store name cannot exceed 255 characters.",
-                "any.required": "Store name is required and cannot be null.",
+                "string.base": "name must be a string.",
+                "string.empty": "name cannot be empty.",
+                "string.max": "name cannot exceed 255 characters.",
+                "any.required": "name is required and cannot be null.",
+            }),
+            nameAr: joi_1.default.string().trim().max(255).required().messages({
+                "string.base": "nameAr must be a string.",
+                "string.empty": "nameAr cannot be empty.",
+                "string.max": "nameAr cannot exceed 255 characters.",
+                "any.required": "nameAr is required and cannot be null.",
             }),
             description: joi_1.default.string().trim().max(1000).allow("").messages({
                 "string.base": "Description must be a string.",
                 "string.max": "Description cannot exceed 1000 characters.",
+            }),
+            descriptionAr: joi_1.default.string().trim().max(1000).allow("").messages({
+                "string.base": "DescriptionAr must be a string.",
+                "string.max": "DescriptionAr cannot exceed 1000 characters.",
             }),
             basePrice: joi_1.default.number().required().messages({
                 "number.base": "Base price must be a number.",

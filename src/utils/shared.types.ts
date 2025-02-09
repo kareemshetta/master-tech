@@ -189,3 +189,12 @@ export interface IRegion {
   updatedAt?: string;
   id?: string;
 }
+
+export interface IUserProductFavourite {
+  id?: string;
+  userId?: string;
+  productId?: string;
+
+  createdAt?: string;
+  updatedAt?: string;
+}

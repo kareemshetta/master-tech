@@ -29,6 +29,12 @@ class BrandController {
         if (foundOneWithSameName) {
             throw new appError_1.AppError("entityWithNameExist", 409);
         }
+        const foundOneWithSameNameAr = await this.service.findOne({
+            where: { name: storeData.nameAr },
+        });
+        if (foundOneWithSameNameAr) {
+            throw new appError_1.AppError("entityWithNameExist", 409);
+        }
         // Create the brand
         const brand = await this.service.create(storeData);
         return brand;
@@ -41,6 +47,14 @@ class BrandController {
         if (updateData.name) {
             const foundOneWithSameName = await this.service.findOne({
                 where: { name: updateData.name, id: { [sequelize_1.Op.ne]: id } },
+            });
+            if (foundOneWithSameName) {
+                throw new appError_1.AppError("entityWithNameExist", 409);
+            }
+        }
+        if (updateData.nameAr) {
+            const foundOneWithSameName = await this.service.findOne({
+                where: { name: updateData.nameAr, id: { [sequelize_1.Op.ne]: id } },
             });
             if (foundOneWithSameName) {
                 throw new appError_1.AppError("entityWithNameExist", 409);
@@ -59,15 +73,24 @@ class BrandController {
     }
     async getStore(req) {
         const { id } = req.params;
-        const brand = await this.service.findOneByIdOrThrowError(id, {});
+        const brand = await this.service.findOneByIdOrThrowError(id, {
+            attributes: ["id", "name", "nameAr", "image"],
+        });
         return brand;
     }
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         let { search } = req.query;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
         this.service.validateGetAllQuery({ search });
         const options = {
+            attributes: [
+                "id",
+                [config_1.default.col(`brands."${nameColumn}"`), "name"],
+                "image",
+            ],
             offset,
             limit,
             order: [[orderBy, order]],
@@ -77,7 +100,7 @@ class BrandController {
             search = search.toString().replace(/\+/g, "").trim();
             options.where.name = {
                 [sequelize_1.Op.or]: [
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col("brands.name")), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`brands."${nameColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };
         }

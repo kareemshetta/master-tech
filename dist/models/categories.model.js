@@ -22,6 +22,10 @@ Category.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
+    nameAr: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
     description: {
         allowNull: true,
         type: sequelize_1.DataTypes.STRING,
@@ -33,6 +37,7 @@ Category.init({
     timestamps: true,
     indexes: [
         { fields: ["name"], name: "category_name_idx" },
+        { fields: ["nameAr"], name: "category_nameAr_idx" },
         { fields: ["description"], name: "category_description_idx" },
     ],
 });

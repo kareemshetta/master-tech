@@ -17,7 +17,14 @@ Product.init({
         type: sequelize_1.DataTypes.STRING,
         allowNull: false,
     },
+    nameAr: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: true,
+    },
     description: {
+        type: sequelize_1.DataTypes.TEXT,
+    },
+    descriptionAr: {
         type: sequelize_1.DataTypes.TEXT,
     },
     basePrice: {

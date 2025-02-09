@@ -5,6 +5,7 @@ import {
   IProcessor,
   IProduct,
   IScreen,
+  IUserProductFavourite,
 } from "../../../../utils/shared.types";
 import ProductSkuRepository from "../product.sku.repository";
 import ProductScreenRepository from "../product.screen.repository";
@@ -12,13 +13,10 @@ import ProductProcessorRepository from "../product.processor.repository";
 import ProductRepository from "../products.repository";
 
 import Joi from "joi";
-import { AppError, ValidationError } from "../../../../utils/appError";
+import { ValidationError } from "../../../../utils/appError";
 import ProductAttributesRepository from "../../../attributes/v1/attributes.repository";
 import sequelize from "../../../../config/db/config";
-import {
-  checkArraysWithSet,
-  getNotIncludedIds,
-} from "../../../../utils/generalFunctions";
+import UserProductFavouriteRepo from "../../../users/v1/user_product_favourite.repository";
 
 export class PrdouctService {
   private static instance: PrdouctService | null = null;
@@ -27,6 +25,7 @@ export class PrdouctService {
   private processorRepo: ProductProcessorRepository;
   public attributesRepo: ProductAttributesRepository;
   private skuRepo: ProductSkuRepository;
+  private favouriteRepo: UserProductFavouriteRepo;
 
   private constructor() {
     this.productRepo = ProductRepository.getInstance();
@@ -34,6 +33,7 @@ export class PrdouctService {
     this.attributesRepo = ProductAttributesRepository.getInstance();
     this.processorRepo = ProductProcessorRepository.getInstance();
     this.skuRepo = ProductSkuRepository.getInstance();
+    this.favouriteRepo = UserProductFavouriteRepo.getInstance();
   }
 
   public static getInstance(): PrdouctService {
@@ -133,7 +133,11 @@ export class PrdouctService {
         where: { id: id },
         transaction,
       });
-      await this.skuRepo.delete({ where: { productId: id }, transaction });
+      await this.skuRepo.delete({
+        where: { productId: id },
+        transaction,
+        force: true,
+      });
       await transaction.commit();
       return deleted;
     } catch (err) {
@@ -142,11 +146,8 @@ export class PrdouctService {
     }
   }
 
-  public async findOneByIdOrThrowError(
-    catId: string,
-    options: FindOptions = {}
-  ) {
-    return this.productRepo.findOneByIdOrThrowError(catId, options);
+  public async findOneByIdOrThrowError(id: string, options: FindOptions = {}) {
+    return this.productRepo.findOneByIdOrThrowError(id, options);
   }
 
   public async findOne(options: FindOptions = {}) {
@@ -157,6 +158,30 @@ export class PrdouctService {
     return this.productRepo.findAndCountAll(options);
   }
 
+  public async toggleFavourite(data: IUserProductFavourite): Promise<boolean> {
+    const { userId, productId } = data;
+
+    const favorite = await this.favouriteRepo.findOne({
+      where: { userId, productId },
+      paranoid: false, // This will include soft-deleted records
+    });
+
+    if (favorite) {
+      if (favorite.deletedAt) {
+        // If it was soft-deleted, restore it
+        await favorite.restore();
+        return true;
+      } else {
+        // If it exists and is not deleted, soft-delete it
+        await favorite.destroy();
+        return false;
+      }
+    } else {
+      // If no record exists at all, create a new one
+      await this.favouriteRepo.create({ userId, productId });
+      return true;
+    }
+  }
   public validateCreate(data: IProduct) {
     const schema = Joi.object({
       screen: Joi.object({
@@ -247,15 +272,25 @@ export class PrdouctService {
       }),
 
       name: Joi.string().trim().max(255).required().messages({
-        "string.base": "Store name must be a string.",
-        "string.empty": "Store name cannot be empty.",
-        "string.max": "Store name cannot exceed 255 characters.",
-        "any.required": "Store name is required and cannot be null.",
+        "string.base": "name must be a string.",
+        "string.empty": "name cannot be empty.",
+        "string.max": "name cannot exceed 255 characters.",
+        "any.required": "name is required and cannot be null.",
+      }),
+      nameAr: Joi.string().trim().max(255).required().messages({
+        "string.base": "nameAr must be a string.",
+        "string.empty": "nameAr cannot be empty.",
+        "string.max": "nameAr cannot exceed 255 characters.",
+        "any.required": "nameAr is required and cannot be null.",
       }),
 
       description: Joi.string().trim().max(1000).allow("").messages({
         "string.base": "Description must be a string.",
         "string.max": "Description cannot exceed 1000 characters.",
+      }),
+      descriptionAr: Joi.string().trim().max(1000).allow("").messages({
+        "string.base": "DescriptionAr must be a string.",
+        "string.max": "DescriptionAr cannot exceed 1000 characters.",
       }),
       basePrice: Joi.number().required().messages({
         "number.base": "Base price must be a number.",
@@ -430,15 +465,25 @@ export class PrdouctService {
       }),
 
       name: Joi.string().trim().max(255).required().messages({
-        "string.base": "Store name must be a string.",
-        "string.empty": "Store name cannot be empty.",
-        "string.max": "Store name cannot exceed 255 characters.",
-        "any.required": "Store name is required and cannot be null.",
+        "string.base": "name must be a string.",
+        "string.empty": "name cannot be empty.",
+        "string.max": "name cannot exceed 255 characters.",
+        "any.required": "name is required and cannot be null.",
+      }),
+      nameAr: Joi.string().trim().max(255).required().messages({
+        "string.base": "nameAr must be a string.",
+        "string.empty": "nameAr cannot be empty.",
+        "string.max": "nameAr cannot exceed 255 characters.",
+        "any.required": "nameAr is required and cannot be null.",
       }),
 
       description: Joi.string().trim().max(1000).allow("").messages({
         "string.base": "Description must be a string.",
         "string.max": "Description cannot exceed 1000 characters.",
+      }),
+      descriptionAr: Joi.string().trim().max(1000).allow("").messages({
+        "string.base": "DescriptionAr must be a string.",
+        "string.max": "DescriptionAr cannot exceed 1000 characters.",
       }),
       basePrice: Joi.number().required().messages({
         "number.base": "Base price must be a number.",
@@ -450,11 +495,11 @@ export class PrdouctService {
         "number.empty": "Discount cannot be empty.",
         "any.required": "Discount is required and cannot be null.",
       }),
-      storeId: Joi.string().uuid().required().messages({
-        "string.base": "storeId must be a string.",
-        "string.empty": "storeId cannot be empty.",
-        "any.required": "storeId is required and cannot be null.",
-      }),
+      // storeId: Joi.string().uuid().required().messages({
+      //   "string.base": "storeId must be a string.",
+      //   "string.empty": "storeId cannot be empty.",
+      //   "any.required": "storeId is required and cannot be null.",
+      // }),
       images: Joi.array().items(
         Joi.string()
           .trim()

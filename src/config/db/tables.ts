@@ -17,6 +17,7 @@ import("./../../models/orders.model");
 import("./../../models/orderItem.model");
 import("./../../models/cities.model");
 import("./../../models/regions.model");
+import("./../../models/user_products_favourite.model");
 
 // store_sub_stores association
 import("./../../models/store_sub_stores.association");
@@ -49,6 +50,8 @@ import("./../../models/orders_ordersItem.associations");
 import("./../../models/cities_regions.associtation");
 // store_region_association
 import("./../../models/stores_region_city.associations");
+// user_products_favourite_association
+import("./../../models/products_user_favourite.association");
 export const initialize = async (app: Application): Promise<void> => {
   try {
     await sequelize.authenticate();
@@ -58,7 +61,7 @@ export const initialize = async (app: Application): Promise<void> => {
     //   alter: true,
     //   // logging: console.log
     // });
-    console.log("All models were synchronized successfully.");
+    // console.log("All models were synchronized successfully.");
 
     const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     app.listen(port, () =>

@@ -59,15 +59,25 @@ class CategoryController {
     }
     async getStore(req) {
         const { id } = req.params;
-        const cat = await this.catService.findOneByIdOrThrowError(id, {});
+        const cat = await this.catService.findOneByIdOrThrowError(id, {
+            attributes: ["id", "name", "nameAr", "description", "image"],
+        });
         return cat;
     }
     async getAllStores(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         let { search } = req.query;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
         this.catService.validateGetAllStoresQuery({ search });
         const options = {
+            attributes: [
+                "id",
+                [config_1.default.col(`categories."${nameColumn}"`), "name"],
+                "description",
+                "image",
+            ],
             offset,
             limit,
             order: [[orderBy, order]],
@@ -77,7 +87,7 @@ class CategoryController {
             search = search.toString().replace(/\+/g, "").trim();
             options.where.name = {
                 [sequelize_1.Op.or]: [
-                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col("categories.name")), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`categories."${nameColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                     config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`categories."description"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };
