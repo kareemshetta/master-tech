@@ -66,6 +66,9 @@ class AuthController {
     }
     async login(req) {
         const body = req.body;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         this.service.validateLoginUser(body);
         const found = (await this.service.findOne({
             where: { email: body.email?.toLowerCase() },
@@ -84,6 +87,15 @@ class AuthController {
             },
             include: [
                 {
+                    model: products_model_1.default,
+                    attributes: [
+                        "id",
+                        [config_1.default.col(`"${nameColumn}"`), "name"],
+                        [config_1.default.col(`"${descriptionColumn}"`), "description"],
+                    ],
+                    through: { attributes: [] },
+                },
+                {
                     model: carts_model_1.default,
                     attributes: ["id"],
                     include: [
@@ -91,7 +103,14 @@ class AuthController {
                             model: cartItem_model_1.default,
                             attributes: ["id", "quantity", "price"],
                             include: [
-                                { model: products_model_1.default, attributes: ["id", "name", "description"] },
+                                {
+                                    model: products_model_1.default,
+                                    attributes: [
+                                        "id",
+                                        [config_1.default.col(`"${nameColumn}"`), "name"],
+                                        [config_1.default.col(`"${descriptionColumn}"`), "description"],
+                                    ],
+                                },
                                 {
                                     model: product_skus_model_1.ProductSku,
                                     attributes: ["sku", "price"],
@@ -136,10 +155,60 @@ class AuthController {
     async getOne(req) {
         const { id } = req.user;
         (0, generalFunctions_1.validateUUID)(id, "invalid user id");
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         return this.service.findOneByIdOrThrowError(id, {
             attributes: {
                 exclude: ["deletedAt", "updatedAt", "password"],
             },
+            include: [
+                {
+                    model: products_model_1.default,
+                    attributes: [
+                        "id",
+                        [config_1.default.col(`"${nameColumn}"`), "name"],
+                        [config_1.default.col(`"${descriptionColumn}"`), "description"],
+                    ],
+                    through: { attributes: [] },
+                },
+                {
+                    model: carts_model_1.default,
+                    attributes: ["id"],
+                    include: [
+                        {
+                            model: cartItem_model_1.default,
+                            attributes: ["id", "quantity", "price"],
+                            include: [
+                                {
+                                    model: products_model_1.default,
+                                    attributes: [
+                                        "id",
+                                        [config_1.default.col(`"${nameColumn}"`), "name"],
+                                        [config_1.default.col(`"${descriptionColumn}"`), "description"],
+                                    ],
+                                },
+                                {
+                                    model: product_skus_model_1.ProductSku,
+                                    attributes: ["sku", "price"],
+                                    include: [
+                                        {
+                                            model: product_attributes_model_1.default,
+                                            attributes: ["type", "value"],
+                                            as: "color",
+                                        },
+                                        {
+                                            model: product_attributes_model_1.default,
+                                            attributes: ["type", "value"],
+                                            as: "storage",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                },
+            ],
         });
     }
     async getOtp(req) {
