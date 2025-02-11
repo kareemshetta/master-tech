@@ -46,7 +46,7 @@ class AdminView {
         const admin = await this.controller.update(req);
         res.send({
             data: admin,
-            message: "Success updating the srevice request bill.",
+            message: req.t("responses.succes"),
         });
     }
     async deleteOne(req, res) {

@@ -219,6 +219,8 @@ export class ProductController {
       "storeId",
       "screenId",
       "processorId",
+      "ram",
+      "battery",
     ];
 
     // Add favorite literal conditionally
@@ -255,6 +257,12 @@ export class ProductController {
                 'ROUND(CAST("price" AS DECIMAL) * (1 - (CAST("Product"."discount" AS DECIMAL) / 100)), 2)'
               ),
               "priceAfterDiscount",
+            ],
+            [
+              sequelize.literal(
+                'CASE WHEN "quantity" > 0 THEN true ELSE false END'
+              ),
+              "isAvailable",
             ],
           ],
           as: "skus",

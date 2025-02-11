@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import passport from "passport";
 import { IAdmin, Iuser } from "../utils/shared.types";
-import User from "../models/users.model";
 
 export const authenticateUser = (
   req: Request,

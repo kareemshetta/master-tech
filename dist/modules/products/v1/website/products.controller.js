@@ -170,6 +170,8 @@ class ProductController {
             "storeId",
             "screenId",
             "processorId",
+            "ram",
+            "battery",
         ];
         // Add favorite literal conditionally
         if (userId)
@@ -202,6 +204,10 @@ class ProductController {
                         [
                             config_1.default.literal('ROUND(CAST("price" AS DECIMAL) * (1 - (CAST("Product"."discount" AS DECIMAL) / 100)), 2)'),
                             "priceAfterDiscount",
+                        ],
+                        [
+                            config_1.default.literal('CASE WHEN "quantity" > 0 THEN true ELSE false END'),
+                            "isAvailable",
                         ],
                     ],
                     as: "skus",
