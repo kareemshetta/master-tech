@@ -153,6 +153,7 @@ class ProductController {
                 "ram",
                 "battery",
                 "images",
+                "image",
             ],
             include: [
                 {

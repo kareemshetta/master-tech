@@ -202,6 +202,7 @@ export class ProductController {
         "ram",
         "battery",
         "images",
+        "image",
       ],
       include: [
         {
@@ -292,7 +293,6 @@ export class ProductController {
         "basePrice",
         "battery",
         "ram",
-
         "image",
         "discount",
         [
