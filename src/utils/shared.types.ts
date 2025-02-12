@@ -198,3 +198,15 @@ export interface IUserProductFavourite {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface IReview {
+  rating?: number;
+  message?: string;
+  userId?: string;
+  productId?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  user?: Iuser;
+  id?: string;
+  product?: IProduct;
+}

@@ -18,6 +18,7 @@ import("./../../models/orderItem.model");
 import("./../../models/cities.model");
 import("./../../models/regions.model");
 import("./../../models/user_products_favourite.model");
+import("./../../models/review.model");
 
 // store_sub_stores association
 import("./../../models/store_sub_stores.association");
@@ -52,6 +53,8 @@ import("./../../models/cities_regions.associtation");
 import("./../../models/stores_region_city.associations");
 // user_products_favourite_association
 import("./../../models/products_user_favourite.association");
+// prduct_user_review_association
+import("./../../models/reviews_product_user_association");
 export const initialize = async (app: Application): Promise<void> => {
   try {
     await sequelize.authenticate();

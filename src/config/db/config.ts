@@ -1,7 +1,5 @@
 import { Dialect, Sequelize } from "sequelize";
 import "dotenv/config";
-import fs from "fs";
-// import "../../../ca.pem";
 const dbName = process.env.DATABASE_NAME as string;
 
 const dbUsername = process.env.DATABASE_USERNAME as string;
