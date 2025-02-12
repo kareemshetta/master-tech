@@ -152,6 +152,7 @@ class ProductController {
                 "processorId",
                 "ram",
                 "battery",
+                "images",
             ],
             include: [
                 {
@@ -163,6 +164,7 @@ class ProductController {
                         "pixelDensity",
                         "type",
                         "details",
+                        "aspectRatio",
                     ],
                 },
                 {
@@ -226,7 +228,7 @@ class ProductController {
             ram,
         });
         const options = {
-            logging: console.log,
+            // logging: console.log,
             attributes: [
                 "id",
                 [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],

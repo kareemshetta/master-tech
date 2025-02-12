@@ -201,6 +201,7 @@ export class ProductController {
         "processorId",
         "ram",
         "battery",
+        "images",
       ],
       include: [
         {
@@ -212,6 +213,7 @@ export class ProductController {
             "pixelDensity",
             "type",
             "details",
+            "aspectRatio",
           ],
         },
         {
@@ -282,7 +284,7 @@ export class ProductController {
       ram,
     });
     const options: any = {
-      logging: console.log,
+      // logging: console.log,
       attributes: [
         "id",
         [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
