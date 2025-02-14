@@ -19,6 +19,7 @@ import("./../../models/cities.model");
 import("./../../models/regions.model");
 import("./../../models/user_products_favourite.model");
 import("./../../models/review.model");
+import("./../../models/contact.model");
 
 // store_sub_stores association
 import("./../../models/store_sub_stores.association");

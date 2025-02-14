@@ -211,3 +211,15 @@ export interface IReview {
   id?: string;
   product?: IProduct;
 }
+
+export interface IContactUs {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  phoneNumber?: string;
+  contactType?: string;
+  message?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  id?: string;
+}

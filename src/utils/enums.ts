@@ -7,3 +7,8 @@ export enum ProductAttributesEnum {
   Storage = "storage",
   Color = "color",
 }
+
+export enum ContactType {
+  Partner = "Partner",
+  Complaint = "Complaint",
+}
