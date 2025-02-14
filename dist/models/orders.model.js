@@ -60,6 +60,11 @@ Order.init({
         allowNull: true,
         defaultValue: (0, generalFunctions_1.generateOrderId)(8),
     },
+    isDelivery: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
     paymentStatus: {
         type: sequelize_1.DataTypes.ENUM,
         values: ["PENDING", "PAID", "FAILED"],

@@ -59,6 +59,11 @@ Order.init(
       allowNull: true,
       defaultValue: generateOrderId(8),
     },
+    isDelivery: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
     paymentStatus: {
       type: DataTypes.ENUM,
       values: ["PENDING", "PAID", "FAILED"],

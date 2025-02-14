@@ -238,6 +238,7 @@ class ProductController {
                         "id",
                         [config_1.default.literal(`store."${nameColumn}"`), "name"],
                         "image",
+                        "allowShipping",
                     ],
                     as: "store",
                 },

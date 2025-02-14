@@ -206,7 +206,7 @@ class ProductController {
                 { model: categories_model_1.default, attributes: ["name", "nameAr"] },
                 {
                     model: stores_model_1.default,
-                    attributes: ["id", "name", "nameAr", "image"],
+                    attributes: ["id", "name", "nameAr", "image", "allowShipping"],
                     as: "store",
                 },
             ],

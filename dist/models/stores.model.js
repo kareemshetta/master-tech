@@ -46,6 +46,11 @@ Store.init({
             key: "id",
         },
     },
+    allowShipping: {
+        type: sequelize_1.DataTypes.BOOLEAN,
+        allowNull: false,
+        defaultValue: false,
+    },
 }, {
     sequelize: config_1.default,
     paranoid: true,

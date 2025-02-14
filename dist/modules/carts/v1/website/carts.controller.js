@@ -9,9 +9,13 @@ const handle_sort_pagination_1 = require("../../../../utils/handle-sort-paginati
 const products_model_1 = __importDefault(require("../../../../models/products.model"));
 const product_skus_model_1 = require("../../../../models/product_skus.model");
 const product_attributes_model_1 = __importDefault(require("../../../../models/product_attributes.model"));
+const cartItem_model_1 = __importDefault(require("../../../../models/cartItem.model"));
+const products_service_1 = __importDefault(require("../../../products/v1/dashboard/products.service"));
+const appError_1 = require("../../../../utils/appError");
 class CartController {
     constructor() {
         this.cartService = carts_service_1.default.getInstance();
+        this.productService = products_service_1.default.getInstance();
     }
     static getInstance() {
         if (!CartController.instance) {
@@ -25,6 +29,23 @@ class CartController {
         storeData.cartId = cart?.id;
         // Validate the incoming data
         this.cartService.validateCreateItem(storeData);
+        const cartProduct = (await this.productService.findOneByIdOrThrowError(storeData.productId, {
+            attributes: ["id", "storeId"],
+        })).toJSON();
+        const foundCart = (await this.cartService.getCart({
+            where: { id: cart?.id },
+            include: [
+                {
+                    model: cartItem_model_1.default,
+                    attributes: ["id"],
+                    include: [{ model: products_model_1.default, attributes: ["storeId"] }],
+                },
+            ],
+        }))?.toJSON();
+        if (foundCart?.cart_items?.length &&
+            foundCart.cart_items[0]?.Product?.storeId !== cartProduct.storeId) {
+            throw new appError_1.AppError("cartItemsMustBeFromSameStore", 403);
+        }
         // Create the cat
         const cat = await this.cartService.createCartItem(storeData);
         return cat;

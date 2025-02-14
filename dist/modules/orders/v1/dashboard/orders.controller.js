@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrderController = void 0;
+const appError_1 = require("../../../../utils/appError");
 const orders_service_1 = __importDefault(require("./orders.service"));
 const handle_sort_pagination_1 = require("../../../../utils/handle-sort-pagination");
 const orderItem_model_1 = __importDefault(require("../../../../models/orderItem.model"));
@@ -48,6 +49,13 @@ class OrderController {
     }
     async delete(req) {
         const { id } = req.params;
+        const storeId = req.user?.storeId;
+        const order = (await this.service.findOneByIdOrThrowError(id, {
+            attributes: ["id", "storeId"],
+        })).toJSON();
+        if (req.user?.role !== "superAdmin" && order.storeId !== storeId) {
+            throw new appError_1.AppError("forbiden", 403);
+        }
         // Delete the order
         return this.service.delete(id);
     }
@@ -66,7 +74,7 @@ class OrderController {
             include: [
                 {
                     model: orderItem_model_1.default,
-                    attributes: ["id", "quantity", "price", "cartId", "skuId"],
+                    attributes: ["id", "quantity", "price"],
                     include: [
                         {
                             model: products_model_1.default,
@@ -81,36 +89,34 @@ class OrderController {
     }
     async getAll(req) {
         // Calculate offset for pagination
+        let storeId = req.user?.storeId;
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         let { search } = req.query;
         this.service.validateGetAllQuery({ search });
         const options = {
             attributes: {
-                exclude: [
-                    "deletedAt",
-                    "updatedAt",
-                    "status",
-                    "paymentStatus",
-                    "storeId",
-                ],
+                exclude: ["deletedAt", "updatedAt", "status", "paymentStatus"],
             },
             offset,
             limit,
+            where: {},
             order: [[orderBy, order]],
-            include: [
-                {
-                    model: orderItem_model_1.default,
-                    attributes: ["id", "quantity", "price", "cartId", "skuId"],
-                    include: [
-                        {
-                            model: products_model_1.default,
-                            attributes: ["id", "name", "description", "image"],
-                        },
-                        { model: product_skus_model_1.ProductSku, attributes: ["id", "price", "sku"] },
-                    ],
-                },
-            ],
+            // include: [
+            //   {
+            //     model: OrderItem,
+            //     attributes: ["id", "quantity", "price", "cartId", "skuId"],
+            //     include: [
+            //       {
+            //         model: Product,
+            //         attributes: ["id", "name", "description", "image"],
+            //       },
+            //       { model: ProductSku, attributes: ["id", "price", "sku"] },
+            //     ],
+            //   },
+            // ],
         };
+        if (storeId)
+            options.where.storeId = storeId;
         const date = await this.service.getAll(options);
         return date;
     }

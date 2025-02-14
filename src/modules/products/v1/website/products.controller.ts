@@ -293,6 +293,7 @@ export class ProductController {
             "id",
             [sequelize.literal(`store."${nameColumn}"`), "name"],
             "image",
+            "allowShipping",
           ],
           as: "store",
         },

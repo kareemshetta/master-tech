@@ -80,6 +80,9 @@ class StoreService {
             regionId: joi_1.default.string().uuid().trim().allow(null).messages({
                 "string.base": "cityId must be a string.",
             }),
+            allowShipping: joi_1.default.boolean().required().messages({
+                "any.required": "allowShipping is required and cannot be null.",
+            }),
         });
         const { error } = schema.validate(data);
         if (error) {
@@ -127,6 +130,9 @@ class StoreService {
             }),
             regionId: joi_1.default.string().uuid().trim().allow(null).messages({
                 "string.base": "cityId must be a string.",
+            }),
+            allowShipping: joi_1.default.boolean().required().messages({
+                "any.required": "allowShipping is required and cannot be null.",
             }),
         });
         const { error } = schema.validate(data);

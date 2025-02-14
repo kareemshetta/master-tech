@@ -15,6 +15,7 @@ const cartItem_model_1 = __importDefault(require("../../../../models/cartItem.mo
 const config_1 = __importDefault(require("../../../../config/db/config"));
 const product_sku_repository_1 = __importDefault(require("../../../products/v1/product.sku.repository"));
 const communication_functions_1 = require("../../../../utils/communication-functions");
+const products_model_1 = __importDefault(require("../../../../models/products.model"));
 class OrderService {
     constructor() {
         this.repo = orders_repository_1.default.getInstance();
@@ -43,12 +44,25 @@ class OrderService {
                         "productId",
                         "skuId",
                     ],
+                    include: [
+                        {
+                            model: products_model_1.default,
+                            attributes: ["storeId"],
+                        },
+                    ],
                 },
             ],
         }))?.toJSON();
         if (!cart || !cart["cart_items"]?.length) {
             throw new appError_1.AppError("cartIsEmpty", 404);
         }
+        const itemsStoreId = cart["cart_items"].map((item) => item.Product.storeId);
+        // if (
+        //   itemsStoreId.length &&
+        //   itemsStoreId.every((id) => id !== itemsStoreId[0])
+        // ) {
+        //   throw new AppError("ordersItemsMustBeFromSameStore", 409);
+        // }
         let transaction = null;
         try {
             transaction = await config_1.default.transaction();
@@ -60,6 +74,7 @@ class OrderService {
                 phoneNumber: data.phoneNumber,
                 totalAmount: data.totalAmount,
                 shippingAddress: data.shippingAddress,
+                storeId: itemsStoreId[0],
                 status: "PENDING",
             }, { transaction })).toJSON();
             await Promise.all(cart["cart_items"].map(async (cartItem) => {
@@ -128,7 +143,15 @@ class OrderService {
             }),
             totalAmount: joi_1.default.number().required(),
             userId: joi_1.default.string().uuid().required(),
-            shippingAddress: joi_1.default.string().trim().max(500).min(1).required(),
+            // storeId: Joi.string().uuid().required(),
+            isDelivery: joi_1.default.boolean().required(),
+            shippingAddress: joi_1.default.string()
+                .trim()
+                .when(joi_1.default.ref("isDelivery"), {
+                is: true,
+                then: joi_1.default.string().max(500).min(1).required(),
+                otherwise: joi_1.default.string().length(0).allow(null, ""),
+            }),
         });
         const { error } = schema.validate(data);
         if (error) {

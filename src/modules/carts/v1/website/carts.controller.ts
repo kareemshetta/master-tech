@@ -1,4 +1,9 @@
-import { ICartItem, Iuser } from "../../../../utils/shared.types";
+import {
+  ICart,
+  ICartItem,
+  IProduct,
+  Iuser,
+} from "../../../../utils/shared.types";
 import CartService from "./carts.service";
 import { Request } from "express";
 import { handlePaginationSort } from "../../../../utils/handle-sort-pagination";
@@ -6,12 +11,17 @@ import { handlePaginationSort } from "../../../../utils/handle-sort-pagination";
 import Product from "../../../../models/products.model";
 import { ProductSku } from "../../../../models/product_skus.model";
 import ProductAttribute from "../../../../models/product_attributes.model";
+import CartItem from "../../../../models/cartItem.model";
+import PrdouctService from "../../../products/v1/dashboard/products.service";
+import { AppError } from "../../../../utils/appError";
 export class CartController {
   private static instance: CartController | null = null;
   private cartService: CartService;
+  private productService: PrdouctService;
 
   private constructor() {
     this.cartService = CartService.getInstance();
+    this.productService = PrdouctService.getInstance();
   }
 
   public static getInstance(): CartController {
@@ -28,7 +38,30 @@ export class CartController {
     storeData.cartId = cart?.id;
     // Validate the incoming data
     this.cartService.validateCreateItem(storeData);
+    const cartProduct = (
+      await this.productService.findOneByIdOrThrowError(storeData.productId!, {
+        attributes: ["id", "storeId"],
+      })
+    ).toJSON() as IProduct;
+    const foundCart = (
+      await this.cartService.getCart({
+        where: { id: cart?.id },
+        include: [
+          {
+            model: CartItem,
+            attributes: ["id"],
+            include: [{ model: Product, attributes: ["storeId"] }],
+          },
+        ],
+      })
+    )?.toJSON() as ICart;
 
+    if (
+      foundCart?.cart_items?.length &&
+      foundCart.cart_items[0]?.Product?.storeId !== cartProduct.storeId
+    ) {
+      throw new AppError("cartItemsMustBeFromSameStore", 403);
+    }
     // Create the cat
     const cat = await this.cartService.createCartItem(storeData);
 

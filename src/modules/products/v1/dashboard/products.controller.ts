@@ -259,7 +259,7 @@ export class ProductController {
         { model: Category, attributes: ["name", "nameAr"] },
         {
           model: Store,
-          attributes: ["id", "name", "nameAr", "image"],
+          attributes: ["id", "name", "nameAr", "image", "allowShipping"],
           as: "store",
         },
       ],

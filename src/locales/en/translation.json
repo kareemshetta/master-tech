@@ -18,7 +18,10 @@
       "wrongOtp":"wrong otp",
       "otpExpired":"otp is expired",
       "cartIsEmpty":"cart is empty",
-      "cityHasRegions":"this city has regions"
+      "cityHasRegions":"this city has regions",
+      "ordersItemsMustBeFromSameStore":"orders items must be from same store",
+      "cartItemsMustBeFromSameStore":"cart items must be from same store"
+
 
       
   }

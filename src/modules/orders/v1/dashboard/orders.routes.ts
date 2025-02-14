@@ -6,7 +6,7 @@ import { authenticateAdmin } from "../../../../middlewares/auth.middleware";
 import { authorizeSuperAdmin } from "../../../../middlewares/authorize.midddleware";
 const router = Router();
 const view = OrderView.getInstance();
-router.use(asyncWrapper(authenticateAdmin), asyncWrapper(authorizeSuperAdmin));
+router.use(asyncWrapper(authenticateAdmin));
 
 router.get("/", asyncWrapper(view.getAll));
 router.get("/:id", asyncWrapper(view.getOneById));

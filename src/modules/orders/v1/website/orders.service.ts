@@ -22,6 +22,7 @@ import sequelize from "../../../../config/db/config";
 import { t } from "i18next";
 import ProductSkuRepository from "../../../products/v1/product.sku.repository";
 import { sendEmail } from "../../../../utils/communication-functions";
+import Product from "../../../../models/products.model";
 
 export class OrderService {
   private static instance: OrderService | null = null;
@@ -61,6 +62,12 @@ export class OrderService {
               "productId",
               "skuId",
             ],
+            include: [
+              {
+                model: Product,
+                attributes: ["storeId"],
+              },
+            ],
           },
         ],
       })
@@ -69,6 +76,17 @@ export class OrderService {
     if (!cart || !cart["cart_items"]?.length) {
       throw new AppError("cartIsEmpty", 404);
     }
+
+    const itemsStoreId = cart["cart_items"].map(
+      (item) => item.Product!.storeId
+    ) as string[];
+
+    // if (
+    //   itemsStoreId.length &&
+    //   itemsStoreId.every((id) => id !== itemsStoreId[0])
+    // ) {
+    //   throw new AppError("ordersItemsMustBeFromSameStore", 409);
+    // }
     let transaction: Transaction | null = null;
     try {
       transaction = await sequelize.transaction();
@@ -83,7 +101,7 @@ export class OrderService {
             phoneNumber: data.phoneNumber,
             totalAmount: data.totalAmount,
             shippingAddress: data.shippingAddress,
-
+            storeId: itemsStoreId[0],
             status: "PENDING",
           },
           { transaction }
@@ -186,7 +204,16 @@ export class OrderService {
         }),
       totalAmount: Joi.number().required(),
       userId: Joi.string().uuid().required(),
-      shippingAddress: Joi.string().trim().max(500).min(1).required(),
+      // storeId: Joi.string().uuid().required(),
+      isDelivery: Joi.boolean().required(),
+
+      shippingAddress: Joi.string()
+        .trim()
+        .when(Joi.ref("isDelivery"), {
+          is: true,
+          then: Joi.string().max(500).min(1).required(),
+          otherwise: Joi.string().length(0).allow(null, ""),
+        }),
     });
 
     const { error } = schema.validate(data);

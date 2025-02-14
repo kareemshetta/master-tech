@@ -143,7 +143,7 @@ export interface ICartItem {
   price?: number;
   skuId?: string;
   sku?: any;
-
+  Product?: IProduct;
   quantity?: number;
   createdAt?: string;
   updatedAt?: string;
@@ -167,6 +167,7 @@ export interface IOrder {
   paymentStatus?: string;
   orderItems?: IOrderItem[];
   shortId?: string;
+  storeId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
