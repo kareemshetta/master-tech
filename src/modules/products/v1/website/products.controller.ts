@@ -515,6 +515,7 @@ export class ProductController {
           ),
           "averageRating",
         ],
+        // [sequelize.fn("COUNT", sequelize.col("reviews.id")), "totalReviews"],
         "basePrice",
         "battery",
         "ram",
@@ -572,6 +573,7 @@ export class ProductController {
           ),
           "DESC",
         ],
+        [sequelize.fn("COUNT", sequelize.col("reviews.id")), "DESC"],
       ],
       where: {},
     };

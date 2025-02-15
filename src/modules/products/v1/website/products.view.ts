@@ -15,6 +15,7 @@ export class ProductView {
     this.update = this.update.bind(this);
     this.deleteOne = this.deleteOne.bind(this);
     this.toggleFavourite = this.toggleFavourite.bind(this);
+    this.getAllTopRated = this.getAllTopRated.bind(this);
   }
 
   public static getInstance(): ProductView {
@@ -32,6 +33,13 @@ export class ProductView {
   }
 
   async getOneById(req: Request, res: Response) {
+    const trainer = await this.controller.get(req);
+    res.send({
+      data: trainer,
+      message: req.t("responses.succes"),
+    });
+  }
+  async getLike(req: Request, res: Response) {
     const trainer = await this.controller.get(req);
     res.send({
       data: trainer,

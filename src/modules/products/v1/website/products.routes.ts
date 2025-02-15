@@ -18,7 +18,7 @@ router.get(
 router.get(
   "/top-rated",
   asyncWrapper(optionalAuthenticateUser),
-  asyncWrapper(view.getAll)
+  asyncWrapper(view.getAllTopRated)
 );
 router.post(
   "/fav/:productId",
@@ -27,6 +27,11 @@ router.post(
 );
 router.get(
   "/:id",
+  asyncWrapper(optionalAuthenticateUser),
+  asyncWrapper(view.getOneById)
+);
+router.get(
+  "/:id/alike",
   asyncWrapper(optionalAuthenticateUser),
   asyncWrapper(view.getOneById)
 );
