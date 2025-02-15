@@ -8,6 +8,7 @@ import sequelize from "../../../../config/db/config";
 import OrderItem from "../../../../models/orderItem.model";
 import Product from "../../../../models/products.model";
 import { ProductSku } from "../../../../models/product_skus.model";
+import Category from "../../../../models/categories.model";
 
 export class OrderController {
   private static instance: OrderController | null = null;
@@ -67,7 +68,9 @@ export class OrderController {
 
   public async getOne(req: Request) {
     const { id } = req.params;
-
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
     const order = await this.service.findOneByIdOrThrowError(id, {
       attributes: {
         exclude: [
@@ -77,6 +80,7 @@ export class OrderController {
           "paymentStatus",
           "storeId",
         ],
+        include: [`orders."${nameColumn}"`],
       },
       include: [
         {
@@ -85,7 +89,18 @@ export class OrderController {
           include: [
             {
               model: Product,
-              attributes: ["id", "name", "description", "image"],
+              attributes: [
+                "id",
+                `${nameColumn}`,
+                `${descriptionColumn}`,
+                "image",
+              ],
+              include: [
+                {
+                  model: Category,
+                  attributes: ["id", `${nameColumn}`],
+                },
+              ],
             },
             { model: ProductSku, attributes: ["id", "sku"] },
           ],
@@ -102,6 +117,9 @@ export class OrderController {
     const userId = req.user?.id;
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
     let { search } = req.query;
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
     this.service.validateGetAllQuery({ search });
     const options: any = {
       attributes: {
@@ -126,7 +144,18 @@ export class OrderController {
           include: [
             {
               model: Product,
-              attributes: ["id", "name", "description", "image"],
+              attributes: [
+                "id",
+                `${nameColumn}`,
+                `${descriptionColumn}`,
+                "image",
+              ],
+              include: [
+                {
+                  model: Category,
+                  attributes: ["id", `${nameColumn}`],
+                },
+              ],
             },
             { model: ProductSku, attributes: ["id", "price", "sku"] },
           ],

@@ -33,7 +33,7 @@ router.get(
 router.get(
   "/:id/alike",
   asyncWrapper(optionalAuthenticateUser),
-  asyncWrapper(view.getOneById)
+  asyncWrapper(view.getLike)
 );
 // router.put("/:id", asyncWrapper(view.update));
 // router.delete("/:id", asyncWrapper(view.deleteOne));

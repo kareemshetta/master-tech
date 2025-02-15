@@ -239,6 +239,7 @@ export class ProductController {
             "pixelDensity",
             "type",
             "details",
+            "aspectRatio",
           ],
         },
         {
@@ -669,5 +670,163 @@ export class ProductController {
       userId,
     });
     return isFavourite;
+  }
+
+  public async getALike(req: Request) {
+    // Calculate offset for pagination
+    const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
+    let {
+      search,
+      maxPrice,
+      minPrice,
+
+      battery,
+      ram,
+    } = req.query;
+
+    const lng = req.language;
+    const userId = req.user?.id;
+    const { id } = req.params;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+    validateUUID(id, "invalid product id");
+    this.service.validateGetAllStoresQuery({
+      search,
+      maxPrice,
+      minPrice,
+      battery,
+      ram,
+    });
+
+    const product = (
+      await this.service.findOneByIdOrThrowError(id, {
+        attributes: [
+          "id",
+          "brandId",
+          "storeId",
+          "categoryId",
+          [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
+        ],
+      })
+    ).toJSON() as IProduct;
+
+    const options: any = {
+      attributes: [
+        "id",
+        [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
+        [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
+        [
+          sequelize.fn(
+            "ROUND",
+            sequelize.fn(
+              "COALESCE",
+              sequelize.fn("AVG", sequelize.col("reviews.rating")),
+              0
+            ),
+            2
+          ),
+          "averageRating",
+        ],
+        "basePrice",
+        "battery",
+        "ram",
+        "brandId",
+        "storeId",
+        "image",
+        "discount",
+        [
+          sequelize.literal(
+            'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
+          ),
+          "priceAfterDiscount",
+        ],
+      ],
+      offset,
+      limit,
+      order: [[orderBy, order]],
+      where: { id: { [Op.ne]: id } },
+      include: [
+        {
+          model: Store,
+          attributes: [
+            "id",
+            [sequelize.literal(`store."${nameColumn}"`), "name"],
+            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+            "image",
+          ],
+          as: "store",
+        },
+        {
+          model: Category,
+          attributes: [
+            [sequelize.literal(`category."${nameColumn}"`), "name"],
+            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+          ],
+        },
+        { model: Review, attributes: [] },
+      ],
+      group: ["Product.id", "store.id", "category.id"],
+      subQuery: false,
+    };
+    const countOption: any = {
+      offset,
+      limit,
+      order: [[orderBy, order]],
+      where: { id: { [Op.ne]: id } },
+    };
+
+    options.where.storeId = product.storeId;
+    countOption.where.storeId = product.storeId;
+
+    options.where.categoryId = product.categoryId;
+    countOption.where.categoryId = product.categoryId;
+
+    if (userId)
+      options.attributes.push([
+        sequelize.literal(`
+    CASE 
+      WHEN EXISTS (
+        SELECT 1
+        FROM "userFavorites" AS "Favourite"
+        WHERE "Favourite"."productId" = "Product"."id"
+        AND "Favourite"."userId" = '${userId}'
+        AND "Favourite"."deletedAt" IS NULL  -- Check for paranoid deleted record
+      ) THEN true
+      ELSE false
+    END
+  `),
+        "isFavourite",
+      ]);
+
+    // if (search) {
+    //   search = product.name!.toString().replace(/\+/g, "").trim();
+    //   const searchOp = {
+    //     [Op.or]: [
+    //       sequelize.where(
+    //         sequelize.fn(
+    //           "LOWER",
+    //           sequelize.literal(`"Product"."${nameColumn}"`)
+    //         ),
+    //         "LIKE",
+    //         "%" + search.toLowerCase() + "%"
+    //       ),
+    //       sequelize.where(
+    //         sequelize.fn(
+    //           "LOWER",
+    //           sequelize.literal(`"Product"."${descriptionColumn}"`)
+    //         ),
+    //         "LIKE",
+    //         "%" + search.toLowerCase() + "%"
+    //       ),
+    //     ],
+    //   };
+    //   options.where.name = searchOp;
+    //   countOption.where.name = searchOp;
+    // }
+
+    const date = await this.service.getAllWithoutCount(options);
+    const count = await this.service.count(countOption);
+
+    return { rows: date, count };
   }
 }
