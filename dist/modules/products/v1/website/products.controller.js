@@ -249,8 +249,7 @@ class ProductController {
     async getAll(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, brandIds, categoryIds, battery, ram } = req.query;
-        let storeId = req.user?.storeId;
+        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, battery, ram, } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -271,6 +270,8 @@ class ProductController {
                 "basePrice",
                 "battery",
                 "ram",
+                "brandId",
+                "storeId",
                 "image",
                 "discount",
                 [
@@ -304,6 +305,8 @@ class ProductController {
         };
         if (storeId)
             options.where.storeId = storeId;
+        if (categoryId)
+            options.where.storeId = categoryId;
         if (userId)
             options.attributes.push([
                 config_1.default.literal(`

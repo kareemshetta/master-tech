@@ -306,9 +306,17 @@ export class ProductController {
   public async getAll(req: Request) {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
-    let { search, maxPrice, minPrice, brandIds, categoryIds, battery, ram } =
-      req.query;
-    let storeId = req.user?.storeId;
+    let {
+      search,
+      maxPrice,
+      minPrice,
+      brandIds,
+      storeId,
+      categoryId,
+      battery,
+      ram,
+    } = req.query;
+
     const lng = req.language;
     const userId = req.user?.id;
     const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -330,7 +338,8 @@ export class ProductController {
         "basePrice",
         "battery",
         "ram",
-
+        "brandId",
+        "storeId",
         "image",
         "discount",
         [
@@ -365,6 +374,8 @@ export class ProductController {
       ],
     };
     if (storeId) options.where.storeId = storeId;
+    if (categoryId) options.where.storeId = categoryId;
+
     if (userId)
       options.attributes.push([
         sequelize.literal(`
