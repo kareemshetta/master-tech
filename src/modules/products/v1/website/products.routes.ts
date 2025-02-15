@@ -16,7 +16,7 @@ router.get(
   asyncWrapper(view.getAll)
 );
 
-router.post(
+router.get(
   "/compare",
   asyncWrapper(optionalAuthenticateUser),
   asyncWrapper(view.compare)
