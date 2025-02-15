@@ -251,51 +251,7 @@ export class StoreController {
       cityId,
       regionId,
     });
-    // const options: any = {
-    //   logging: console.log,
-    //   attributes: [
-    //     "id",
-    //     [sequelize.col(`stores."${nameColumn}"`), "name"], // nameAr or name ( depends on the language of the stores. ), "name"],
-    //     [sequelize.col(`stores."${descriptionColumn}"`), "description"], // nameAr or name ( depends on the language of the stores. ), "name"],
-    //     "phoneNumber",
-    //     "location",
-    //     "image",
-    //     [
-    //       sequelize.fn(
-    //         "ROUND",
-    //         sequelize.literal('COUNT("products->reviews"."id") > 0'),
-    //         2
-    //       ),
-    //       "averageRating",
-    //     ],
-    //     [
-    //       sequelize.fn("COUNT", sequelize.col(`"products->reviews"."id"`)),
-    //       "totalReviews",
-    //     ],
-    //   ],
-    //   offset,
-    //   limit,
 
-    //   include: [
-    //     {
-    //       model: Product,
-    //       as: "products",
-    //       attributes: [],
-    //       include: [
-    //         {
-    //           model: Review,
-    //           attributes: [],
-    //           required: false,
-    //           // as: "reviews",
-    //         },
-    //       ],
-    //     },
-    //   ],
-    //   group: ["stores.id"],
-    //   having: sequelize.literal('COUNT("products->reviews"."id") > 0'),
-    //   order: [[sequelize.literal("averageRating"), "DESC"]],
-    //   where: {},
-    // };
     const options: any = {
       // logging: console.log,
       attributes: [

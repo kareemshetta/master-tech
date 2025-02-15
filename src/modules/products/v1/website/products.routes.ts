@@ -15,6 +15,11 @@ router.get(
   asyncWrapper(optionalAuthenticateUser),
   asyncWrapper(view.getAll)
 );
+router.get(
+  "/top-rated",
+  asyncWrapper(optionalAuthenticateUser),
+  asyncWrapper(view.getAll)
+);
 router.post(
   "/fav/:productId",
   asyncWrapper(authenticateUser),

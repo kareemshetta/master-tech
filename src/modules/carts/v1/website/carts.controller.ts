@@ -125,12 +125,36 @@ export class CartController {
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
 
     const { cart } = req.user as Partial<Iuser>;
-
+    const lng = req.language;
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
     const options: any = {
       offset,
       limit,
       order: [[orderBy, order]],
       where: { cartId: cart?.id },
+      include: [
+        {
+          model: Product,
+          attributes: ["id", `${nameColumn}`, `${descriptionColumn}`, "image"],
+        },
+        {
+          model: ProductSku,
+          attributes: ["sku", "price"],
+          include: [
+            {
+              model: ProductAttribute,
+              attributes: ["type", "value"],
+              as: "color",
+            },
+            {
+              model: ProductAttribute,
+              attributes: ["type", "value"],
+              as: "storage",
+            },
+          ],
+        },
+      ],
     };
 
     const date = await this.cartService.getAll(options);

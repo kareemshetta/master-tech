@@ -47,6 +47,14 @@ export class ProductView {
     });
   }
 
+  async getAllTopRated(req: Request, res: Response) {
+    const users = await this.controller.getAllTopRated(req);
+    res.send({
+      data: users,
+      message: req.t("responses.succes"),
+    });
+  }
+
   async toggleFavourite(req: Request, res: Response) {
     const isFavourite = await this.controller.toggleFavourite(req);
     res.send({

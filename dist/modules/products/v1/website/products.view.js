@@ -40,6 +40,13 @@ class ProductView {
             message: req.t("responses.succes"),
         });
     }
+    async getAllTopRated(req, res) {
+        const users = await this.controller.getAllTopRated(req);
+        res.send({
+            data: users,
+            message: req.t("responses.succes"),
+        });
+    }
     async toggleFavourite(req, res) {
         const isFavourite = await this.controller.toggleFavourite(req);
         res.send({

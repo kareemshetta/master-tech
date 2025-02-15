@@ -97,11 +97,36 @@ class CartController {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         const { cart } = req.user;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         const options = {
             offset,
             limit,
             order: [[orderBy, order]],
             where: { cartId: cart?.id },
+            include: [
+                {
+                    model: products_model_1.default,
+                    attributes: ["id", `${nameColumn}`, `${descriptionColumn}`, "image"],
+                },
+                {
+                    model: product_skus_model_1.ProductSku,
+                    attributes: ["sku", "price"],
+                    include: [
+                        {
+                            model: product_attributes_model_1.default,
+                            attributes: ["type", "value"],
+                            as: "color",
+                        },
+                        {
+                            model: product_attributes_model_1.default,
+                            attributes: ["type", "value"],
+                            as: "storage",
+                        },
+                    ],
+                },
+            ],
         };
         const date = await this.cartService.getAll(options);
         return date;
