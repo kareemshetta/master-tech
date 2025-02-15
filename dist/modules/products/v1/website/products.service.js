@@ -518,6 +518,23 @@ class PrdouctService {
         }
         return;
     }
+    validateComapareQuery(query) {
+        const schema = joi_1.default.object({
+            fProduct: joi_1.default.string().trim().max(255).allow("").messages({
+                "string.base": "Search term must be a string.",
+                "string.max": "Search term cannot exceed 255 characters.",
+            }),
+            sProduct: joi_1.default.string().trim().max(255).allow("").messages({
+                "string.base": "Search term must be a string.",
+                "string.max": "Search term cannot exceed 255 characters.",
+            }),
+        });
+        const { error } = schema.validate(query);
+        if (error) {
+            throw new appError_1.ValidationError(error.message);
+        }
+        return;
+    }
     validateBrandsIds(data) {
         const schema = joi_1.default.object({
             brandIds: joi_1.default.array().items(joi_1.default.string().uuid()).min(1).required(),

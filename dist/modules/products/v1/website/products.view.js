@@ -14,6 +14,7 @@ class ProductView {
         this.toggleFavourite = this.toggleFavourite.bind(this);
         this.getAllTopRated = this.getAllTopRated.bind(this);
         this.getLike = this.getLike.bind(this);
+        this.compare = this.compare.bind(this);
     }
     static getInstance() {
         if (!ProductView.instance) {
@@ -44,6 +45,13 @@ class ProductView {
     }
     async getAll(req, res) {
         const users = await this.controller.getAll(req);
+        res.send({
+            data: users,
+            message: req.t("responses.succes"),
+        });
+    }
+    async compare(req, res) {
+        const users = await this.controller.compare(req);
         res.send({
             data: users,
             message: req.t("responses.succes"),

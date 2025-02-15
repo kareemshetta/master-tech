@@ -597,6 +597,25 @@ export class PrdouctService {
     return;
   }
 
+  public validateComapareQuery(query: { fProduct?: any; sProduct?: any }) {
+    const schema = Joi.object({
+      fProduct: Joi.string().trim().max(255).allow("").messages({
+        "string.base": "Search term must be a string.",
+        "string.max": "Search term cannot exceed 255 characters.",
+      }),
+      sProduct: Joi.string().trim().max(255).allow("").messages({
+        "string.base": "Search term must be a string.",
+        "string.max": "Search term cannot exceed 255 characters.",
+      }),
+    });
+
+    const { error } = schema.validate(query);
+    if (error) {
+      throw new ValidationError(error.message);
+    }
+    return;
+  }
+
   public validateBrandsIds(data: { brandIds: string[] }) {
     const schema = Joi.object({
       brandIds: Joi.array().items(Joi.string().uuid()).min(1).required(),

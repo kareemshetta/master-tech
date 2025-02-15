@@ -305,6 +305,122 @@ export class ProductController {
     return product;
   }
 
+  public async compare(req: Request) {
+    const { fProduct, sProduct } = req.query;
+    const lng = req.language;
+    this.service.validateComapareQuery({ fProduct, sProduct });
+
+    const nameColumn = lng === "ar" ? "nameAr" : "name";
+    const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+    // Explicitly type the array as FindAttributeOptions
+    const arr: FindAttributeOptions = [
+      "id",
+      [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
+      [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
+      "basePrice",
+      "discount",
+      [
+        sequelize.literal(
+          'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
+        ),
+        "priceAfterDiscount",
+      ],
+      "brandId",
+      "categoryId",
+      "storeId",
+      "screenId",
+      "processorId",
+      "ram",
+      "battery",
+    ];
+
+    const options: any = {
+      attributes: arr,
+      include: [
+        {
+          model: Screen,
+          attributes: [
+            "id",
+            "size",
+            "refreshRate",
+            "pixelDensity",
+            "type",
+            "details",
+            "aspectRatio",
+          ],
+        },
+        {
+          model: Processor,
+          attributes: ["id", "type", "noOfCores", "details"],
+        },
+
+        {
+          model: ProductSku,
+          attributes: [
+            "id",
+            "sku",
+            "price",
+            "quantity",
+            [
+              sequelize.literal(
+                'ROUND(CAST("price" AS DECIMAL) * (1 - (CAST("Product"."discount" AS DECIMAL) / 100)), 2)'
+              ),
+              "priceAfterDiscount",
+            ],
+            [
+              sequelize.literal(
+                'CASE WHEN "quantity" > 0 THEN true ELSE false END'
+              ),
+              "isAvailable",
+            ],
+          ],
+          as: "skus",
+          include: [
+            {
+              model: ProductAttribute,
+              attributes: ["id", "type", "value"],
+              as: "color",
+            },
+            {
+              model: ProductAttribute,
+              attributes: ["id", "type", "value"],
+              as: "storage",
+            },
+          ],
+        },
+        {
+          model: Brand,
+          attributes: [[sequelize.literal(`brand."${nameColumn}"`), "name"]],
+        },
+        {
+          model: Category,
+          attributes: [[sequelize.literal(`category."${nameColumn}"`), "name"]],
+        },
+        {
+          model: Store,
+          attributes: [
+            "id",
+            [sequelize.literal(`store."${nameColumn}"`), "name"],
+            "image",
+            "allowShipping",
+          ],
+          as: "store",
+        },
+      ],
+    };
+    const [fProd, sProd] = await Promise.all([
+      this.service.findOne({
+        where: { [`${nameColumn}`]: { [Op.like]: `%${fProduct}%` } },
+        ...options,
+      }),
+      this.service.findOne({
+        where: { [`${nameColumn}`]: { [Op.like]: `%${sProduct}%` } },
+        ...options,
+      }),
+    ]);
+
+    return { fProd, sProd };
+  }
   public async getAll(req: Request) {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);

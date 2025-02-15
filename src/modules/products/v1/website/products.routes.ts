@@ -15,6 +15,12 @@ router.get(
   asyncWrapper(optionalAuthenticateUser),
   asyncWrapper(view.getAll)
 );
+
+router.get(
+  "/compare",
+  asyncWrapper(optionalAuthenticateUser),
+  asyncWrapper(view.compare)
+);
 router.get(
   "/top-rated",
   asyncWrapper(optionalAuthenticateUser),

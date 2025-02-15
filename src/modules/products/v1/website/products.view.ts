@@ -17,6 +17,7 @@ export class ProductView {
     this.toggleFavourite = this.toggleFavourite.bind(this);
     this.getAllTopRated = this.getAllTopRated.bind(this);
     this.getLike = this.getLike.bind(this);
+    this.compare = this.compare.bind(this);
   }
 
   public static getInstance(): ProductView {
@@ -50,6 +51,14 @@ export class ProductView {
 
   async getAll(req: Request, res: Response) {
     const users = await this.controller.getAll(req);
+    res.send({
+      data: users,
+      message: req.t("responses.succes"),
+    });
+  }
+
+  async compare(req: Request, res: Response) {
+    const users = await this.controller.compare(req);
     res.send({
       data: users,
       message: req.t("responses.succes"),

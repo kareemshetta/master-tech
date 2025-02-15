@@ -248,6 +248,112 @@ class ProductController {
         });
         return product;
     }
+    async compare(req) {
+        const { fProduct, sProduct } = req.query;
+        const lng = req.language;
+        this.service.validateComapareQuery({ fProduct, sProduct });
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+        // Explicitly type the array as FindAttributeOptions
+        const arr = [
+            "id",
+            [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],
+            [config_1.default.literal(`"Product"."${descriptionColumn}"`), "description"],
+            "basePrice",
+            "discount",
+            [
+                config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
+                "priceAfterDiscount",
+            ],
+            "brandId",
+            "categoryId",
+            "storeId",
+            "screenId",
+            "processorId",
+            "ram",
+            "battery",
+        ];
+        const options = {
+            attributes: arr,
+            include: [
+                {
+                    model: screen_model_1.default,
+                    attributes: [
+                        "id",
+                        "size",
+                        "refreshRate",
+                        "pixelDensity",
+                        "type",
+                        "details",
+                        "aspectRatio",
+                    ],
+                },
+                {
+                    model: processor_model_1.default,
+                    attributes: ["id", "type", "noOfCores", "details"],
+                },
+                {
+                    model: product_skus_model_1.ProductSku,
+                    attributes: [
+                        "id",
+                        "sku",
+                        "price",
+                        "quantity",
+                        [
+                            config_1.default.literal('ROUND(CAST("price" AS DECIMAL) * (1 - (CAST("Product"."discount" AS DECIMAL) / 100)), 2)'),
+                            "priceAfterDiscount",
+                        ],
+                        [
+                            config_1.default.literal('CASE WHEN "quantity" > 0 THEN true ELSE false END'),
+                            "isAvailable",
+                        ],
+                    ],
+                    as: "skus",
+                    include: [
+                        {
+                            model: product_attributes_model_1.default,
+                            attributes: ["id", "type", "value"],
+                            as: "color",
+                        },
+                        {
+                            model: product_attributes_model_1.default,
+                            attributes: ["id", "type", "value"],
+                            as: "storage",
+                        },
+                    ],
+                },
+                {
+                    model: brands_model_1.default,
+                    attributes: [[config_1.default.literal(`brand."${nameColumn}"`), "name"]],
+                },
+                {
+                    model: categories_model_1.default,
+                    attributes: [[config_1.default.literal(`category."${nameColumn}"`), "name"]],
+                },
+                {
+                    model: stores_model_1.default,
+                    attributes: [
+                        "id",
+                        [config_1.default.literal(`store."${nameColumn}"`), "name"],
+                        "image",
+                        "allowShipping",
+                    ],
+                    as: "store",
+                },
+            ],
+        };
+        const [fProd, sProd] = await Promise.all([
+            this.service.findOne({
+                where: { [`${nameColumn}`]: { [sequelize_1.Op.like]: `%${fProduct}%` } },
+                ...options,
+            }),
+            this.service.findOne({
+                where: { [`${nameColumn}`]: { [sequelize_1.Op.like]: `%${sProduct}%` } },
+                ...options,
+            }),
+        ]);
+        return { fProd, sProd };
+    }
     async getAll(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
