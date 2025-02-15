@@ -9,6 +9,7 @@ const handle_sort_pagination_1 = require("../../../../utils/handle-sort-paginati
 const orderItem_model_1 = __importDefault(require("../../../../models/orderItem.model"));
 const products_model_1 = __importDefault(require("../../../../models/products.model"));
 const product_skus_model_1 = require("../../../../models/product_skus.model");
+const categories_model_1 = __importDefault(require("../../../../models/categories.model"));
 class OrderController {
     constructor() {
         this.service = orders_service_1.default.getInstance();
@@ -53,6 +54,9 @@ class OrderController {
     //   }
     async getOne(req) {
         const { id } = req.params;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         const order = await this.service.findOneByIdOrThrowError(id, {
             attributes: {
                 exclude: [
@@ -62,6 +66,7 @@ class OrderController {
                     "paymentStatus",
                     "storeId",
                 ],
+                include: [`orders."${nameColumn}"`],
             },
             include: [
                 {
@@ -70,7 +75,18 @@ class OrderController {
                     include: [
                         {
                             model: products_model_1.default,
-                            attributes: ["id", "name", "description", "image"],
+                            attributes: [
+                                "id",
+                                `${nameColumn}`,
+                                `${descriptionColumn}`,
+                                "image",
+                            ],
+                            include: [
+                                {
+                                    model: categories_model_1.default,
+                                    attributes: ["id", `${nameColumn}`],
+                                },
+                            ],
                         },
                         { model: product_skus_model_1.ProductSku, attributes: ["id", "sku"] },
                     ],
@@ -84,6 +100,9 @@ class OrderController {
         const userId = req.user?.id;
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         let { search } = req.query;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
         this.service.validateGetAllQuery({ search });
         const options = {
             attributes: {
@@ -108,7 +127,18 @@ class OrderController {
                     include: [
                         {
                             model: products_model_1.default,
-                            attributes: ["id", "name", "description", "image"],
+                            attributes: [
+                                "id",
+                                `${nameColumn}`,
+                                `${descriptionColumn}`,
+                                "image",
+                            ],
+                            include: [
+                                {
+                                    model: categories_model_1.default,
+                                    attributes: ["id", `${nameColumn}`],
+                                },
+                            ],
                         },
                         { model: product_skus_model_1.ProductSku, attributes: ["id", "price", "sku"] },
                     ],

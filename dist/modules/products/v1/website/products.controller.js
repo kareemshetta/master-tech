@@ -189,6 +189,7 @@ class ProductController {
                         "pixelDensity",
                         "type",
                         "details",
+                        "aspectRatio",
                     ],
                 },
                 {
@@ -525,6 +526,135 @@ class ProductController {
             userId,
         });
         return isFavourite;
+    }
+    async getALike(req) {
+        // Calculate offset for pagination
+        const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
+        let { search, maxPrice, minPrice, battery, ram, } = req.query;
+        const lng = req.language;
+        const userId = req.user?.id;
+        const { id } = req.params;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+        (0, generalFunctions_1.validateUUID)(id, "invalid product id");
+        this.service.validateGetAllStoresQuery({
+            search,
+            maxPrice,
+            minPrice,
+            battery,
+            ram,
+        });
+        const product = (await this.service.findOneByIdOrThrowError(id, {
+            attributes: [
+                "id",
+                "brandId",
+                "storeId",
+                "categoryId",
+                [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],
+            ],
+        })).toJSON();
+        const options = {
+            attributes: [
+                "id",
+                [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],
+                [config_1.default.literal(`"Product"."${descriptionColumn}"`), "description"],
+                [
+                    config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("reviews.rating")), 0), 2),
+                    "averageRating",
+                ],
+                "basePrice",
+                "battery",
+                "ram",
+                "brandId",
+                "storeId",
+                "image",
+                "discount",
+                [
+                    config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
+                    "priceAfterDiscount",
+                ],
+            ],
+            offset,
+            limit,
+            order: [[orderBy, order]],
+            where: { id: { [sequelize_1.Op.ne]: id } },
+            include: [
+                {
+                    model: stores_model_1.default,
+                    attributes: [
+                        "id",
+                        [config_1.default.literal(`store."${nameColumn}"`), "name"],
+                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                        "image",
+                    ],
+                    as: "store",
+                },
+                {
+                    model: categories_model_1.default,
+                    attributes: [
+                        [config_1.default.literal(`category."${nameColumn}"`), "name"],
+                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                    ],
+                },
+                { model: review_model_1.default, attributes: [] },
+            ],
+            group: ["Product.id", "store.id", "category.id"],
+            subQuery: false,
+        };
+        const countOption = {
+            offset,
+            limit,
+            order: [[orderBy, order]],
+            where: { id: { [sequelize_1.Op.ne]: id } },
+        };
+        options.where.storeId = product.storeId;
+        countOption.where.storeId = product.storeId;
+        options.where.categoryId = product.categoryId;
+        countOption.where.categoryId = product.categoryId;
+        if (userId)
+            options.attributes.push([
+                config_1.default.literal(`
+    CASE 
+      WHEN EXISTS (
+        SELECT 1
+        FROM "userFavorites" AS "Favourite"
+        WHERE "Favourite"."productId" = "Product"."id"
+        AND "Favourite"."userId" = '${userId}'
+        AND "Favourite"."deletedAt" IS NULL  -- Check for paranoid deleted record
+      ) THEN true
+      ELSE false
+    END
+  `),
+                "isFavourite",
+            ]);
+        // if (search) {
+        //   search = product.name!.toString().replace(/\+/g, "").trim();
+        //   const searchOp = {
+        //     [Op.or]: [
+        //       sequelize.where(
+        //         sequelize.fn(
+        //           "LOWER",
+        //           sequelize.literal(`"Product"."${nameColumn}"`)
+        //         ),
+        //         "LIKE",
+        //         "%" + search.toLowerCase() + "%"
+        //       ),
+        //       sequelize.where(
+        //         sequelize.fn(
+        //           "LOWER",
+        //           sequelize.literal(`"Product"."${descriptionColumn}"`)
+        //         ),
+        //         "LIKE",
+        //         "%" + search.toLowerCase() + "%"
+        //       ),
+        //     ],
+        //   };
+        //   options.where.name = searchOp;
+        //   countOption.where.name = searchOp;
+        // }
+        const date = await this.service.getAllWithoutCount(options);
+        const count = await this.service.count(countOption);
+        return { rows: date, count };
     }
 }
 exports.ProductController = ProductController;
