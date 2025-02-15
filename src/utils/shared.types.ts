@@ -223,3 +223,22 @@ export interface IContactUs {
   updatedAt?: string;
   id?: string;
 }
+
+export interface IFaqItem {
+  id: any;
+  question: string;
+  questionAr: string;
+  answer: string;
+  answerAr: string;
+}
+
+export interface IAboutus {
+  id?: string;
+  ourMessage: string;
+  ourMessageAr: string;
+  ourVision: string;
+  ourVisionAr: string;
+  whoAreWe: string;
+  whoAreWeAr: string;
+  faqs?: IFaqItem[];
+}

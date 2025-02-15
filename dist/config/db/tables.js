@@ -58,6 +58,7 @@ Promise.resolve().then(() => __importStar(require("./../../models/regions.model"
 Promise.resolve().then(() => __importStar(require("./../../models/user_products_favourite.model")));
 Promise.resolve().then(() => __importStar(require("./../../models/review.model")));
 Promise.resolve().then(() => __importStar(require("./../../models/contact.model")));
+Promise.resolve().then(() => __importStar(require("./../../models/aboutus.model")));
 // store_sub_stores association
 Promise.resolve().then(() => __importStar(require("./../../models/store_sub_stores.association")));
 // store_Admins association

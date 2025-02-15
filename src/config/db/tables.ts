@@ -20,6 +20,7 @@ import("./../../models/regions.model");
 import("./../../models/user_products_favourite.model");
 import("./../../models/review.model");
 import("./../../models/contact.model");
+import("./../../models/aboutus.model");
 
 // store_sub_stores association
 import("./../../models/store_sub_stores.association");

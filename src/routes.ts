@@ -15,6 +15,7 @@ import citiesRoute from "./modules/cities/versions.routes";
 import regionsRoute from "./modules/regions/versions.routes";
 import reviewsRoute from "./modules/reviews/versions.routes";
 import contactusRoute from "./modules/contact-us/versions.routes";
+import aboutusRoute from "./modules/aboutus/versions.routes";
 
 import path from "path";
 export const injectRoutes = (app: Application): void => {
@@ -39,4 +40,5 @@ export const injectRoutes = (app: Application): void => {
   app.use("/regions", regionsRoute);
   app.use("/reviews", reviewsRoute);
   app.use("/contact-us", contactusRoute);
+  app.use("/about-us", aboutusRoute);
 };
