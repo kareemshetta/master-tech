@@ -122,6 +122,12 @@ class PrdouctService {
     async getAll(options = {}) {
         return this.productRepo.findAndCountAll(options);
     }
+    async getAllWithoutCount(options = {}) {
+        return this.productRepo.findAll(options);
+    }
+    async count(options = {}) {
+        return this.productRepo.count(options);
+    }
     async toggleFavourite(data) {
         const { userId, productId } = data;
         const favorite = await this.favouriteRepo.findOne({

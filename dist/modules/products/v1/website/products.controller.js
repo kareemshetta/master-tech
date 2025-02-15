@@ -20,6 +20,7 @@ const product_skus_model_1 = require("../../../../models/product_skus.model");
 const product_attributes_model_1 = __importDefault(require("../../../../models/product_attributes.model"));
 const screen_model_1 = __importDefault(require("../../../../models/screen.model"));
 const processor_model_1 = __importDefault(require("../../../../models/processor.model"));
+const review_model_1 = __importDefault(require("../../../../models/review.model"));
 class ProductController {
     // private favouriteLiteral: string|Literal;
     constructor() {
@@ -262,11 +263,14 @@ class ProductController {
             ram,
         });
         const options = {
-            // logging: console.log,
             attributes: [
                 "id",
                 [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],
                 [config_1.default.literal(`"Product"."${descriptionColumn}"`), "description"],
+                [
+                    config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("reviews.rating")), 0), 2),
+                    "averageRating",
+                ],
                 "basePrice",
                 "battery",
                 "ram",
@@ -301,12 +305,25 @@ class ProductController {
                         // [sequelize.literal(`"${descriptionColumn}"`), "description"],
                     ],
                 },
+                { model: review_model_1.default, attributes: [] },
             ],
+            group: ["Product.id", "store.id", "category.id"],
+            subQuery: false,
         };
-        if (storeId)
+        const countOption = {
+            offset,
+            limit,
+            order: [[orderBy, order]],
+            where: {},
+        };
+        if (storeId) {
             options.where.storeId = storeId;
-        if (categoryId)
+            countOption.where.storeId = storeId;
+        }
+        if (categoryId) {
             options.where.storeId = categoryId;
+            countOption.where.storeId = categoryId;
+        }
         if (userId)
             options.attributes.push([
                 config_1.default.literal(`
@@ -327,29 +344,38 @@ class ProductController {
             options.where.basePrice = {
                 [sequelize_1.Op.between]: [Number(minPrice), Number(maxPrice)],
             };
+            countOption.where.basePrice = {
+                [sequelize_1.Op.between]: [Number(minPrice), Number(maxPrice)],
+            };
         }
         if (battery) {
             options.where.battery = { [sequelize_1.Op.gte]: Number(battery) };
+            countOption.where.battery = { [sequelize_1.Op.gte]: Number(battery) };
         }
         if (ram) {
             options.where.ram = Number(ram);
+            countOption.where.ram = Number(ram);
         }
         if (brandIds) {
             brandIds = brandIds.toString();
             this.service.validateBrandsIds({ brandIds: brandIds.split(",") });
             options.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
+            countOption.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
         }
         if (search) {
             search = search.toString().replace(/\+/g, "").trim();
-            options.where.name = {
+            const searchOp = {
                 [sequelize_1.Op.or]: [
                     config_1.default.where(config_1.default.fn("LOWER", config_1.default.literal(`"Product"."${nameColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                     config_1.default.where(config_1.default.fn("LOWER", config_1.default.literal(`"Product"."${descriptionColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };
+            options.where.name = searchOp;
+            countOption.where.name = searchOp;
         }
-        const date = await this.service.getAll(options);
-        return date;
+        const date = await this.service.getAllWithoutCount(options);
+        const count = await this.service.count(countOption);
+        return { rows: date, count };
     }
     async toggleFavourite(req) {
         const { productId } = req.params;

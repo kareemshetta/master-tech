@@ -1,4 +1,10 @@
-import { FindAndCountOptions, FindOptions, Op, Transaction } from "sequelize";
+import {
+  CountOptions,
+  FindAndCountOptions,
+  FindOptions,
+  Op,
+  Transaction,
+} from "sequelize";
 import {
   IAttributes,
   ICategory,
@@ -156,6 +162,13 @@ export class PrdouctService {
 
   public async getAll(options: FindAndCountOptions = {}) {
     return this.productRepo.findAndCountAll(options);
+  }
+
+  public async getAllWithoutCount(options: FindAndCountOptions = {}) {
+    return this.productRepo.findAll(options);
+  }
+  public async count(options: CountOptions = {}) {
+    return this.productRepo.count(options);
   }
 
   public async toggleFavourite(data: IUserProductFavourite): Promise<boolean> {

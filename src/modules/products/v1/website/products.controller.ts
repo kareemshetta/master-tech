@@ -22,6 +22,7 @@ import ProductAttribute from "../../../../models/product_attributes.model";
 import Screen from "../../../../models/screen.model";
 import Processor from "../../../../models/processor.model";
 import { Literal } from "sequelize/types/utils";
+import Review from "../../../../models/review.model";
 export class ProductController {
   private static instance: ProductController | null = null;
   private service: PrdouctService;
@@ -329,12 +330,22 @@ export class ProductController {
       ram,
     });
     const options: any = {
-      // logging: console.log,
       attributes: [
         "id",
         [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
         [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
-
+        [
+          sequelize.fn(
+            "ROUND",
+            sequelize.fn(
+              "COALESCE",
+              sequelize.fn("AVG", sequelize.col("reviews.rating")),
+              0
+            ),
+            2
+          ),
+          "averageRating",
+        ],
         "basePrice",
         "battery",
         "ram",
@@ -371,10 +382,26 @@ export class ProductController {
             // [sequelize.literal(`"${descriptionColumn}"`), "description"],
           ],
         },
+        { model: Review, attributes: [] },
       ],
+      group: ["Product.id", "store.id", "category.id"],
+      subQuery: false,
     };
-    if (storeId) options.where.storeId = storeId;
-    if (categoryId) options.where.storeId = categoryId;
+    const countOption: any = {
+      offset,
+      limit,
+      order: [[orderBy, order]],
+      where: {},
+    };
+
+    if (storeId) {
+      options.where.storeId = storeId;
+      countOption.where.storeId = storeId;
+    }
+    if (categoryId) {
+      options.where.storeId = categoryId;
+      countOption.where.storeId = categoryId;
+    }
 
     if (userId)
       options.attributes.push([
@@ -396,21 +423,27 @@ export class ProductController {
       options.where.basePrice = {
         [Op.between]: [Number(minPrice), Number(maxPrice)],
       };
+      countOption.where.basePrice = {
+        [Op.between]: [Number(minPrice), Number(maxPrice)],
+      };
     }
     if (battery) {
       options.where.battery = { [Op.gte]: Number(battery) };
+      countOption.where.battery = { [Op.gte]: Number(battery) };
     }
     if (ram) {
       options.where.ram = Number(ram);
+      countOption.where.ram = Number(ram);
     }
     if (brandIds) {
       brandIds = brandIds.toString();
       this.service.validateBrandsIds({ brandIds: brandIds.split(",") });
       options.where.brandId = { [Op.in]: brandIds.split(",") };
+      countOption.where.brandId = { [Op.in]: brandIds.split(",") };
     }
     if (search) {
       search = search.toString().replace(/\+/g, "").trim();
-      options.where.name = {
+      const searchOp = {
         [Op.or]: [
           sequelize.where(
             sequelize.fn(
@@ -430,11 +463,14 @@ export class ProductController {
           ),
         ],
       };
+      options.where.name = searchOp;
+      countOption.where.name = searchOp;
     }
 
-    const date = await this.service.getAll(options);
+    const date = await this.service.getAllWithoutCount(options);
+    const count = await this.service.count(countOption);
 
-    return date;
+    return { rows: date, count };
   }
 
   public async toggleFavourite(req: Request) {

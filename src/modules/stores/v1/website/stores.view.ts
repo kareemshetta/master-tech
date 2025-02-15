@@ -12,6 +12,7 @@ export class StoresView {
 
     this.getOneById = this.getOneById.bind(this);
     this.getAll = this.getAll.bind(this);
+    this.getAllHighRatedStores = this.getAllHighRatedStores.bind(this);
   }
 
   public static getInstance(): StoresView {
@@ -31,6 +32,14 @@ export class StoresView {
 
   async getAll(req: Request, res: Response) {
     const users = await this.controller.getAllStores(req);
+    res.send({
+      data: users,
+      message: req.t("responses.succes"),
+    });
+  }
+
+  async getAllHighRatedStores(req: Request, res: Response) {
+    const users = await this.controller.getAllHighRatedStores(req);
     res.send({
       data: users,
       message: req.t("responses.succes"),

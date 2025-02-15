@@ -11,6 +11,7 @@ class StoresView {
         // Bind all methods to preserve 'this' context
         this.getOneById = this.getOneById.bind(this);
         this.getAll = this.getAll.bind(this);
+        this.getAllHighRatedStores = this.getAllHighRatedStores.bind(this);
     }
     static getInstance() {
         if (!StoresView.instance) {
@@ -27,6 +28,13 @@ class StoresView {
     }
     async getAll(req, res) {
         const users = await this.controller.getAllStores(req);
+        res.send({
+            data: users,
+            message: req.t("responses.succes"),
+        });
+    }
+    async getAllHighRatedStores(req, res) {
+        const users = await this.controller.getAllHighRatedStores(req);
         res.send({
             data: users,
             message: req.t("responses.succes"),

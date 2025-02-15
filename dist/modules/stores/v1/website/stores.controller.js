@@ -11,6 +11,8 @@ const stores_model_1 = __importDefault(require("../../../../models/stores.model"
 const config_1 = __importDefault(require("../../../../config/db/config"));
 const cities_model_1 = __importDefault(require("../../../../models/cities.model"));
 const regions_model_1 = __importDefault(require("../../../../models/regions.model"));
+const products_model_1 = __importDefault(require("../../../../models/products.model"));
+const review_model_1 = __importDefault(require("../../../../models/review.model"));
 class StoreController {
     constructor() {
         this.storeService = stores_service_1.StoreService.getInstance();
@@ -83,11 +85,64 @@ class StoreController {
             attributes: [
                 "id",
                 [config_1.default.col(`stores."${nameColumn}"`), "name"], // nameAr or name ( depends on the language of the stores. ), "name"],
-                [config_1.default.col(`stores."${descriptionColumn}"`), "description"], // nameAr or name ( depends on the language of the stores. ), "name"],
+                [config_1.default.col(`stores."${descriptionColumn}"`), "description"],
+                [
+                    config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("products->reviews.rating")), 0), 2),
+                    "averageRating",
+                ],
+                [
+                    config_1.default.fn("COUNT", config_1.default.col("products->reviews.id")),
+                    "totalReviews",
+                ], // nameAr or name ( depends on the language of the stores. ), "name"],
                 "phoneNumber",
                 "location",
                 "image",
             ],
+            offset,
+            limit,
+            order: [[orderBy, order]],
+            include: [
+                {
+                    model: products_model_1.default,
+                    as: "products",
+                    attributes: [],
+                    required: false,
+                    include: [
+                        {
+                            model: review_model_1.default,
+                            as: "reviews",
+                            attributes: [],
+                            required: false,
+                        },
+                    ],
+                },
+                {
+                    model: cities_model_1.default,
+                    attributes: ["id", [config_1.default.col(`"${nameColumn}"`), "name"]],
+                },
+                {
+                    model: regions_model_1.default,
+                    attributes: ["id", [config_1.default.col(`"${nameColumn}"`), "name"]],
+                },
+            ],
+            group: [
+                "stores.id",
+                `stores.${nameColumn}`,
+                `city.${nameColumn}`,
+                `region.${nameColumn}`,
+                "region.id",
+                "city.id",
+                // "stores.nameAr",
+                // "stores.description",
+                `stores.${descriptionColumn}`,
+                // "stores.phoneNumber",
+                // "stores.location",
+                // "stores.image",
+            ],
+            where: {},
+            subQuery: false,
+        };
+        const countOptions = {
             offset,
             limit,
             order: [[orderBy, order]],
@@ -102,18 +157,146 @@ class StoreController {
                     config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`stores."phoneNumber"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };
+            countOptions.where.name = {
+                [sequelize_1.Op.or]: [
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`stores."${nameColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`stores."${descriptionColumn}"`)), "LIKE", "%" + search.toLowerCase() + "%"),
+                    config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`stores."phoneNumber"`)), "LIKE", "%" + search.toLowerCase() + "%"),
+                ],
+            };
         }
         if (storeIds) {
             storeIds = storeIds.toString().split(",");
             options.where.parentId = { [sequelize_1.Op.in]: storeIds };
+            countOptions.where.parentId = { [sequelize_1.Op.in]: storeIds };
         }
         if (cityId) {
             options.where.cityId = cityId;
+            countOptions.where.cityId = cityId;
         }
         if (regionId) {
             options.where.regionId = regionId;
+            countOptions.where.regionId = regionId;
         }
-        const date = await this.storeService.getAll(options);
+        const date = await this.storeService.getAllWithoutCount(options);
+        const count = await this.storeService.count(countOptions);
+        return { rows: date, count: count };
+    }
+    async getAllHighRatedStores(req) {
+        // Calculate offset for pagination
+        const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
+        let { search, storeIds, cityId, regionId } = req.query;
+        const lng = req.language;
+        const nameColumn = lng === "ar" ? "nameAr" : "name";
+        const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+        this.storeService.validateGetAllStoresQuery({
+            search,
+            storeIds,
+            cityId,
+            regionId,
+        });
+        // const options: any = {
+        //   logging: console.log,
+        //   attributes: [
+        //     "id",
+        //     [sequelize.col(`stores."${nameColumn}"`), "name"], // nameAr or name ( depends on the language of the stores. ), "name"],
+        //     [sequelize.col(`stores."${descriptionColumn}"`), "description"], // nameAr or name ( depends on the language of the stores. ), "name"],
+        //     "phoneNumber",
+        //     "location",
+        //     "image",
+        //     [
+        //       sequelize.fn(
+        //         "ROUND",
+        //         sequelize.literal('COUNT("products->reviews"."id") > 0'),
+        //         2
+        //       ),
+        //       "averageRating",
+        //     ],
+        //     [
+        //       sequelize.fn("COUNT", sequelize.col(`"products->reviews"."id"`)),
+        //       "totalReviews",
+        //     ],
+        //   ],
+        //   offset,
+        //   limit,
+        //   include: [
+        //     {
+        //       model: Product,
+        //       as: "products",
+        //       attributes: [],
+        //       include: [
+        //         {
+        //           model: Review,
+        //           attributes: [],
+        //           required: false,
+        //           // as: "reviews",
+        //         },
+        //       ],
+        //     },
+        //   ],
+        //   group: ["stores.id"],
+        //   having: sequelize.literal('COUNT("products->reviews"."id") > 0'),
+        //   order: [[sequelize.literal("averageRating"), "DESC"]],
+        //   where: {},
+        // };
+        const options = {
+            // logging: console.log,
+            attributes: [
+                "id",
+                [config_1.default.col(`stores.${nameColumn}`), "name"], // Fix ambiguity by explicitly referencing "stores"
+                [config_1.default.col(`stores.${descriptionColumn}`), "description"],
+                "phoneNumber",
+                "location",
+                "image",
+                [
+                    config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("products->reviews.rating")), 0), 2),
+                    "averageRating",
+                ],
+                [
+                    config_1.default.fn("COUNT", config_1.default.col("products->reviews.id")),
+                    "totalReviews",
+                ],
+            ],
+            include: [
+                {
+                    model: products_model_1.default,
+                    as: "products",
+                    attributes: [],
+                    required: false,
+                    include: [
+                        {
+                            model: review_model_1.default,
+                            as: "reviews",
+                            attributes: [],
+                            required: false,
+                        },
+                    ],
+                },
+            ],
+            group: [
+                "stores.id",
+                `stores.${nameColumn}`,
+                // "stores.nameAr",
+                // "stores.description",
+                `stores.${descriptionColumn}`,
+                // "stores.phoneNumber",
+                // "stores.location",
+                // "stores.image",
+            ],
+            // having: sequelize.literal('COUNT("products->reviews"."id") > 0'),
+            order: [
+                [
+                    config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("products->reviews.rating")), 0), 2),
+                    "DESC",
+                ],
+                [config_1.default.fn("COUNT", config_1.default.col("products->reviews.id")), "DESC"],
+            ],
+            where: {},
+            offset,
+            limit,
+            subQuery: false,
+        };
+        const date = await this.storeService.getAllWithoutCount(options);
         return date;
     }
 }

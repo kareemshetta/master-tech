@@ -32,6 +32,12 @@ class StoreService {
     async getAll(options = {}) {
         return this.storeRepository.findAndCountAll(options);
     }
+    async getAllWithoutCount(options = {}) {
+        return this.storeRepository.findAll(options);
+    }
+    async count(options = {}) {
+        return this.storeRepository.count(options);
+    }
     validateCreateStore(data) {
         const schema = joi_1.default.object({
             image: joi_1.default.string()

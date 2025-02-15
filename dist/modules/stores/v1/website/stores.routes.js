@@ -9,5 +9,6 @@ const async_wrapper_1 = __importDefault(require("../../../../utils/async-wrapper
 const router = (0, express_1.Router)();
 const storeController = stores_view_1.StoresView.getInstance();
 router.get("/", (0, async_wrapper_1.default)(storeController.getAll));
+router.get("/high-rated", (0, async_wrapper_1.default)(storeController.getAllHighRatedStores));
 router.get("/:id", (0, async_wrapper_1.default)(storeController.getOneById));
 exports.default = router;

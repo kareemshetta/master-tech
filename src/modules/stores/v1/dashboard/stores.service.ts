@@ -1,4 +1,4 @@
-import { FindAndCountOptions, FindOptions } from "sequelize";
+import { CountOptions, FindAndCountOptions, FindOptions } from "sequelize";
 import { IStore } from "../../../../utils/shared.types";
 import StoreRepository from "../stores.repository";
 import Joi from "joi";
@@ -40,6 +40,14 @@ export class StoreService {
 
   public async getAll(options: FindAndCountOptions = {}) {
     return this.storeRepository.findAndCountAll(options);
+  }
+
+  public async getAllWithoutCount(options: FindAndCountOptions = {}) {
+    return this.storeRepository.findAll(options);
+  }
+
+  public async count(options: CountOptions = {}) {
+    return this.storeRepository.count(options);
   }
 
   public validateCreateStore(data: IStore) {
