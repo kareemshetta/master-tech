@@ -12,6 +12,7 @@ class ProductView {
         this.update = this.update.bind(this);
         this.deleteOne = this.deleteOne.bind(this);
         this.toggleFavourite = this.toggleFavourite.bind(this);
+        this.getAllTopRated = this.getAllTopRated.bind(this);
     }
     static getInstance() {
         if (!ProductView.instance) {
@@ -27,6 +28,13 @@ class ProductView {
         });
     }
     async getOneById(req, res) {
+        const trainer = await this.controller.get(req);
+        res.send({
+            data: trainer,
+            message: req.t("responses.succes"),
+        });
+    }
+    async getLike(req, res) {
         const trainer = await this.controller.get(req);
         res.send({
             data: trainer,

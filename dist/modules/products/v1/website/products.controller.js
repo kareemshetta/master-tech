@@ -401,6 +401,7 @@ class ProductController {
                     config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("reviews.rating")), 0), 2),
                     "averageRating",
                 ],
+                // [sequelize.fn("COUNT", sequelize.col("reviews.id")), "totalReviews"],
                 "basePrice",
                 "battery",
                 "ram",
@@ -448,6 +449,7 @@ class ProductController {
                     config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("reviews.rating")), 0), 2),
                     "DESC",
                 ],
+                [config_1.default.fn("COUNT", config_1.default.col("reviews.id")), "DESC"],
             ],
             where: {},
         };
