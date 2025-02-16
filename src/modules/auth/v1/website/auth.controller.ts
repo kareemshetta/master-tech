@@ -22,6 +22,9 @@ import CartItem from "../../../../models/cartItem.model";
 import Product from "../../../../models/products.model";
 import { ProductSku } from "../../../../models/product_skus.model";
 import ProductAttribute from "../../../../models/product_attributes.model";
+import Store from "../../../../models/stores.model";
+import Category from "../../../../models/categories.model";
+import Review from "../../../../models/review.model";
 
 export class AuthController {
   private static instance: AuthController | null = null;
@@ -181,7 +184,34 @@ export class AuthController {
   }
 
   async update(req: any) {
-    const { id } = req.params;
+    const { id } = req.user;
+    const body = req.body as Iuser;
+
+    this.service.validateUpdateUser(body);
+    const found = await this.service.findOne({
+      where: { email: body.email?.toLowerCase(), id: { [Op.ne]: id } },
+    });
+
+    if (found) {
+      throw new AppError("entityWithEmialExist", 409);
+    }
+
+    const user = await this.service.findOneByIdOrThrowError(id);
+    const updated = (
+      await user.update(body, {
+        returning: ["email", "firstName", "lastName", "phoneNumber", "image"],
+      })
+    ).toJSON() as Iuser;
+
+    delete updated.password;
+    delete updated.role;
+    delete updated.passwordChangedAt;
+    delete updated.otp;
+    delete updated.otpCreatedAt;
+    delete updated.status;
+    delete updated.deletedAt;
+    return updated;
+
     // Implementation commented out in original code
   }
 
@@ -202,6 +232,50 @@ export class AuthController {
             "id",
             [sequelize.col(`"${nameColumn}"`), "name"],
             [sequelize.col(`"${descriptionColumn}"`), "description"],
+            "image",
+            "discount",
+            "basePrice",
+            [
+              sequelize.literal(
+                'ROUND(CAST("Products"."basePrice" AS DECIMAL) * (1 - (CAST("Products"."discount" AS DECIMAL) / 100)), 2)'
+              ),
+              "priceAfterDiscount",
+            ],
+            [
+              sequelize.literal(`
+                ROUND(COALESCE(
+                  (SELECT AVG(rating) FROM "reviews" WHERE "reviews"."productId" = "Products"."id"
+                ), 0), 2)
+              `),
+              "averageRating",
+            ],
+            [
+              sequelize.literal(`
+                EXISTS (
+                  SELECT 1 FROM "userFavorites" AS "favorites"
+                  WHERE "favorites"."productId" = "Products"."id" 
+                  AND "favorites"."userId" = '${id}' AND "favorites"."deletedAt" IS NULL
+                )
+              `),
+              "isFavourite",
+            ],
+          ],
+          include: [
+            {
+              model: Store,
+              attributes: [
+                "id",
+                [sequelize.col(`"${nameColumn}"`), "name"],
+
+                "image",
+              ],
+              as: "store",
+            },
+            {
+              model: Category,
+              attributes: ["id", [sequelize.col(`"${nameColumn}"`), "name"]],
+              as: "category",
+            },
           ],
           through: { attributes: [] },
         },

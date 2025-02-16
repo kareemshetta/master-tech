@@ -40,10 +40,7 @@ export class UserService {
     return this.userRepository.delete({ where: { id: userId } });
   }
 
-  public async findOneByIdOrThrowError(
-    trainerId: string,
-    options: FindOptions = {}
-  ) {
+  public async findOneByIdOrThrowError(trainerId: string, options: any = {}) {
     return this.userRepository.findOneByIdOrThrowError(trainerId, options);
   }
 
@@ -130,7 +127,7 @@ export class UserService {
     return;
   }
 
-  public validateUpdateAdmin(data: Iuser) {
+  public validateUpdateUser(data: Iuser) {
     const schema = Joi.object({
       image: Joi.string()
         .trim()

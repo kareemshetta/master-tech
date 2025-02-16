@@ -13,6 +13,8 @@ export interface Iuser {
   updatedAt?: string;
   cart?: ICart;
   cartId?: string;
+  passwordChangedAt?: string;
+  deletedAt?: string;
 }
 
 export interface IAdmin extends Iuser {

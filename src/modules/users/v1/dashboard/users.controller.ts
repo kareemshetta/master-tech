@@ -54,7 +54,7 @@ export class UserController {
     validateUUID(id, "invalid User id");
     const body = req.body as Iuser;
 
-    this.service.validateUpdateAdmin(body);
+    this.service.validateUpdateUser(body);
     const found = await this.service.findOne({
       where: { email: body.email?.toLowerCase(), id: { [Op.ne]: id } },
     });

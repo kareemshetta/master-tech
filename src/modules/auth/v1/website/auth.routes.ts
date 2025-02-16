@@ -21,4 +21,10 @@ router
   .get(asyncWrapper(authenticateUser), asyncWrapper(view.getOneById))
   .delete(asyncWrapper(view.deleteOne));
 
+router.put(
+  "/update_my_profile",
+  asyncWrapper(authenticateUser),
+  asyncWrapper(view.update)
+);
+
 export default router;
