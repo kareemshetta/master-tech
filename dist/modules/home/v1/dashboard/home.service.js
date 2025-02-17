@@ -59,6 +59,16 @@ class HomeService {
                 "string.empty": "Section subtitle in Arabic cannot be empty",
                 "any.required": "Section subtitle in Arabic is required",
             }),
+            image: joi_1.default.string()
+                .trim()
+                .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
+                .messages({
+                "string.base": "Image must be a string.",
+                "string.empty": "Image cannot be empty.",
+                "string.pattern.base": "Image must have a valid file extension (jpg, jpeg, png, HEIF, svg).",
+                "any.required": "Image is required and cannot be null.",
+            })
+                .required(),
         }));
     }
     validateCreate(data) {

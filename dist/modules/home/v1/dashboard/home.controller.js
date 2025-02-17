@@ -69,6 +69,7 @@ class HomeController {
         const transformedHome = {
             ...home,
             sections: home.sections?.map((section) => ({
+                image: section.image,
                 title: lng === "ar" ? section.titleAr : section.title,
                 subtitle: lng === "ar" ? section.subtitleAr : section.subtitle,
             })) || [],
@@ -119,6 +120,7 @@ class HomeController {
                 return {
                     ...rowData,
                     sections: rowData.sections?.map((section) => ({
+                        image: section.image,
                         title: lng === "ar" ? section.titleAr : section.title,
                         subtitle: lng === "ar" ? section.subtitleAr : section.subtitle,
                     })) || [],
