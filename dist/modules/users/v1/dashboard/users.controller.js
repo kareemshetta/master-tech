@@ -44,7 +44,7 @@ class UserController {
         const { id } = req.params;
         (0, generalFunctions_1.validateUUID)(id, "invalid User id");
         const body = req.body;
-        this.service.validateUpdateAdmin(body);
+        this.service.validateUpdateUser(body);
         const found = await this.service.findOne({
             where: { email: body.email?.toLowerCase(), id: { [sequelize_1.Op.ne]: id } },
         });

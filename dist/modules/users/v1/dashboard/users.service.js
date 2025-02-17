@@ -100,7 +100,7 @@ class UserService {
         }
         return;
     }
-    validateUpdateAdmin(data) {
+    validateUpdateUser(data) {
         const schema = joi_1.default.object({
             image: joi_1.default.string()
                 .trim()

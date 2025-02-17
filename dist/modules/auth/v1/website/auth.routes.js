@@ -18,4 +18,5 @@ router
     .route("/get_my_profile")
     .get((0, async_wrapper_1.default)(auth_middleware_1.authenticateUser), (0, async_wrapper_1.default)(view.getOneById))
     .delete((0, async_wrapper_1.default)(view.deleteOne));
+router.put("/update_my_profile", (0, async_wrapper_1.default)(auth_middleware_1.authenticateUser), (0, async_wrapper_1.default)(view.update));
 exports.default = router;

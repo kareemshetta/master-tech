@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.AuthController = void 0;
 const handle_sort_pagination_1 = require("../../../../utils/handle-sort-pagination");
 const generalFunctions_1 = require("../../../../utils/generalFunctions");
+const sequelize_1 = require("sequelize");
 const config_1 = __importDefault(require("../../../../config/db/config"));
 const appError_1 = require("../../../../utils/appError");
 const users_service_1 = __importDefault(require("../../../users/v1/dashboard/users.service"));
@@ -15,6 +16,8 @@ const cartItem_model_1 = __importDefault(require("../../../../models/cartItem.mo
 const products_model_1 = __importDefault(require("../../../../models/products.model"));
 const product_skus_model_1 = require("../../../../models/product_skus.model");
 const product_attributes_model_1 = __importDefault(require("../../../../models/product_attributes.model"));
+const stores_model_1 = __importDefault(require("../../../../models/stores.model"));
+const categories_model_1 = __importDefault(require("../../../../models/categories.model"));
 class AuthController {
     constructor() {
         this.service = users_service_1.default.getInstance();
@@ -149,7 +152,27 @@ class AuthController {
         return { date: found, token };
     }
     async update(req) {
-        const { id } = req.params;
+        const { id } = req.user;
+        const body = req.body;
+        this.service.validateUpdateUser(body);
+        const found = await this.service.findOne({
+            where: { email: body.email?.toLowerCase(), id: { [sequelize_1.Op.ne]: id } },
+        });
+        if (found) {
+            throw new appError_1.AppError("entityWithEmialExist", 409);
+        }
+        const user = await this.service.findOneByIdOrThrowError(id);
+        const updated = (await user.update(body, {
+            returning: ["email", "firstName", "lastName", "phoneNumber", "image"],
+        })).toJSON();
+        delete updated.password;
+        delete updated.role;
+        delete updated.passwordChangedAt;
+        delete updated.otp;
+        delete updated.otpCreatedAt;
+        delete updated.status;
+        delete updated.deletedAt;
+        return updated;
         // Implementation commented out in original code
     }
     async getOne(req) {
@@ -169,6 +192,47 @@ class AuthController {
                         "id",
                         [config_1.default.col(`"${nameColumn}"`), "name"],
                         [config_1.default.col(`"${descriptionColumn}"`), "description"],
+                        "image",
+                        "discount",
+                        "basePrice",
+                        [
+                            config_1.default.literal('ROUND(CAST("Products"."basePrice" AS DECIMAL) * (1 - (CAST("Products"."discount" AS DECIMAL) / 100)), 2)'),
+                            "priceAfterDiscount",
+                        ],
+                        [
+                            config_1.default.literal(`
+                ROUND(COALESCE(
+                  (SELECT AVG(rating) FROM "reviews" WHERE "reviews"."productId" = "Products"."id"
+                ), 0), 2)
+              `),
+                            "averageRating",
+                        ],
+                        [
+                            config_1.default.literal(`
+                EXISTS (
+                  SELECT 1 FROM "userFavorites" AS "favorites"
+                  WHERE "favorites"."productId" = "Products"."id" 
+                  AND "favorites"."userId" = '${id}' AND "favorites"."deletedAt" IS NULL
+                )
+              `),
+                            "isFavourite",
+                        ],
+                    ],
+                    include: [
+                        {
+                            model: stores_model_1.default,
+                            attributes: [
+                                "id",
+                                [config_1.default.col(`"${nameColumn}"`), "name"],
+                                "image",
+                            ],
+                            as: "store",
+                        },
+                        {
+                            model: categories_model_1.default,
+                            attributes: ["id", [config_1.default.col(`"${nameColumn}"`), "name"]],
+                            as: "category",
+                        },
                     ],
                     through: { attributes: [] },
                 },

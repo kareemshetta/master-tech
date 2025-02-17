@@ -16,6 +16,7 @@ class AuthView {
         this.getOtp = this.getOtp.bind(this);
         this.deleteOne = this.deleteOne.bind(this);
         this.updatePassword = this.updatePassword.bind(this);
+        this.update = this.update.bind(this);
     }
     static getInstance() {
         if (!AuthView.instance) {
@@ -46,6 +47,13 @@ class AuthView {
     }
     async getOneById(req, res) {
         const trainer = await this.controller.getOne(req);
+        res.send({
+            data: trainer,
+            message: req.t("responses.succes"),
+        });
+    }
+    async update(req, res) {
+        const trainer = await this.controller.update(req);
         res.send({
             data: trainer,
             message: req.t("responses.succes"),
