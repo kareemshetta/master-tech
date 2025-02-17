@@ -230,6 +230,11 @@ class PrdouctService {
                 "number.max": "Ram cannot exceed 200.",
                 "any.required": "Ram is required and cannot be null.",
             }),
+            grantee: joi_1.default.string().trim().required().messages({
+                "string.base": "Grantee must be a string.",
+                "string.empty": "Grantee cannot be empty.",
+                "any.required": "Grantee is required and cannot be null.",
+            }),
             battery: joi_1.default.number().min(300).max(500000).required().messages({
                 "number.base": "Battery must be a number.",
                 "number.empty": "Battery cannot be empty.",
@@ -415,6 +420,11 @@ class PrdouctService {
                 "number.min": "Battery cannot be less than 300.",
                 "number.max": "Battery cannot exceed 5000.",
                 "any.required": "Battery is required and cannot be null.",
+            }),
+            grantee: joi_1.default.string().trim().required().messages({
+                "string.base": "Grantee must be a string.",
+                "string.empty": "Grantee cannot be empty.",
+                "any.required": "Grantee is required and cannot be null.",
             }),
             name: joi_1.default.string().trim().max(255).required().messages({
                 "string.base": "name must be a string.",

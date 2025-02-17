@@ -141,6 +141,7 @@ class ProductController {
                 "descriptionAr",
                 "basePrice",
                 "discount",
+                "grantee",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",
@@ -239,6 +240,7 @@ class ProductController {
                 "ram",
                 "image",
                 "discount",
+                "grantee",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",

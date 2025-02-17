@@ -59,6 +59,7 @@ Promise.resolve().then(() => __importStar(require("./../../models/user_products_
 Promise.resolve().then(() => __importStar(require("./../../models/review.model")));
 Promise.resolve().then(() => __importStar(require("./../../models/contact.model")));
 Promise.resolve().then(() => __importStar(require("./../../models/aboutus.model")));
+Promise.resolve().then(() => __importStar(require("./../../models/home.model")));
 // store_sub_stores association
 Promise.resolve().then(() => __importStar(require("./../../models/store_sub_stores.association")));
 // store_Admins association
@@ -97,11 +98,11 @@ const initialize = async (app) => {
     try {
         await config_1.default.authenticate();
         console.log("Connection to  database has been established successfully.");
-        // await sequelize.sync({
-        //   alter: true,
-        //   // logging: console.log
-        // });
-        // console.log("All models were synchronized successfully.");
+        await config_1.default.sync({
+            alter: true,
+            // logging: console.log
+        });
+        console.log("All models were synchronized successfully.");
         const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
         app.listen(port, () => console.log(`⚡️Server is running at ${os_1.default.hostname()}:${port}`));
     }

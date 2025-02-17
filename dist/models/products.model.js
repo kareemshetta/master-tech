@@ -34,6 +34,11 @@ Product.init({
     image: {
         type: sequelize_1.DataTypes.STRING, // URL for the main product image
     },
+    grantee: {
+        type: sequelize_1.DataTypes.STRING,
+        allowNull: false,
+        defaultValue: "1 year ",
+    },
     battery: {
         type: sequelize_1.DataTypes.INTEGER,
     },

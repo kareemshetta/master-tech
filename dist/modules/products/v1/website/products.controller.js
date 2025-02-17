@@ -162,6 +162,7 @@ class ProductController {
             [config_1.default.literal(`"Product"."${descriptionColumn}"`), "description"],
             "basePrice",
             "discount",
+            "grantee",
             [
                 config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                 "priceAfterDiscount",
@@ -225,6 +226,7 @@ class ProductController {
                             as: "storage",
                         },
                     ],
+                    order: [["price", "ASC"]],
                 },
                 {
                     model: brands_model_1.default,
@@ -265,6 +267,7 @@ class ProductController {
                 config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                 "priceAfterDiscount",
             ],
+            "grantee",
             "brandId",
             "categoryId",
             "storeId",
@@ -378,6 +381,7 @@ class ProductController {
                     config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("reviews.rating")), 0), 2),
                     "averageRating",
                 ],
+                "grantee",
                 "basePrice",
                 "battery",
                 "ram",
@@ -516,6 +520,7 @@ class ProductController {
                 "storeId",
                 "image",
                 "discount",
+                "grantee",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",
@@ -675,6 +680,7 @@ class ProductController {
                 "storeId",
                 "image",
                 "discount",
+                "grantee",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",
