@@ -209,6 +209,7 @@ export class ProductController {
       [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
       "basePrice",
       "discount",
+      "grantee",
       [
         sequelize.literal(
           'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
@@ -280,6 +281,7 @@ export class ProductController {
               as: "storage",
             },
           ],
+          order: [["price", "ASC"]],
         },
         {
           model: Brand,
@@ -325,6 +327,7 @@ export class ProductController {
         ),
         "priceAfterDiscount",
       ],
+      "grantee",
       "brandId",
       "categoryId",
       "storeId",
@@ -463,6 +466,7 @@ export class ProductController {
           ),
           "averageRating",
         ],
+        "grantee",
         "basePrice",
         "battery",
         "ram",
@@ -640,6 +644,7 @@ export class ProductController {
         "storeId",
         "image",
         "discount",
+        "grantee",
         [
           sequelize.literal(
             'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
@@ -850,6 +855,7 @@ export class ProductController {
         "storeId",
         "image",
         "discount",
+        "grantee",
         [
           sequelize.literal(
             'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'

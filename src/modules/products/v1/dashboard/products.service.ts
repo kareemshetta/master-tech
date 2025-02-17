@@ -246,7 +246,11 @@ export class PrdouctService {
         "number.max": "Battery cannot exceed 5000.",
         "any.required": "Battery is required and cannot be null.",
       }),
-
+      grantee: Joi.string().trim().required().messages({
+        "string.base": "Grantee must be a string.",
+        "string.empty": "Grantee cannot be empty.",
+        "any.required": "Grantee is required and cannot be null.",
+      }),
       name: Joi.string().trim().max(255).required().messages({
         "string.base": "name must be a string.",
         "string.empty": "name cannot be empty.",
@@ -439,7 +443,11 @@ export class PrdouctService {
         "number.max": "Battery cannot exceed 5000.",
         "any.required": "Battery is required and cannot be null.",
       }),
-
+      grantee: Joi.string().trim().required().messages({
+        "string.base": "Grantee must be a string.",
+        "string.empty": "Grantee cannot be empty.",
+        "any.required": "Grantee is required and cannot be null.",
+      }),
       name: Joi.string().trim().max(255).required().messages({
         "string.base": "name must be a string.",
         "string.empty": "name cannot be empty.",

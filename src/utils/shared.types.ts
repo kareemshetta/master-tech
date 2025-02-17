@@ -244,3 +244,17 @@ export interface IAboutus {
   whoAreWeAr: string;
   faqs?: IFaqItem[];
 }
+
+export interface IHomeSection {
+  title: string;
+  titleAr: string;
+  subtitle: string;
+  subtitleAr: string;
+}
+
+export interface IHome {
+  id?: string;
+  title: string;
+  titleAr: string;
+  sections: IHomeSection[];
+}

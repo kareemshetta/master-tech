@@ -30,6 +30,11 @@ Product.init(
     image: {
       type: DataTypes.STRING, // URL for the main product image
     },
+    grantee: {
+      type: DataTypes.STRING,
+      allowNull: false,
+      defaultValue: "1 year ",
+    },
     battery: {
       type: DataTypes.INTEGER,
     },

@@ -188,6 +188,7 @@ export class ProductController {
         "descriptionAr",
         "basePrice",
         "discount",
+        "grantee",
         [
           sequelize.literal(
             'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
@@ -295,6 +296,7 @@ export class ProductController {
         "ram",
         "image",
         "discount",
+        "grantee",
         [
           sequelize.literal(
             'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
