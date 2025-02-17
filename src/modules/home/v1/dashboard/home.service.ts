@@ -68,6 +68,17 @@ export class HomeService {
           "string.empty": "Section subtitle in Arabic cannot be empty",
           "any.required": "Section subtitle in Arabic is required",
         }),
+        image: Joi.string()
+          .trim()
+          .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
+          .messages({
+            "string.base": "Image must be a string.",
+            "string.empty": "Image cannot be empty.",
+            "string.pattern.base":
+              "Image must have a valid file extension (jpg, jpeg, png, HEIF, svg).",
+            "any.required": "Image is required and cannot be null.",
+          })
+          .required(),
       })
     );
   }
@@ -84,6 +95,7 @@ export class HomeService {
         "string.empty": "Title in Arabic cannot be empty",
         "any.required": "Title in Arabic is required",
       }),
+
       sections: this.getSectionValidationSchema().required().messages({
         "any.required": "Sections are required",
       }),
@@ -100,6 +112,7 @@ export class HomeService {
     const schema = Joi.object({
       title: Joi.string().trim(),
       titleAr: Joi.string().trim(),
+
       sections: this.getSectionValidationSchema(),
     }).min(1);
 

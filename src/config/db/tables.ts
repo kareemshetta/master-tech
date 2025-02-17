@@ -63,11 +63,11 @@ export const initialize = async (app: Application): Promise<void> => {
     await sequelize.authenticate();
     console.log("Connection to  database has been established successfully.");
 
-    await sequelize.sync({
-      alter: true,
-      // logging: console.log
-    });
-    console.log("All models were synchronized successfully.");
+    // await sequelize.sync({
+    //   alter: true,
+    //   // logging: console.log
+    // });
+    // console.log("All models were synchronized successfully.");
 
     const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 5000;
     app.listen(port, () =>
