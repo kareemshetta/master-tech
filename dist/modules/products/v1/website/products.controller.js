@@ -163,6 +163,7 @@ class ProductController {
             "basePrice",
             "discount",
             "grantee",
+            "images",
             [
                 config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                 "priceAfterDiscount",
@@ -360,7 +361,7 @@ class ProductController {
     async getAll(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, battery, ram, } = req.query;
+        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, battery, ram, screenSize, } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -400,6 +401,11 @@ class ProductController {
             where: {},
             include: [
                 {
+                    model: screen_model_1.default,
+                    attributes: [],
+                    where: {},
+                },
+                {
                     model: stores_model_1.default,
                     attributes: [
                         "id",
@@ -413,6 +419,7 @@ class ProductController {
                     model: categories_model_1.default,
                     attributes: [
                         [config_1.default.literal(`category."${nameColumn}"`), "name"],
+                        "id",
                         // [sequelize.literal(`"${descriptionColumn}"`), "description"],
                     ],
                 },
@@ -426,14 +433,21 @@ class ProductController {
             limit,
             order: [[orderBy, order]],
             where: {},
+            include: [
+                {
+                    model: screen_model_1.default,
+                    attributes: [],
+                    where: {},
+                },
+            ],
         };
         if (storeId) {
             options.where.storeId = storeId;
             countOption.where.storeId = storeId;
         }
         if (categoryId) {
-            options.where.storeId = categoryId;
-            countOption.where.storeId = categoryId;
+            options.where.categoryId = categoryId;
+            countOption.where.categoryId = categoryId;
         }
         if (userId)
             options.attributes.push([
@@ -473,6 +487,10 @@ class ProductController {
             options.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
             countOption.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
         }
+        if (screenSize) {
+            options.include[0].where.size = screenSize;
+            countOption.include[0].where.size = screenSize;
+        }
         if (search) {
             search = search.toString().replace(/\+/g, "").trim();
             const searchOp = {
@@ -491,7 +509,7 @@ class ProductController {
     async getAllTopRated(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, battery, ram, } = req.query;
+        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, battery, ram, screenSize, } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -531,6 +549,7 @@ class ProductController {
             order: [[orderBy, order]],
             where: {},
             include: [
+                { model: screen_model_1.default, attributes: [], where: {} },
                 {
                     model: stores_model_1.default,
                     attributes: [
@@ -564,14 +583,15 @@ class ProductController {
                 [config_1.default.fn("COUNT", config_1.default.col("reviews.id")), "DESC"],
             ],
             where: {},
+            include: [{ model: screen_model_1.default, attributes: [], where: {} }],
         };
         if (storeId) {
             options.where.storeId = storeId;
             countOption.where.storeId = storeId;
         }
         if (categoryId) {
-            options.where.storeId = categoryId;
-            countOption.where.storeId = categoryId;
+            options.where.categoryId = categoryId;
+            countOption.where.categoryId = categoryId;
         }
         if (userId)
             options.attributes.push([

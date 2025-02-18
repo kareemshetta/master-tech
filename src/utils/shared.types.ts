@@ -136,6 +136,7 @@ export interface ICart {
   cart_items?: ICartItem[];
   createdAt?: string;
   updatedAt?: string;
+  store?: IStore;
 }
 
 export interface ICartItem {

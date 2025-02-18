@@ -1,4 +1,4 @@
-import { ICart, Iuser } from "../../../../utils/shared.types";
+import { ICart, IStore, Iuser } from "../../../../utils/shared.types";
 
 import { handlePaginationSort } from "../../../../utils/handle-sort-pagination";
 import {
@@ -25,13 +25,16 @@ import ProductAttribute from "../../../../models/product_attributes.model";
 import Store from "../../../../models/stores.model";
 import Category from "../../../../models/categories.model";
 import Review from "../../../../models/review.model";
+import StoreService from "../../../stores/v1/dashboard/stores.service";
 
 export class AuthController {
   private static instance: AuthController | null = null;
   private service: UserService;
+  private StoreService: StoreService;
 
   private constructor() {
     this.service = UserService.getInstance();
+    this.StoreService = StoreService.getInstance();
   }
 
   public static getInstance(): AuthController {
@@ -221,102 +224,137 @@ export class AuthController {
     const lng = req.language;
     const nameColumn = lng === "ar" ? "nameAr" : "name";
     const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
-    return this.service.findOneByIdOrThrowError(id, {
-      attributes: {
-        exclude: ["deletedAt", "updatedAt", "password"],
-      },
-      include: [
-        {
-          model: Product,
-          attributes: [
-            "id",
-            [sequelize.col(`"${nameColumn}"`), "name"],
-            [sequelize.col(`"${descriptionColumn}"`), "description"],
-            "image",
-            "discount",
-            "basePrice",
-            [
-              sequelize.literal(
-                'ROUND(CAST("Products"."basePrice" AS DECIMAL) * (1 - (CAST("Products"."discount" AS DECIMAL) / 100)), 2)'
-              ),
-              "priceAfterDiscount",
-            ],
-            [
-              sequelize.literal(`
+    const user = (
+      await this.service.findOneByIdOrThrowError(id, {
+        logging: console.log,
+        attributes: {
+          exclude: ["deletedAt", "updatedAt", "password"],
+        },
+        include: [
+          {
+            model: Product,
+            attributes: [
+              "id",
+              [sequelize.col(`"${nameColumn}"`), "name"],
+              [sequelize.col(`"${descriptionColumn}"`), "description"],
+              "image",
+              "discount",
+              "basePrice",
+              [
+                sequelize.literal(
+                  'ROUND(CAST("Products"."basePrice" AS DECIMAL) * (1 - (CAST("Products"."discount" AS DECIMAL) / 100)), 2)'
+                ),
+                "priceAfterDiscount",
+              ],
+              [
+                sequelize.literal(`
                 ROUND(COALESCE(
                   (SELECT AVG(rating) FROM "reviews" WHERE "reviews"."productId" = "Products"."id"
                 ), 0), 2)
               `),
-              "averageRating",
-            ],
-            [
-              sequelize.literal(`
+                "averageRating",
+              ],
+              [
+                sequelize.literal(`
                 EXISTS (
                   SELECT 1 FROM "userFavorites" AS "favorites"
                   WHERE "favorites"."productId" = "Products"."id" 
                   AND "favorites"."userId" = '${id}' AND "favorites"."deletedAt" IS NULL
                 )
               `),
-              "isFavourite",
+                "isFavourite",
+              ],
             ],
-          ],
-          include: [
-            {
-              model: Store,
-              attributes: [
-                "id",
-                [sequelize.col(`"${nameColumn}"`), "name"],
+            include: [
+              {
+                model: Store,
+                attributes: [
+                  "id",
+                  [sequelize.col(`"${nameColumn}"`), "name"],
 
-                "image",
+                  "image",
+                ],
+                as: "store",
+              },
+              {
+                model: Category,
+                attributes: ["id", [sequelize.col(`"${nameColumn}"`), "name"]],
+                as: "category",
+              },
+            ],
+            through: { attributes: [] },
+          },
+          {
+            model: Cart,
+            attributes: [
+              "id",
+              [
+                sequelize.literal(`
+                COALESCE(
+                    (
+                        SELECT SUM(CAST("CartItems"."quantity" AS DECIMAL) * CAST("CartItems"."price" AS DECIMAL))
+                        FROM "cart_items" AS "CartItems"
+                        WHERE "CartItems"."cartId" = "cart"."id"
+                        AND "CartItems"."deletedAt" IS NULL
+                    ), 0
+                )
+            `),
+                "totalPrice",
               ],
-              as: "store",
-            },
-            {
-              model: Category,
-              attributes: ["id", [sequelize.col(`"${nameColumn}"`), "name"]],
-              as: "category",
-            },
-          ],
-          through: { attributes: [] },
-        },
-        {
-          model: Cart,
-          attributes: ["id"],
-          include: [
-            {
-              model: CartItem,
-              attributes: ["id", "quantity", "price"],
-              include: [
-                {
-                  model: Product,
-                  attributes: [
-                    "id",
-                    [sequelize.col(`"${nameColumn}"`), "name"],
-                    [sequelize.col(`"${descriptionColumn}"`), "description"],
-                  ],
-                },
-                {
-                  model: ProductSku,
-                  attributes: ["sku", "price"],
-                  include: [
-                    {
-                      model: ProductAttribute,
-                      attributes: ["type", "value"],
-                      as: "color",
-                    },
-                    {
-                      model: ProductAttribute,
-                      attributes: ["type", "value"],
-                      as: "storage",
-                    },
-                  ],
-                },
-              ],
-            },
-          ],
-        },
-      ],
-    });
+            ],
+            include: [
+              {
+                model: CartItem,
+                attributes: ["id", "quantity", "price"],
+                include: [
+                  {
+                    model: Product,
+                    attributes: [
+                      "id",
+                      [sequelize.col(`"${nameColumn}"`), "name"],
+                      [sequelize.col(`"${descriptionColumn}"`), "description"],
+                      "storeId",
+                    ],
+                  },
+                  {
+                    model: ProductSku,
+                    attributes: ["sku", "price"],
+                    include: [
+                      {
+                        model: ProductAttribute,
+                        attributes: ["type", "value"],
+                        as: "color",
+                      },
+                      {
+                        model: ProductAttribute,
+                        attributes: ["type", "value"],
+                        as: "storage",
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      })
+    ).toJSON() as Iuser;
+    if (
+      user &&
+      user.cart &&
+      user.cart.cart_items &&
+      user.cart.cart_items.length > 0
+    ) {
+      const cartStoreId = user.cart.cart_items[0].Product!.storeId;
+      const store = await this.StoreService.findOne({
+        where: { id: cartStoreId },
+        attributes: ["id", "allowShipping", "image"],
+      });
+      if (store) {
+        user.cart.store = store.toJSON() as IStore;
+      }
+    }
+    return user;
   }
 
   async getOtp(req: any) {

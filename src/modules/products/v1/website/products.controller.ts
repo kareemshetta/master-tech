@@ -210,6 +210,7 @@ export class ProductController {
       "basePrice",
       "discount",
       "grantee",
+      "images",
       [
         sequelize.literal(
           'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
@@ -436,6 +437,7 @@ export class ProductController {
       categoryId,
       battery,
       ram,
+      screenSize,
     } = req.query;
 
     const lng = req.language;
@@ -487,6 +489,11 @@ export class ProductController {
       where: {},
       include: [
         {
+          model: Screen,
+          attributes: [],
+          where: {},
+        },
+        {
           model: Store,
           attributes: [
             "id",
@@ -500,6 +507,7 @@ export class ProductController {
           model: Category,
           attributes: [
             [sequelize.literal(`category."${nameColumn}"`), "name"],
+            "id",
             // [sequelize.literal(`"${descriptionColumn}"`), "description"],
           ],
         },
@@ -513,6 +521,13 @@ export class ProductController {
       limit,
       order: [[orderBy, order]],
       where: {},
+      include: [
+        {
+          model: Screen,
+          attributes: [],
+          where: {},
+        },
+      ],
     };
 
     if (storeId) {
@@ -520,8 +535,8 @@ export class ProductController {
       countOption.where.storeId = storeId;
     }
     if (categoryId) {
-      options.where.storeId = categoryId;
-      countOption.where.storeId = categoryId;
+      options.where.categoryId = categoryId;
+      countOption.where.categoryId = categoryId;
     }
 
     if (userId)
@@ -562,6 +577,11 @@ export class ProductController {
       options.where.brandId = { [Op.in]: brandIds.split(",") };
       countOption.where.brandId = { [Op.in]: brandIds.split(",") };
     }
+    if (screenSize) {
+      options.include[0].where.size = screenSize;
+      countOption.include[0].where.size = screenSize;
+    }
+
     if (search) {
       search = search.toString().replace(/\+/g, "").trim();
       const searchOp = {
@@ -606,6 +626,7 @@ export class ProductController {
       categoryId,
       battery,
       ram,
+      screenSize,
     } = req.query;
 
     const lng = req.language;
@@ -657,6 +678,7 @@ export class ProductController {
       order: [[orderBy, order]],
       where: {},
       include: [
+        { model: Screen, attributes: [], where: {} },
         {
           model: Store,
           attributes: [
@@ -698,6 +720,7 @@ export class ProductController {
         [sequelize.fn("COUNT", sequelize.col("reviews.id")), "DESC"],
       ],
       where: {},
+      include: [{ model: Screen, attributes: [], where: {} }],
     };
 
     if (storeId) {
@@ -705,8 +728,8 @@ export class ProductController {
       countOption.where.storeId = storeId;
     }
     if (categoryId) {
-      options.where.storeId = categoryId;
-      countOption.where.storeId = categoryId;
+      options.where.categoryId = categoryId;
+      countOption.where.categoryId = categoryId;
     }
 
     if (userId)

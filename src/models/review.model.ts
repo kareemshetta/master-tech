@@ -50,13 +50,13 @@ Review.init(
     modelName: "reviews",
     paranoid: true,
     timestamps: true,
-    indexes: [
-      {
-        unique: true,
-        fields: ["userId", "productId"],
-        name: "unique_user_product_review",
-      },
-    ],
+    // indexes: [
+    //   {
+    //     unique: true,
+    //     fields: ["userId", "productId"],
+    //     name: "unique_user_product_review",
+    //   },
+    // ],
   }
 );
 

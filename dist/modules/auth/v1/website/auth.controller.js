@@ -18,9 +18,11 @@ const product_skus_model_1 = require("../../../../models/product_skus.model");
 const product_attributes_model_1 = __importDefault(require("../../../../models/product_attributes.model"));
 const stores_model_1 = __importDefault(require("../../../../models/stores.model"));
 const categories_model_1 = __importDefault(require("../../../../models/categories.model"));
+const stores_service_1 = __importDefault(require("../../../stores/v1/dashboard/stores.service"));
 class AuthController {
     constructor() {
         this.service = users_service_1.default.getInstance();
+        this.StoreService = stores_service_1.default.getInstance();
     }
     static getInstance() {
         if (!AuthController.instance) {
@@ -181,7 +183,8 @@ class AuthController {
         const lng = req.language;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
         const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
-        return this.service.findOneByIdOrThrowError(id, {
+        const user = (await this.service.findOneByIdOrThrowError(id, {
+            logging: console.log,
             attributes: {
                 exclude: ["deletedAt", "updatedAt", "password"],
             },
@@ -238,7 +241,22 @@ class AuthController {
                 },
                 {
                     model: carts_model_1.default,
-                    attributes: ["id"],
+                    attributes: [
+                        "id",
+                        [
+                            config_1.default.literal(`
+                COALESCE(
+                    (
+                        SELECT SUM(CAST("CartItems"."quantity" AS DECIMAL) * CAST("CartItems"."price" AS DECIMAL))
+                        FROM "cart_items" AS "CartItems"
+                        WHERE "CartItems"."cartId" = "cart"."id"
+                        AND "CartItems"."deletedAt" IS NULL
+                    ), 0
+                )
+            `),
+                            "totalPrice",
+                        ],
+                    ],
                     include: [
                         {
                             model: cartItem_model_1.default,
@@ -250,6 +268,7 @@ class AuthController {
                                         "id",
                                         [config_1.default.col(`"${nameColumn}"`), "name"],
                                         [config_1.default.col(`"${descriptionColumn}"`), "description"],
+                                        "storeId",
                                     ],
                                 },
                                 {
@@ -273,7 +292,21 @@ class AuthController {
                     ],
                 },
             ],
-        });
+        })).toJSON();
+        if (user &&
+            user.cart &&
+            user.cart.cart_items &&
+            user.cart.cart_items.length > 0) {
+            const cartStoreId = user.cart.cart_items[0].Product.storeId;
+            const store = await this.StoreService.findOne({
+                where: { id: cartStoreId },
+                attributes: ["id", "allowShipping", "image"],
+            });
+            if (store) {
+                user.cart.store = store.toJSON();
+            }
+        }
+        return user;
     }
     async getOtp(req) {
         const body = req.body;
