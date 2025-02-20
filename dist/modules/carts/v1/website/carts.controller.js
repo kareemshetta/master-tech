@@ -12,6 +12,7 @@ const product_attributes_model_1 = __importDefault(require("../../../../models/p
 const cartItem_model_1 = __importDefault(require("../../../../models/cartItem.model"));
 const products_service_1 = __importDefault(require("../../../products/v1/dashboard/products.service"));
 const appError_1 = require("../../../../utils/appError");
+const config_1 = __importDefault(require("../../../../config/db/config"));
 class CartController {
     constructor() {
         this.cartService = carts_service_1.default.getInstance();
@@ -100,36 +101,89 @@ class CartController {
         const lng = req.language;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
         const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
-        const options = {
-            offset,
-            limit,
-            order: [[orderBy, order]],
-            where: { cartId: cart?.id },
+        const foundCart = (await this.cartService.getCart({
+            attributes: [
+                "id",
+                [
+                    config_1.default.literal(`
+        COALESCE(
+            (
+                SELECT SUM(CAST("CartItems"."quantity" AS DECIMAL) * CAST("CartItems"."price" AS DECIMAL))
+                FROM "cart_items" AS "CartItems"
+                WHERE "CartItems"."cartId" = "carts"."id"
+                AND "CartItems"."deletedAt" IS NULL
+            ), 0
+        )
+    `),
+                    "totalPrice",
+                ],
+            ],
+            // logging: console.log,
+            where: { id: cart?.id },
             include: [
                 {
-                    model: products_model_1.default,
-                    attributes: ["id", `${nameColumn}`, `${descriptionColumn}`, "image"],
-                },
-                {
-                    model: product_skus_model_1.ProductSku,
-                    attributes: ["sku", "price"],
+                    model: cartItem_model_1.default,
+                    attributes: ["id", "quantity", "price"],
                     include: [
                         {
-                            model: product_attributes_model_1.default,
-                            attributes: ["type", "value"],
-                            as: "color",
+                            model: products_model_1.default,
+                            attributes: [
+                                "id",
+                                `${nameColumn}`,
+                                `${descriptionColumn}`,
+                                "image",
+                            ],
                         },
                         {
-                            model: product_attributes_model_1.default,
-                            attributes: ["type", "value"],
-                            as: "storage",
+                            model: product_skus_model_1.ProductSku,
+                            attributes: ["sku", "price"],
+                            include: [
+                                {
+                                    model: product_attributes_model_1.default,
+                                    attributes: ["type", "value"],
+                                    as: "color",
+                                },
+                                {
+                                    model: product_attributes_model_1.default,
+                                    attributes: ["type", "value"],
+                                    as: "storage",
+                                },
+                            ],
                         },
                     ],
                 },
             ],
-        };
-        const date = await this.cartService.getAll(options);
-        return date;
+        }))?.toJSON();
+        // const options: any = {
+        //   offset,
+        //   limit,
+        //   order: [[orderBy, order]],
+        //   where: { cartId: cart?.id },
+        //   include: [
+        //     {
+        //       model: Product,
+        //       attributes: ["id", `${nameColumn}`, `${descriptionColumn}`, "image"],
+        //     },
+        //     {
+        //       model: ProductSku,
+        //       attributes: ["sku", "price"],
+        //       include: [
+        //         {
+        //           model: ProductAttribute,
+        //           attributes: ["type", "value"],
+        //           as: "color",
+        //         },
+        //         {
+        //           model: ProductAttribute,
+        //           attributes: ["type", "value"],
+        //           as: "storage",
+        //         },
+        //       ],
+        //     },
+        //   ],
+        // };
+        // const date = await this.cartService.getAll(options);
+        return foundCart;
     }
 }
 exports.CartController = CartController;
