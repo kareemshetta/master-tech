@@ -22,6 +22,7 @@ const versions_routes_14 = __importDefault(require("./modules/reviews/versions.r
 const versions_routes_15 = __importDefault(require("./modules/contact-us/versions.routes"));
 const versions_routes_16 = __importDefault(require("./modules/aboutus/versions.routes"));
 const versions_routes_17 = __importDefault(require("./modules/home/versions.routes"));
+const versions_routes_18 = __importDefault(require("./modules/processors/versions.routes"));
 const path_1 = __importDefault(require("path"));
 const injectRoutes = (app) => {
     // Basic route
@@ -46,5 +47,6 @@ const injectRoutes = (app) => {
     app.use("/contact-us", versions_routes_15.default);
     app.use("/about-us", versions_routes_16.default);
     app.use("/home", versions_routes_17.default);
+    app.use("/processors", versions_routes_18.default);
 };
 exports.injectRoutes = injectRoutes;

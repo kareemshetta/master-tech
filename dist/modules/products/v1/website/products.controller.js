@@ -361,7 +361,7 @@ class ProductController {
     async getAll(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, battery, ram, screenSize, } = req.query;
+        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, processorIds, battery, ram, screenSize, } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -486,6 +486,14 @@ class ProductController {
             this.service.validateBrandsIds({ brandIds: brandIds.split(",") });
             options.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
             countOption.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
+        }
+        if (processorIds) {
+            processorIds = processorIds.toString();
+            this.service.validateProcessorsIds({
+                processorIds: processorIds.split(","),
+            });
+            options.where.processorId = { [sequelize_1.Op.in]: processorIds.split(",") };
+            countOption.where.processorId = { [sequelize_1.Op.in]: processorIds.split(",") };
         }
         if (screenSize) {
             options.include[0].where.size = screenSize;

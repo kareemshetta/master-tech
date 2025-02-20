@@ -555,6 +555,16 @@ class PrdouctService {
         }
         return;
     }
+    validateProcessorsIds(data) {
+        const schema = joi_1.default.object({
+            processorIds: joi_1.default.array().items(joi_1.default.string().uuid()).min(1).required(),
+        });
+        const { error } = schema.validate(data);
+        if (error) {
+            throw new appError_1.ValidationError(error.message);
+        }
+        return;
+    }
     validateCatIds(data) {
         const schema = joi_1.default.object({
             categoryIds: joi_1.default.array().items(joi_1.default.string().uuid()).min(1).required(),
