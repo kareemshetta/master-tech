@@ -156,23 +156,24 @@ class PrdouctService {
                     "any.required": "Screen details is required and cannot be null.",
                 }),
             }),
-            processor: joi_1.default.object({
-                type: joi_1.default.string().required().messages({
-                    "string.base": "Processor type must be a string.",
-                    "string.empty": "Processor type cannot be empty.",
-                    "any.required": "Processor type is required and cannot be null.",
-                }),
-                noOfCores: joi_1.default.string().required().messages({
-                    "string.base": "Number of cores must be a string.",
-                    "string.empty": "Number of cores cannot be empty.",
-                    "any.required": "Number of cores is required and cannot be null.",
-                }),
-                details: joi_1.default.string().required().messages({
-                    "string.base": "Processor details must be a string.",
-                    "string.empty": "Processor details cannot be empty.",
-                    "any.required": "Processor details is required and cannot be null.",
-                }),
-            }),
+            processorId: joi_1.default.string().trim().uuid().required(),
+            // processor: Joi.object({
+            //   type: Joi.string().required().messages({
+            //     "string.base": "Processor type must be a string.",
+            //     "string.empty": "Processor type cannot be empty.",
+            //     "any.required": "Processor type is required and cannot be null.",
+            //   }),
+            //   noOfCores: Joi.string().required().messages({
+            //     "string.base": "Number of cores must be a string.",
+            //     "string.empty": "Number of cores cannot be empty.",
+            //     "any.required": "Number of cores is required and cannot be null.",
+            //   }),
+            //   details: Joi.string().required().messages({
+            //     "string.base": "Processor details must be a string.",
+            //     "string.empty": "Processor details cannot be empty.",
+            //     "any.required": "Processor details is required and cannot be null.",
+            //   }),
+            // }),
             brandId: joi_1.default.string().trim().uuid().required().messages({
                 "string.base": "Brand id must be a string.",
                 "string.empty": "Brand id cannot be empty.",
@@ -335,28 +336,29 @@ class PrdouctService {
                     "any.required": "Screen details is required and cannot be null.",
                 }),
             }),
-            processor: joi_1.default.object({
-                id: joi_1.default.string().uuid().required().messages({
-                    "string.base": "Processor id must be a string.",
-                    "string.empty": "Processor id cannot be empty.",
-                    "any.required": "Processor id is required and cannot be null.",
-                }),
-                type: joi_1.default.string().required().messages({
-                    "string.base": "Processor type must be a string.",
-                    "string.empty": "Processor type cannot be empty.",
-                    "any.required": "Processor type is required and cannot be null.",
-                }),
-                noOfCores: joi_1.default.string().required().messages({
-                    "string.base": "Number of cores must be a string.",
-                    "string.empty": "Number of cores cannot be empty.",
-                    "any.required": "Number of cores is required and cannot be null.",
-                }),
-                details: joi_1.default.string().required().messages({
-                    "string.base": "Processor details must be a string.",
-                    "string.empty": "Processor details cannot be empty.",
-                    "any.required": "Processor details is required and cannot be null.",
-                }),
-            }),
+            processorId: joi_1.default.string().trim().uuid().required(),
+            // processor: Joi.object({
+            //   id: Joi.string().uuid().required().messages({
+            //     "string.base": "Processor id must be a string.",
+            //     "string.empty": "Processor id cannot be empty.",
+            //     "any.required": "Processor id is required and cannot be null.",
+            //   }),
+            //   type: Joi.string().required().messages({
+            //     "string.base": "Processor type must be a string.",
+            //     "string.empty": "Processor type cannot be empty.",
+            //     "any.required": "Processor type is required and cannot be null.",
+            //   }),
+            //   noOfCores: Joi.string().required().messages({
+            //     "string.base": "Number of cores must be a string.",
+            //     "string.empty": "Number of cores cannot be empty.",
+            //     "any.required": "Number of cores is required and cannot be null.",
+            //   }),
+            //   details: Joi.string().required().messages({
+            //     "string.base": "Processor details must be a string.",
+            //     "string.empty": "Processor details cannot be empty.",
+            //     "any.required": "Processor details is required and cannot be null.",
+            //   }),
+            // }),
             brandId: joi_1.default.string().trim().uuid().required().messages({
                 "string.base": "Brand id must be a string.",
                 "string.empty": "Brand id cannot be empty.",
