@@ -637,6 +637,18 @@ export class PrdouctService {
     return;
   }
 
+  public validateProcessorsIds(data: { processorIds: string[] }) {
+    const schema = Joi.object({
+      processorIds: Joi.array().items(Joi.string().uuid()).min(1).required(),
+    });
+
+    const { error } = schema.validate(data);
+    if (error) {
+      throw new ValidationError(error.message);
+    }
+    return;
+  }
+
   public validateCatIds(data: { categoryIds: string[] }) {
     const schema = Joi.object({
       categoryIds: Joi.array().items(Joi.string().uuid()).min(1).required(),

@@ -17,6 +17,7 @@ import reviewsRoute from "./modules/reviews/versions.routes";
 import contactusRoute from "./modules/contact-us/versions.routes";
 import aboutusRoute from "./modules/aboutus/versions.routes";
 import homeRoute from "./modules/home/versions.routes";
+import processorRoute from "./modules/processors/versions.routes";
 
 import path from "path";
 export const injectRoutes = (app: Application): void => {
@@ -43,4 +44,5 @@ export const injectRoutes = (app: Application): void => {
   app.use("/contact-us", contactusRoute);
   app.use("/about-us", aboutusRoute);
   app.use("/home", homeRoute);
+  app.use("/processors", processorRoute);
 };

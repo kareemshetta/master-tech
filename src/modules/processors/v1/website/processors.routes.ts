@@ -1,10 +1,10 @@
 import { Router } from "express";
 
 import asyncWrapper from "../../../../utils/async-wrapper";
-import { BrandView } from "../dashboard/brands.view";
+import { ProcessorView } from "./processors.view";
 
 const router = Router();
-const view = BrandView.getInstance();
+const view = ProcessorView.getInstance();
 
 router.get("/", asyncWrapper(view.getAll));
 

@@ -435,6 +435,7 @@ export class ProductController {
       brandIds,
       storeId,
       categoryId,
+      processorIds,
       battery,
       ram,
       screenSize,
@@ -576,6 +577,14 @@ export class ProductController {
       this.service.validateBrandsIds({ brandIds: brandIds.split(",") });
       options.where.brandId = { [Op.in]: brandIds.split(",") };
       countOption.where.brandId = { [Op.in]: brandIds.split(",") };
+    }
+    if (processorIds) {
+      processorIds = processorIds.toString();
+      this.service.validateProcessorsIds({
+        processorIds: processorIds.split(","),
+      });
+      options.where.processorId = { [Op.in]: processorIds.split(",") };
+      countOption.where.processorId = { [Op.in]: processorIds.split(",") };
     }
     if (screenSize) {
       options.include[0].where.size = screenSize;
