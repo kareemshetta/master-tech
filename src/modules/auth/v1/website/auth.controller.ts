@@ -284,58 +284,58 @@ export class AuthController {
             ],
             through: { attributes: [] },
           },
-          {
-            model: Cart,
-            attributes: [
-              "id",
-              [
-                sequelize.literal(`
-                COALESCE(
-                    (
-                        SELECT SUM(CAST("CartItems"."quantity" AS DECIMAL) * CAST("CartItems"."price" AS DECIMAL))
-                        FROM "cart_items" AS "CartItems"
-                        WHERE "CartItems"."cartId" = "cart"."id"
-                        AND "CartItems"."deletedAt" IS NULL
-                    ), 0
-                )
-            `),
-                "totalPrice",
-              ],
-            ],
-            include: [
-              {
-                model: CartItem,
-                attributes: ["id", "quantity", "price"],
-                include: [
-                  {
-                    model: Product,
-                    attributes: [
-                      "id",
-                      [sequelize.col(`"${nameColumn}"`), "name"],
-                      [sequelize.col(`"${descriptionColumn}"`), "description"],
-                      "storeId",
-                    ],
-                  },
-                  {
-                    model: ProductSku,
-                    attributes: ["sku", "price"],
-                    include: [
-                      {
-                        model: ProductAttribute,
-                        attributes: ["type", "value"],
-                        as: "color",
-                      },
-                      {
-                        model: ProductAttribute,
-                        attributes: ["type", "value"],
-                        as: "storage",
-                      },
-                    ],
-                  },
-                ],
-              },
-            ],
-          },
+          // {
+          //   model: Cart,
+          //   attributes: [
+          //     "id",
+          //     [
+          //       sequelize.literal(`
+          //       COALESCE(
+          //           (
+          //               SELECT SUM(CAST("CartItems"."quantity" AS DECIMAL) * CAST("CartItems"."price" AS DECIMAL))
+          //               FROM "cart_items" AS "CartItems"
+          //               WHERE "CartItems"."cartId" = "cart"."id"
+          //               AND "CartItems"."deletedAt" IS NULL
+          //           ), 0
+          //       )
+          //   `),
+          //       "totalPrice",
+          //     ],
+          //   ],
+          //   include: [
+          //     {
+          //       model: CartItem,
+          //       attributes: ["id", "quantity", "price"],
+          //       include: [
+          //         {
+          //           model: Product,
+          //           attributes: [
+          //             "id",
+          //             [sequelize.col(`"${nameColumn}"`), "name"],
+          //             [sequelize.col(`"${descriptionColumn}"`), "description"],
+          //             "storeId",
+          //           ],
+          //         },
+          //         {
+          //           model: ProductSku,
+          //           attributes: ["sku", "price"],
+          //           include: [
+          //             {
+          //               model: ProductAttribute,
+          //               attributes: ["type", "value"],
+          //               as: "color",
+          //             },
+          //             {
+          //               model: ProductAttribute,
+          //               attributes: ["type", "value"],
+          //               as: "storage",
+          //             },
+          //           ],
+          //         },
+          //       ],
+          //     },
+          //   ],
+          // },
         ],
       })
     ).toJSON() as Iuser;

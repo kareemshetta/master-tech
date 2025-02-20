@@ -14,6 +14,8 @@ import ProductAttribute from "../../../../models/product_attributes.model";
 import CartItem from "../../../../models/cartItem.model";
 import PrdouctService from "../../../products/v1/dashboard/products.service";
 import { AppError } from "../../../../utils/appError";
+import sequelize from "../../../../config/db/config";
+import { log } from "console";
 export class CartController {
   private static instance: CartController | null = null;
   private cartService: CartService;
@@ -128,37 +130,93 @@ export class CartController {
     const lng = req.language;
     const nameColumn = lng === "ar" ? "nameAr" : "name";
     const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
-    const options: any = {
-      offset,
-      limit,
-      order: [[orderBy, order]],
-      where: { cartId: cart?.id },
-      include: [
-        {
-          model: Product,
-          attributes: ["id", `${nameColumn}`, `${descriptionColumn}`, "image"],
-        },
-        {
-          model: ProductSku,
-          attributes: ["sku", "price"],
-          include: [
-            {
-              model: ProductAttribute,
-              attributes: ["type", "value"],
-              as: "color",
-            },
-            {
-              model: ProductAttribute,
-              attributes: ["type", "value"],
-              as: "storage",
-            },
+    const foundCart = (
+      await this.cartService.getCart({
+        attributes: [
+          "id",
+          [
+            sequelize.literal(`
+        COALESCE(
+            (
+                SELECT SUM(CAST("CartItems"."quantity" AS DECIMAL) * CAST("CartItems"."price" AS DECIMAL))
+                FROM "cart_items" AS "CartItems"
+                WHERE "CartItems"."cartId" = "carts"."id"
+                AND "CartItems"."deletedAt" IS NULL
+            ), 0
+        )
+    `),
+            "totalPrice",
           ],
-        },
-      ],
-    };
+        ],
+        // logging: console.log,
+        where: { id: cart?.id },
+        include: [
+          {
+            model: CartItem,
+            attributes: ["id", "quantity", "price"],
+            include: [
+              {
+                model: Product,
+                attributes: [
+                  "id",
+                  `${nameColumn}`,
+                  `${descriptionColumn}`,
+                  "image",
+                ],
+              },
+              {
+                model: ProductSku,
+                attributes: ["sku", "price"],
+                include: [
+                  {
+                    model: ProductAttribute,
+                    attributes: ["type", "value"],
+                    as: "color",
+                  },
+                  {
+                    model: ProductAttribute,
+                    attributes: ["type", "value"],
+                    as: "storage",
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+      })
+    )?.toJSON() as ICart;
 
-    const date = await this.cartService.getAll(options);
+    // const options: any = {
+    //   offset,
+    //   limit,
+    //   order: [[orderBy, order]],
+    //   where: { cartId: cart?.id },
+    //   include: [
+    //     {
+    //       model: Product,
+    //       attributes: ["id", `${nameColumn}`, `${descriptionColumn}`, "image"],
+    //     },
+    //     {
+    //       model: ProductSku,
+    //       attributes: ["sku", "price"],
+    //       include: [
+    //         {
+    //           model: ProductAttribute,
+    //           attributes: ["type", "value"],
+    //           as: "color",
+    //         },
+    //         {
+    //           model: ProductAttribute,
+    //           attributes: ["type", "value"],
+    //           as: "storage",
+    //         },
+    //       ],
+    //     },
+    //   ],
+    // };
 
-    return date;
+    // const date = await this.cartService.getAll(options);
+
+    return foundCart;
   }
 }
