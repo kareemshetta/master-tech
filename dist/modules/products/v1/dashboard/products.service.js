@@ -516,6 +516,9 @@ class PrdouctService {
         }
         return;
     }
+    async count(options = {}) {
+        return this.productRepo.count(options);
+    }
 }
 exports.PrdouctService = PrdouctService;
 PrdouctService.instance = null;
