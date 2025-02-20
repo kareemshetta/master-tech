@@ -21,18 +21,21 @@ import Product from "../../../../models/products.model";
 import ProductAttribute from "../../../../models/product_attributes.model";
 import Screen from "../../../../models/screen.model";
 import Processor from "../../../../models/processor.model";
+import ProcessorService from "../../../processors/v1/website/processors.service";
 export class ProductController {
   private static instance: ProductController | null = null;
   private service: PrdouctService;
   private brandService: BrandService;
   private CategoreyService: CategoryService;
   private storeService: StoreService;
+  private processorService: ProcessorService;
 
   private constructor() {
     this.service = PrdouctService.getInstance();
     this.brandService = BrandService.getInstance();
     this.CategoreyService = CategoryService.getInstance();
     this.storeService = StoreService.getInstance();
+    this.processorService = ProcessorService.getInstance();
   }
 
   public static getInstance(): ProductController {
@@ -62,6 +65,7 @@ export class ProductController {
     await this.brandService.findOneByIdOrThrowError(storeData.brandId!);
     await this.CategoreyService.findOneByIdOrThrowError(storeData.categoryId!);
     await this.storeService.findOneByIdOrThrowError(storeData.storeId!);
+    await this.processorService.findOneByIdOrThrowError(storeData.processorId!);
     const colorsAttributesIDs = storeData.skus!.map(
       (attr) => attr.colorAttributeId!
     );
@@ -127,6 +131,11 @@ export class ProductController {
       );
     if (updateData.storeId)
       await this.storeService.findOneByIdOrThrowError(updateData.storeId!);
+
+    if (updateData.processorId)
+      await this.processorService.findOneByIdOrThrowError(
+        updateData.processorId!
+      );
     if (updateData.skus && updateData) {
       const colorsAttributesIDs = updateData.skus!.map(
         (attr) => attr.colorAttributeId!

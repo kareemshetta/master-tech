@@ -57,14 +57,14 @@ export class PrdouctService {
       const screen = (
         await this.screenRepo.create(data.screen, { transaction })
       ).toJSON() as IScreen;
-      const processor = (
-        await this.processorRepo.create(data.processor, {
-          transaction,
-        })
-      ).toJSON() as IProcessor;
+      // const processor = (
+      //   await this.processorRepo.create(data.processor, {
+      //     transaction,
+      //   })
+      // ).toJSON() as IProcessor;
 
       const product = await this.productRepo.create(
-        { ...data, processorId: processor.id, screenId: screen.id },
+        { ...data, screenId: screen.id },
         { transaction }
       );
 
@@ -95,12 +95,12 @@ export class PrdouctService {
         });
       }
 
-      if (data.processor?.id) {
-        await this.processorRepo.update(data.processor, {
-          transaction,
-          where: { id: data.processor.id },
-        });
-      }
+      // if (data.processor?.id) {
+      //   await this.processorRepo.update(data.processor, {
+      //     transaction,
+      //     where: { id: data.processor.id },
+      //   });
+      // }
 
       const product = await this.productRepo.update(
         { ...data },
