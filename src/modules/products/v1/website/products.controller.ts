@@ -440,12 +440,14 @@ export class ProductController {
       battery,
       ram,
       screenSize,
+      isAcc,
     } = req.query;
 
     const lng = req.language;
     const userId = req.user?.id;
     const nameColumn = lng === "ar" ? "nameAr" : "name";
     const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+
     this.service.validateGetAllStoresQuery({
       search,
       maxPrice,
@@ -515,13 +517,13 @@ export class ProductController {
         },
         { model: Review, attributes: [] },
         {
-          required: true,
+          required: !isAcc ? true : false,
           model: ProductSku,
           attributes: ["id"],
           as: "skus",
           include: [
             {
-              required: true,
+              required: !isAcc ? true : false,
               model: ProductAttribute,
               attributes: ["id", "type", "value"],
               where: {},
@@ -552,12 +554,12 @@ export class ProductController {
         },
         {
           model: ProductSku,
-          required: true,
+          required: !isAcc ? true : false,
           attributes: [],
           as: "skus",
           include: [
             {
-              required: true,
+              required: !isAcc ? true : false,
               model: ProductAttribute,
               attributes: [],
               where: {},

@@ -361,7 +361,7 @@ class ProductController {
     async getAll(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, storageId, processorIds, battery, ram, screenSize, } = req.query;
+        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, storageId, processorIds, battery, ram, screenSize, isAcc, } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -425,20 +425,28 @@ class ProductController {
                 },
                 { model: review_model_1.default, attributes: [] },
                 {
+                    required: !isAcc ? true : false,
                     model: product_skus_model_1.ProductSku,
-                    attributes: [],
+                    attributes: ["id"],
                     as: "skus",
                     include: [
                         {
+                            required: !isAcc ? true : false,
                             model: product_attributes_model_1.default,
                             attributes: ["id", "type", "value"],
                             where: {},
-                            as: "color",
+                            as: "storage",
                         },
                     ],
                 },
             ],
-            group: ["Product.id", "store.id", "category.id"],
+            group: [
+                "Product.id",
+                "store.id",
+                "category.id",
+                "skus.id",
+                "skus->storage.id",
+            ],
             subQuery: false,
         };
         const countOption = {
@@ -451,6 +459,21 @@ class ProductController {
                     model: screen_model_1.default,
                     attributes: [],
                     where: {},
+                },
+                {
+                    model: product_skus_model_1.ProductSku,
+                    required: !isAcc ? true : false,
+                    attributes: [],
+                    as: "skus",
+                    include: [
+                        {
+                            required: !isAcc ? true : false,
+                            model: product_attributes_model_1.default,
+                            attributes: [],
+                            where: {},
+                            as: "storage",
+                        },
+                    ],
                 },
             ],
         };
@@ -499,6 +522,10 @@ class ProductController {
             this.service.validateBrandsIds({ brandIds: brandIds.split(",") });
             options.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
             countOption.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
+        }
+        if (storageId) {
+            options.include[4].include[0].where.id = storageId;
+            countOption.include[1].include[0].where.id = storageId;
         }
         if (processorIds) {
             processorIds = processorIds.toString();
