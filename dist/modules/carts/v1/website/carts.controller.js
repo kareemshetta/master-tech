@@ -13,6 +13,7 @@ const cartItem_model_1 = __importDefault(require("../../../../models/cartItem.mo
 const products_service_1 = __importDefault(require("../../../products/v1/dashboard/products.service"));
 const appError_1 = require("../../../../utils/appError");
 const config_1 = __importDefault(require("../../../../config/db/config"));
+const stores_model_1 = __importDefault(require("../../../../models/stores.model"));
 class CartController {
     constructor() {
         this.cartService = carts_service_1.default.getInstance();
@@ -132,6 +133,13 @@ class CartController {
                                 `${nameColumn}`,
                                 `${descriptionColumn}`,
                                 "image",
+                            ],
+                            include: [
+                                {
+                                    model: stores_model_1.default,
+                                    attributes: ["allowShipping", nameColumn],
+                                    as: "store",
+                                },
                             ],
                         },
                         {
