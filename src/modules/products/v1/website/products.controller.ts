@@ -515,20 +515,28 @@ export class ProductController {
         },
         { model: Review, attributes: [] },
         {
+          required: true,
           model: ProductSku,
-          attributes: [],
+          attributes: ["id"],
           as: "skus",
           include: [
             {
+              required: true,
               model: ProductAttribute,
               attributes: ["id", "type", "value"],
               where: {},
-              as: "color",
+              as: "storage",
             },
           ],
         },
       ],
-      group: ["Product.id", "store.id", "category.id"],
+      group: [
+        "Product.id",
+        "store.id",
+        "category.id",
+        "skus.id",
+        "skus->storage.id",
+      ],
       subQuery: false,
     };
     const countOption: any = {
@@ -541,6 +549,21 @@ export class ProductController {
           model: Screen,
           attributes: [],
           where: {},
+        },
+        {
+          model: ProductSku,
+          required: true,
+          attributes: [],
+          as: "skus",
+          include: [
+            {
+              required: true,
+              model: ProductAttribute,
+              attributes: [],
+              where: {},
+              as: "storage",
+            },
+          ],
         },
       ],
     };
@@ -591,6 +614,10 @@ export class ProductController {
       this.service.validateBrandsIds({ brandIds: brandIds.split(",") });
       options.where.brandId = { [Op.in]: brandIds.split(",") };
       countOption.where.brandId = { [Op.in]: brandIds.split(",") };
+    }
+    if (storageId) {
+      options.include[4].include[0].where.id = storageId;
+      countOption.include[1].include[0].where.id = storageId;
     }
     if (processorIds) {
       processorIds = processorIds.toString();
