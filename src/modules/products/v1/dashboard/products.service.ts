@@ -1,4 +1,10 @@
-import { FindAndCountOptions, FindOptions, Op, Transaction } from "sequelize";
+import {
+  CountOptions,
+  FindAndCountOptions,
+  FindOptions,
+  Op,
+  Transaction,
+} from "sequelize";
 import {
   IAttributes,
   ICategory,
@@ -590,6 +596,9 @@ export class PrdouctService {
       throw new ValidationError(error.message);
     }
     return;
+  }
+  public async count(options: CountOptions = {}) {
+    return this.productRepo.count(options);
   }
 }
 
