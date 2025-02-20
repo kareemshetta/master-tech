@@ -31,10 +31,12 @@ class PrdouctService {
         try {
             transaction = await config_1.default.transaction();
             const screen = (await this.screenRepo.create(data.screen, { transaction })).toJSON();
-            const processor = (await this.processorRepo.create(data.processor, {
-                transaction,
-            })).toJSON();
-            const product = await this.productRepo.create({ ...data, processorId: processor.id, screenId: screen.id }, { transaction });
+            // const processor = (
+            //   await this.processorRepo.create(data.processor, {
+            //     transaction,
+            //   })
+            // ).toJSON() as IProcessor;
+            const product = await this.productRepo.create({ ...data, screenId: screen.id }, { transaction });
             const productId = product.getDataValue("id");
             const skus = data.skus.map((sku) => ({
                 ...sku,
@@ -60,12 +62,12 @@ class PrdouctService {
                     where: { id: data.screen.id },
                 });
             }
-            if (data.processor?.id) {
-                await this.processorRepo.update(data.processor, {
-                    transaction,
-                    where: { id: data.processor.id },
-                });
-            }
+            // if (data.processor?.id) {
+            //   await this.processorRepo.update(data.processor, {
+            //     transaction,
+            //     where: { id: data.processor.id },
+            //   });
+            // }
             const product = await this.productRepo.update({ ...data }, { transaction, where: { id: data.id }, returning: true });
             if (data.skus && data.skus.length > 0) {
                 await this.skuRepo.delete({

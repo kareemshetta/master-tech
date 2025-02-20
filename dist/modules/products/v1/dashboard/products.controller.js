@@ -20,12 +20,14 @@ const product_skus_model_1 = require("../../../../models/product_skus.model");
 const product_attributes_model_1 = __importDefault(require("../../../../models/product_attributes.model"));
 const screen_model_1 = __importDefault(require("../../../../models/screen.model"));
 const processor_model_1 = __importDefault(require("../../../../models/processor.model"));
+const processors_service_1 = __importDefault(require("../../../processors/v1/website/processors.service"));
 class ProductController {
     constructor() {
         this.service = products_service_1.default.getInstance();
         this.brandService = brands_service_1.default.getInstance();
         this.CategoreyService = categories_service_1.default.getInstance();
         this.storeService = stores_service_1.default.getInstance();
+        this.processorService = processors_service_1.default.getInstance();
     }
     static getInstance() {
         if (!ProductController.instance) {
@@ -52,6 +54,7 @@ class ProductController {
         await this.brandService.findOneByIdOrThrowError(storeData.brandId);
         await this.CategoreyService.findOneByIdOrThrowError(storeData.categoryId);
         await this.storeService.findOneByIdOrThrowError(storeData.storeId);
+        await this.processorService.findOneByIdOrThrowError(storeData.processorId);
         const colorsAttributesIDs = storeData.skus.map((attr) => attr.colorAttributeId);
         const storageAttributesIDs = storeData.skus.map((attr) => attr.storageAttributeId);
         const ids = [...colorsAttributesIDs, ...storageAttributesIDs];
@@ -98,6 +101,8 @@ class ProductController {
             await this.CategoreyService.findOneByIdOrThrowError(updateData.categoryId);
         if (updateData.storeId)
             await this.storeService.findOneByIdOrThrowError(updateData.storeId);
+        if (updateData.processorId)
+            await this.processorService.findOneByIdOrThrowError(updateData.processorId);
         if (updateData.skus && updateData) {
             const colorsAttributesIDs = updateData.skus.map((attr) => attr.colorAttributeId);
             const storageAttributesIDs = updateData.skus.map((attr) => attr.storageAttributeId);
