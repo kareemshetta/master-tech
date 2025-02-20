@@ -52,7 +52,7 @@ Order.init(
     },
     shippingAddress: {
       type: DataTypes.JSON,
-      allowNull: false,
+      allowNull: true,
     },
     shortId: {
       type: DataTypes.STRING,

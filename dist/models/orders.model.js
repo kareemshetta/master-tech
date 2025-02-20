@@ -53,7 +53,7 @@ Order.init({
     },
     shippingAddress: {
         type: sequelize_1.DataTypes.JSON,
-        allowNull: false,
+        allowNull: true,
     },
     shortId: {
         type: sequelize_1.DataTypes.STRING,

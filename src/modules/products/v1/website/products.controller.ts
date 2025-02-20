@@ -435,6 +435,7 @@ export class ProductController {
       brandIds,
       storeId,
       categoryId,
+      storageId,
       processorIds,
       battery,
       ram,
@@ -513,6 +514,19 @@ export class ProductController {
           ],
         },
         { model: Review, attributes: [] },
+        {
+          model: ProductSku,
+          attributes: [],
+          as: "skus",
+          include: [
+            {
+              model: ProductAttribute,
+              attributes: ["id", "type", "value"],
+              where: {},
+              as: "color",
+            },
+          ],
+        },
       ],
       group: ["Product.id", "store.id", "category.id"],
       subQuery: false,

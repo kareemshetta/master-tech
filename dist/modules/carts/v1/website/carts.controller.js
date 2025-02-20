@@ -123,6 +123,7 @@ class CartController {
             where: { id: cart?.id },
             include: [
                 {
+                    order: [[orderBy, order]],
                     model: cartItem_model_1.default,
                     attributes: ["id", "quantity", "price"],
                     include: [

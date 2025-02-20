@@ -361,7 +361,7 @@ class ProductController {
     async getAll(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, processorIds, battery, ram, screenSize, } = req.query;
+        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, storageId, processorIds, battery, ram, screenSize, } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -424,6 +424,19 @@ class ProductController {
                     ],
                 },
                 { model: review_model_1.default, attributes: [] },
+                {
+                    model: product_skus_model_1.ProductSku,
+                    attributes: [],
+                    as: "skus",
+                    include: [
+                        {
+                            model: product_attributes_model_1.default,
+                            attributes: ["id", "type", "value"],
+                            where: {},
+                            as: "color",
+                        },
+                    ],
+                },
             ],
             group: ["Product.id", "store.id", "category.id"],
             subQuery: false,

@@ -67,7 +67,7 @@ class AttributeController {
     async getAllAttributes(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search } = req.query;
+        let { search, type } = req.query;
         this.attributesService.validateGetAllQuery({ search });
         const options = {
             offset,
@@ -83,6 +83,9 @@ class AttributeController {
                     config_1.default.where(config_1.default.fn("LOWER", config_1.default.col(`product_attributes."value"`)), "LIKE", "%" + search.toLowerCase() + "%"),
                 ],
             };
+        }
+        if (type) {
+            options.where.type = type;
         }
         const date = await this.attributesService.getAll(options);
         return date;
