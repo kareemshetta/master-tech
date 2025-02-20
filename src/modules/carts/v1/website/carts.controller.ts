@@ -16,6 +16,7 @@ import PrdouctService from "../../../products/v1/dashboard/products.service";
 import { AppError } from "../../../../utils/appError";
 import sequelize from "../../../../config/db/config";
 import { log } from "console";
+import Store from "../../../../models/stores.model";
 export class CartController {
   private static instance: CartController | null = null;
   private cartService: CartService;
@@ -162,6 +163,13 @@ export class CartController {
                   `${nameColumn}`,
                   `${descriptionColumn}`,
                   "image",
+                ],
+                include: [
+                  {
+                    model: Store,
+                    attributes: ["allowShipping", nameColumn],
+                    as: "store",
+                  },
                 ],
               },
               {
