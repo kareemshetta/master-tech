@@ -12,6 +12,7 @@ class AuthView {
         this.loginUser = this.loginUser.bind(this);
         this.getOneById = this.getOneById.bind(this);
         this.signUp = this.signUp.bind(this);
+        this.updateProfile = this.updateProfile.bind(this);
         // this.updateBill = this.updateBill.bind(this);
         this.deleteOne = this.deleteOne.bind(this);
     }
@@ -23,6 +24,13 @@ class AuthView {
     }
     async loginUser(req, res) {
         const trainer = await this.controller.login(req);
+        res.send({
+            data: trainer,
+            message: req.t("responses.succes"),
+        });
+    }
+    async updateProfile(req, res) {
+        const trainer = await this.controller.update(req);
         res.send({
             data: trainer,
             message: req.t("responses.succes"),

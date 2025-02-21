@@ -14,5 +14,6 @@ router.route("/login").post((0, async_wrapper_1.default)(view.loginUser));
 router
     .route("/get_my_profile")
     .get((0, async_wrapper_1.default)(auth_middleware_1.authenticateAdmin), (0, async_wrapper_1.default)(view.getOneById))
+    .put((0, async_wrapper_1.default)(auth_middleware_1.authenticateAdmin), (0, async_wrapper_1.default)(view.updateProfile))
     .delete((0, async_wrapper_1.default)(view.deleteOne));
 exports.default = router;

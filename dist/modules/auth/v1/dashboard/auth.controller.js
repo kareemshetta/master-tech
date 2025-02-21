@@ -8,6 +8,7 @@ const handle_sort_pagination_1 = require("../../../../utils/handle-sort-paginati
 const generalFunctions_1 = require("../../../../utils/generalFunctions");
 const appError_1 = require("../../../../utils/appError");
 const admins_service_1 = __importDefault(require("../../../admins/v1/dashboard/admins.service"));
+const sequelize_1 = require("sequelize");
 class AuthController {
     constructor() {
         this.service = admins_service_1.default.getInstance();
@@ -67,7 +68,22 @@ class AuthController {
         return { date: found, token };
     }
     async update(req) {
-        const { id } = req.params;
+        const { id } = req.user;
+        (0, generalFunctions_1.validateUUID)(id, "invalid user id");
+        const body = req.body;
+        this.service.validateUpdateAdmin(body);
+        if (body.email) {
+            const found = await this.service.findOne({
+                where: { email: body.email?.toLowerCase(), id: { [sequelize_1.Op.ne]: id } },
+            });
+            if (found) {
+                throw new appError_1.AppError("entityWithEmialExist", 409);
+            }
+        }
+        const admin = await this.service.findOneByIdOrThrowError(id);
+        const updated = (await admin.update(body, { returning: true })).toJSON();
+        delete updated.password;
+        return updated;
         // Implementation commented out in original code
     }
     async getOne(req) {
