@@ -330,10 +330,10 @@ class ProductController {
                     model: brands_model_1.default,
                     attributes: [[config_1.default.literal(`brand."${nameColumn}"`), "name"]],
                 },
-                {
-                    model: categories_model_1.default,
-                    attributes: [[config_1.default.literal(`category."${nameColumn}"`), "name"]],
-                },
+                // {
+                //   model: Category,
+                //   attributes: [[sequelize.literal(`category."${nameColumn}"`), "name"]],
+                // },
                 {
                     model: stores_model_1.default,
                     attributes: [
@@ -361,7 +361,9 @@ class ProductController {
     async getAll(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, storageId, processorIds, battery, ram, screenSize, isAcc, } = req.query;
+        let { search, maxPrice, minPrice, brandIds, storeId, 
+        // categoryId,
+        categoryType, storageId, processorIds, battery, ram, screenSize, isAcc, } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -372,6 +374,7 @@ class ProductController {
             minPrice,
             battery,
             ram,
+            categoryType,
         });
         const options = {
             attributes: [
@@ -390,6 +393,7 @@ class ProductController {
                 "storeId",
                 "image",
                 "discount",
+                "categoryType",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",
@@ -415,14 +419,14 @@ class ProductController {
                     ],
                     as: "store",
                 },
-                {
-                    model: categories_model_1.default,
-                    attributes: [
-                        [config_1.default.literal(`category."${nameColumn}"`), "name"],
-                        "id",
-                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
-                    ],
-                },
+                // {
+                //   model: Category,
+                //   attributes: [
+                //     [sequelize.literal(`category."${nameColumn}"`), "name"],
+                //     "id",
+                //     // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                //   ],
+                // },
                 { model: review_model_1.default, attributes: [] },
                 {
                     required: !isAcc ? true : false,
@@ -443,7 +447,7 @@ class ProductController {
             group: [
                 "Product.id",
                 "store.id",
-                "category.id",
+                // "category.id",
                 "skus.id",
                 "skus->storage.id",
             ],
@@ -481,9 +485,9 @@ class ProductController {
             options.where.storeId = storeId;
             countOption.where.storeId = storeId;
         }
-        if (categoryId) {
-            options.where.categoryId = categoryId;
-            countOption.where.categoryId = categoryId;
+        if (categoryType) {
+            options.where.categoryType = categoryType;
+            countOption.where.categoryType = categoryType;
         }
         if (userId)
             options.attributes.push([
@@ -524,7 +528,7 @@ class ProductController {
             countOption.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
         }
         if (storageId) {
-            options.include[4].include[0].where.id = storageId;
+            options.include[3].include[0].where.id = storageId;
             countOption.include[1].include[0].where.id = storageId;
         }
         if (processorIds) {
@@ -557,7 +561,7 @@ class ProductController {
     async getAllTopRated(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, battery, ram, screenSize, } = req.query;
+        let { search, maxPrice, minPrice, brandIds, storeId, categoryId, battery, ram, screenSize, categoryType, } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -568,6 +572,7 @@ class ProductController {
             minPrice,
             battery,
             ram,
+            categoryType,
         });
         const options = {
             attributes: [
@@ -587,6 +592,7 @@ class ProductController {
                 "image",
                 "discount",
                 "grantee",
+                "categoryType",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",
@@ -608,16 +614,16 @@ class ProductController {
                     ],
                     as: "store",
                 },
-                {
-                    model: categories_model_1.default,
-                    attributes: [
-                        [config_1.default.literal(`category."${nameColumn}"`), "name"],
-                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
-                    ],
-                },
+                // {
+                //   model: Category,
+                //   attributes: [
+                //     [sequelize.literal(`category."${nameColumn}"`), "name"],
+                //     // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                //   ],
+                // },
                 { model: review_model_1.default, attributes: [] },
             ],
-            group: ["Product.id", "store.id", "category.id"],
+            group: ["Product.id", "store.id"],
             subQuery: false,
         };
         const countOption = {
@@ -637,9 +643,9 @@ class ProductController {
             options.where.storeId = storeId;
             countOption.where.storeId = storeId;
         }
-        if (categoryId) {
-            options.where.categoryId = categoryId;
-            countOption.where.categoryId = categoryId;
+        if (categoryType) {
+            options.where.categoryType = categoryType;
+            countOption.where.categoryType = categoryType;
         }
         if (userId)
             options.attributes.push([
@@ -709,7 +715,7 @@ class ProductController {
     async getALike(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, battery, ram, } = req.query;
+        let { search, maxPrice, minPrice, categoryType, battery, ram } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const { id } = req.params;
@@ -722,13 +728,14 @@ class ProductController {
             minPrice,
             battery,
             ram,
+            categoryType,
         });
         const product = (await this.service.findOneByIdOrThrowError(id, {
             attributes: [
                 "id",
                 "brandId",
                 "storeId",
-                "categoryId",
+                "categoryType",
                 [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],
             ],
         })).toJSON();
@@ -749,6 +756,7 @@ class ProductController {
                 "image",
                 "discount",
                 "grantee",
+                "categoryType",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",
@@ -769,16 +777,16 @@ class ProductController {
                     ],
                     as: "store",
                 },
-                {
-                    model: categories_model_1.default,
-                    attributes: [
-                        [config_1.default.literal(`category."${nameColumn}"`), "name"],
-                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
-                    ],
-                },
+                // {
+                //   model: Category,
+                //   attributes: [
+                //     [sequelize.literal(`category."${nameColumn}"`), "name"],
+                //     // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                //   ],
+                // },
                 { model: review_model_1.default, attributes: [] },
             ],
-            group: ["Product.id", "store.id", "category.id"],
+            group: ["Product.id", "store.id"],
             subQuery: false,
         };
         const countOption = {
@@ -789,8 +797,8 @@ class ProductController {
         };
         options.where.storeId = product.storeId;
         countOption.where.storeId = product.storeId;
-        options.where.categoryId = product.categoryId;
-        countOption.where.categoryId = product.categoryId;
+        options.where.categoryType = product.categoryType;
+        countOption.where.categoryType = product.categoryType;
         if (userId)
             options.attributes.push([
                 config_1.default.literal(`

@@ -13,6 +13,7 @@ const appError_1 = require("../../../../utils/appError");
 const attributes_repository_1 = __importDefault(require("../../../attributes/v1/attributes.repository"));
 const config_1 = __importDefault(require("../../../../config/db/config"));
 const user_product_favourite_repository_1 = __importDefault(require("../../../users/v1/user_product_favourite.repository"));
+const enums_1 = require("../../../../utils/enums");
 class PrdouctService {
     constructor() {
         this.productRepo = products_repository_1.default.getInstance();
@@ -521,6 +522,9 @@ class PrdouctService {
             ram: joi_1.default.number().min(1).max(200).allow(""),
             minPrice: joi_1.default.number().min(1).allow(""),
             maxPrice: joi_1.default.number().min(1).greater(joi_1.default.ref("minPrice")).allow(""),
+            categoryType: joi_1.default.string()
+                .valid(...Object.values(enums_1.CategoryType))
+                .allow(""),
         });
         const { error } = schema.validate(query);
         if (error) {

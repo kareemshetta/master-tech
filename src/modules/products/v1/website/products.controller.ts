@@ -396,10 +396,10 @@ export class ProductController {
           model: Brand,
           attributes: [[sequelize.literal(`brand."${nameColumn}"`), "name"]],
         },
-        {
-          model: Category,
-          attributes: [[sequelize.literal(`category."${nameColumn}"`), "name"]],
-        },
+        // {
+        //   model: Category,
+        //   attributes: [[sequelize.literal(`category."${nameColumn}"`), "name"]],
+        // },
         {
           model: Store,
           attributes: [
@@ -434,7 +434,8 @@ export class ProductController {
       minPrice,
       brandIds,
       storeId,
-      categoryId,
+      // categoryId,
+      categoryType,
       storageId,
       processorIds,
       battery,
@@ -454,6 +455,7 @@ export class ProductController {
       minPrice,
       battery,
       ram,
+      categoryType,
     });
     const options: any = {
       attributes: [
@@ -480,6 +482,7 @@ export class ProductController {
         "storeId",
         "image",
         "discount",
+        "categoryType",
         [
           sequelize.literal(
             'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
@@ -507,14 +510,14 @@ export class ProductController {
           ],
           as: "store",
         },
-        {
-          model: Category,
-          attributes: [
-            [sequelize.literal(`category."${nameColumn}"`), "name"],
-            "id",
-            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
-          ],
-        },
+        // {
+        //   model: Category,
+        //   attributes: [
+        //     [sequelize.literal(`category."${nameColumn}"`), "name"],
+        //     "id",
+        //     // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+        //   ],
+        // },
         { model: Review, attributes: [] },
         {
           required: !isAcc ? true : false,
@@ -535,7 +538,7 @@ export class ProductController {
       group: [
         "Product.id",
         "store.id",
-        "category.id",
+        // "category.id",
         "skus.id",
         "skus->storage.id",
       ],
@@ -574,9 +577,9 @@ export class ProductController {
       options.where.storeId = storeId;
       countOption.where.storeId = storeId;
     }
-    if (categoryId) {
-      options.where.categoryId = categoryId;
-      countOption.where.categoryId = categoryId;
+    if (categoryType) {
+      options.where.categoryType = categoryType;
+      countOption.where.categoryType = categoryType;
     }
 
     if (userId)
@@ -618,7 +621,7 @@ export class ProductController {
       countOption.where.brandId = { [Op.in]: brandIds.split(",") };
     }
     if (storageId) {
-      options.include[4].include[0].where.id = storageId;
+      options.include[3].include[0].where.id = storageId;
       countOption.include[1].include[0].where.id = storageId;
     }
     if (processorIds) {
@@ -679,6 +682,7 @@ export class ProductController {
       battery,
       ram,
       screenSize,
+      categoryType,
     } = req.query;
 
     const lng = req.language;
@@ -691,6 +695,7 @@ export class ProductController {
       minPrice,
       battery,
       ram,
+      categoryType,
     });
     const options: any = {
       attributes: [
@@ -718,6 +723,7 @@ export class ProductController {
         "image",
         "discount",
         "grantee",
+        "categoryType",
         [
           sequelize.literal(
             'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
@@ -741,16 +747,16 @@ export class ProductController {
           ],
           as: "store",
         },
-        {
-          model: Category,
-          attributes: [
-            [sequelize.literal(`category."${nameColumn}"`), "name"],
-            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
-          ],
-        },
+        // {
+        //   model: Category,
+        //   attributes: [
+        //     [sequelize.literal(`category."${nameColumn}"`), "name"],
+        //     // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+        //   ],
+        // },
         { model: Review, attributes: [] },
       ],
-      group: ["Product.id", "store.id", "category.id"],
+      group: ["Product.id", "store.id"],
       subQuery: false,
     };
     const countOption: any = {
@@ -779,9 +785,10 @@ export class ProductController {
       options.where.storeId = storeId;
       countOption.where.storeId = storeId;
     }
-    if (categoryId) {
-      options.where.categoryId = categoryId;
-      countOption.where.categoryId = categoryId;
+
+    if (categoryType) {
+      options.where.categoryType = categoryType;
+      countOption.where.categoryType = categoryType;
     }
 
     if (userId)
@@ -871,14 +878,7 @@ export class ProductController {
   public async getALike(req: Request) {
     // Calculate offset for pagination
     const { limit, offset, order, orderBy } = handlePaginationSort(req.query);
-    let {
-      search,
-      maxPrice,
-      minPrice,
-
-      battery,
-      ram,
-    } = req.query;
+    let { search, maxPrice, minPrice, categoryType, battery, ram } = req.query;
 
     const lng = req.language;
     const userId = req.user?.id;
@@ -892,6 +892,7 @@ export class ProductController {
       minPrice,
       battery,
       ram,
+      categoryType,
     });
 
     const product = (
@@ -900,7 +901,7 @@ export class ProductController {
           "id",
           "brandId",
           "storeId",
-          "categoryId",
+          "categoryType",
           [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
         ],
       })
@@ -931,6 +932,7 @@ export class ProductController {
         "image",
         "discount",
         "grantee",
+        "categoryType",
         [
           sequelize.literal(
             'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
@@ -953,16 +955,16 @@ export class ProductController {
           ],
           as: "store",
         },
-        {
-          model: Category,
-          attributes: [
-            [sequelize.literal(`category."${nameColumn}"`), "name"],
-            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
-          ],
-        },
+        // {
+        //   model: Category,
+        //   attributes: [
+        //     [sequelize.literal(`category."${nameColumn}"`), "name"],
+        //     // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+        //   ],
+        // },
         { model: Review, attributes: [] },
       ],
-      group: ["Product.id", "store.id", "category.id"],
+      group: ["Product.id", "store.id"],
       subQuery: false,
     };
     const countOption: any = {
@@ -975,8 +977,8 @@ export class ProductController {
     options.where.storeId = product.storeId;
     countOption.where.storeId = product.storeId;
 
-    options.where.categoryId = product.categoryId;
-    countOption.where.categoryId = product.categoryId;
+    options.where.categoryType = product.categoryType;
+    countOption.where.categoryType = product.categoryType;
 
     if (userId)
       options.attributes.push([

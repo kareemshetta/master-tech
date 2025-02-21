@@ -45,10 +45,16 @@ class CategoryService {
             })
                 .required(),
             name: joi_1.default.string().trim().max(255).required().messages({
-                "string.base": "Store name must be a string.",
-                "string.empty": "Store name cannot be empty.",
-                "string.max": "Store name cannot exceed 255 characters.",
-                "any.required": "Store name is required and cannot be null.",
+                "string.base": "name must be a string.",
+                "string.empty": "name cannot be empty.",
+                "string.max": "name cannot exceed 255 characters.",
+                "any.required": "name is required and cannot be null.",
+            }),
+            nameAr: joi_1.default.string().trim().max(255).required().messages({
+                "string.base": "nameAr must be a string.",
+                "string.empty": "nameAr cannot be empty.",
+                "string.max": "nameAr cannot exceed 255 characters.",
+                "any.required": "nameAr is required and cannot be null.",
             }),
             description: joi_1.default.string().trim().max(1000).allow("").messages({
                 "string.base": "Description must be a string.",
@@ -71,8 +77,12 @@ class CategoryService {
                 "string.pattern.base": "Image must have a valid file extension (jpg, jpeg, png, HEIF, svg).",
             }),
             name: joi_1.default.string().trim().max(255).messages({
-                "string.base": "Store name must be a string.",
-                "string.max": "Store name cannot exceed 255 characters.",
+                "string.base": "name must be a string.",
+                "string.max": "name cannot exceed 255 characters.",
+            }),
+            nameAr: joi_1.default.string().trim().max(255).messages({
+                "string.base": "nameAr must be a string.",
+                "string.max": "nameAr cannot exceed 255 characters.",
             }),
             description: joi_1.default.string().trim().max(1000).allow("").messages({
                 "string.base": "Description must be a string.",

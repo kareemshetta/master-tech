@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.ContactType = exports.ProductAttributesEnum = exports.UserStatus = void 0;
+exports.CategoryType = exports.ContactType = exports.ProductAttributesEnum = exports.UserStatus = void 0;
 var UserStatus;
 (function (UserStatus) {
     UserStatus["Active"] = "ACTIVE";
@@ -16,3 +16,8 @@ var ContactType;
     ContactType["Partner"] = "Partner";
     ContactType["Complaint"] = "Complaint";
 })(ContactType || (exports.ContactType = ContactType = {}));
+var CategoryType;
+(function (CategoryType) {
+    CategoryType["LAPTOP"] = "laptop";
+    CategoryType["ACCESSORY"] = "accessory";
+})(CategoryType || (exports.CategoryType = CategoryType = {}));

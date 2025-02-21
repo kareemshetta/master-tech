@@ -25,6 +25,8 @@ import {
   checkArraysWithSet,
   getNotIncludedIds,
 } from "../../../../utils/generalFunctions";
+import Category from "../../../../models/categories.model";
+import { CategoryType } from "../../../../utils/enums";
 
 export class PrdouctService {
   private static instance: PrdouctService | null = null;
@@ -222,11 +224,14 @@ export class PrdouctService {
         "string.empty": "Brand id cannot be empty.",
         "any.required": "Brand id is required and cannot be null.",
       }),
-      categoryId: Joi.string().trim().uuid().required().messages({
-        "string.base": "Category id must be a string.",
-        "string.empty": "Category id cannot be empty.",
-        "any.required": "Category id is required and cannot be null.",
-      }),
+      // categoryId: Joi.string().trim().uuid().required().messages({
+      //   "string.base": "Category id must be a string.",
+      //   "string.empty": "Category id cannot be empty.",
+      //   "any.required": "Category id is required and cannot be null.",
+      // }),
+      categoryType: Joi.string()
+        .valid(...Object.values(CategoryType))
+        .required(),
 
       image: Joi.string()
         .trim()
@@ -420,11 +425,14 @@ export class PrdouctService {
         "string.empty": "Brand id cannot be empty.",
         "any.required": "Brand id is required and cannot be null.",
       }),
-      categoryId: Joi.string().trim().uuid().required().messages({
-        "string.base": "Category id must be a string.",
-        "string.empty": "Category id cannot be empty.",
-        "any.required": "Category id is required and cannot be null.",
-      }),
+      categoryType: Joi.string()
+        .valid(...Object.values(CategoryType))
+        .required(),
+      // categoryId: Joi.string().trim().uuid().required().messages({
+      //   "string.base": "Category id must be a string.",
+      //   "string.empty": "Category id cannot be empty.",
+      //   "any.required": "Category id is required and cannot be null.",
+      // }),
 
       image: Joi.string()
         .trim()
@@ -565,6 +573,9 @@ export class PrdouctService {
         })
         .allow(""),
       ram: Joi.number().min(1).max(200).allow(""),
+      categoryType: Joi.string()
+        .valid(...Object.values(CategoryType))
+        .allow(""),
       minPrice: Joi.number().min(1).allow(""),
       maxPrice: Joi.number().min(1).greater(Joi.ref("minPrice")).allow(""),
     });

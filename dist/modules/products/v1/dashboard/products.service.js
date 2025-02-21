@@ -12,6 +12,7 @@ const joi_1 = __importDefault(require("joi"));
 const appError_1 = require("../../../../utils/appError");
 const attributes_repository_1 = __importDefault(require("../../../attributes/v1/attributes.repository"));
 const config_1 = __importDefault(require("../../../../config/db/config"));
+const enums_1 = require("../../../../utils/enums");
 class PrdouctService {
     constructor() {
         this.productRepo = products_repository_1.default.getInstance();
@@ -179,11 +180,14 @@ class PrdouctService {
                 "string.empty": "Brand id cannot be empty.",
                 "any.required": "Brand id is required and cannot be null.",
             }),
-            categoryId: joi_1.default.string().trim().uuid().required().messages({
-                "string.base": "Category id must be a string.",
-                "string.empty": "Category id cannot be empty.",
-                "any.required": "Category id is required and cannot be null.",
-            }),
+            // categoryId: Joi.string().trim().uuid().required().messages({
+            //   "string.base": "Category id must be a string.",
+            //   "string.empty": "Category id cannot be empty.",
+            //   "any.required": "Category id is required and cannot be null.",
+            // }),
+            categoryType: joi_1.default.string()
+                .valid(...Object.values(enums_1.CategoryType))
+                .required(),
             image: joi_1.default.string()
                 .trim()
                 .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
@@ -364,11 +368,14 @@ class PrdouctService {
                 "string.empty": "Brand id cannot be empty.",
                 "any.required": "Brand id is required and cannot be null.",
             }),
-            categoryId: joi_1.default.string().trim().uuid().required().messages({
-                "string.base": "Category id must be a string.",
-                "string.empty": "Category id cannot be empty.",
-                "any.required": "Category id is required and cannot be null.",
-            }),
+            categoryType: joi_1.default.string()
+                .valid(...Object.values(enums_1.CategoryType))
+                .required(),
+            // categoryId: Joi.string().trim().uuid().required().messages({
+            //   "string.base": "Category id must be a string.",
+            //   "string.empty": "Category id cannot be empty.",
+            //   "any.required": "Category id is required and cannot be null.",
+            // }),
             image: joi_1.default.string()
                 .trim()
                 .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
@@ -491,6 +498,9 @@ class PrdouctService {
             })
                 .allow(""),
             ram: joi_1.default.number().min(1).max(200).allow(""),
+            categoryType: joi_1.default.string()
+                .valid(...Object.values(enums_1.CategoryType))
+                .allow(""),
             minPrice: joi_1.default.number().min(1).allow(""),
             maxPrice: joi_1.default.number().min(1).greater(joi_1.default.ref("minPrice")).allow(""),
         });

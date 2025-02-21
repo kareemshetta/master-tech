@@ -52,7 +52,7 @@ class ProductController {
         //   throw new AppError("entityWithNameExist", 409);
         // }
         await this.brandService.findOneByIdOrThrowError(storeData.brandId);
-        await this.CategoreyService.findOneByIdOrThrowError(storeData.categoryId);
+        // await this.CategoreyService.findOneByIdOrThrowError(storeData.categoryId!);
         await this.storeService.findOneByIdOrThrowError(storeData.storeId);
         await this.processorService.findOneByIdOrThrowError(storeData.processorId);
         const colorsAttributesIDs = storeData.skus.map((attr) => attr.colorAttributeId);
@@ -97,8 +97,10 @@ class ProductController {
         // }
         if (updateData.brandId)
             await this.brandService.findOneByIdOrThrowError(updateData.brandId);
-        if (updateData.categoryId)
-            await this.CategoreyService.findOneByIdOrThrowError(updateData.categoryId);
+        // if (updateData.categoryId)
+        //   await this.CategoreyService.findOneByIdOrThrowError(
+        //     updateData.categoryId!
+        //   );
         if (updateData.storeId)
             await this.storeService.findOneByIdOrThrowError(updateData.storeId);
         if (updateData.processorId)
@@ -153,6 +155,7 @@ class ProductController {
                 ],
                 "brandId",
                 "categoryId",
+                "categoryType",
                 "storeId",
                 "screenId",
                 "processorId",
@@ -222,7 +225,7 @@ class ProductController {
     async getAll(req) {
         // Calculate offset for pagination
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
-        let { search, maxPrice, minPrice, brandIds, categoryIds, battery, ram } = req.query;
+        let { search, maxPrice, minPrice, brandIds, categoryIds, categoryType, battery, ram, } = req.query;
         let storeId = req.user?.storeId;
         const lng = req.language;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
@@ -246,6 +249,7 @@ class ProductController {
                 "image",
                 "discount",
                 "grantee",
+                "categoryType",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",
@@ -277,6 +281,8 @@ class ProductController {
         };
         if (storeId)
             options.where.storeId = storeId;
+        if (categoryType)
+            options.where.categoryType = categoryType;
         if (maxPrice && minPrice) {
             options.where.basePrice = {
                 [sequelize_1.Op.between]: [Number(minPrice), Number(maxPrice)],

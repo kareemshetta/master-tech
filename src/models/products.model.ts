@@ -1,5 +1,6 @@
 import { DataTypes, Model } from "sequelize";
 import sequelize from "../config/db/config";
+import { CategoryType } from "../utils/enums";
 class Product extends Model {}
 
 Product.init(
@@ -19,6 +20,10 @@ Product.init(
     },
     description: {
       type: DataTypes.TEXT,
+    },
+    categoryType: {
+      type: DataTypes.STRING,
+      defaultValue: CategoryType.LAPTOP,
     },
     descriptionAr: {
       type: DataTypes.TEXT,

@@ -23,6 +23,7 @@ import { ValidationError } from "../../../../utils/appError";
 import ProductAttributesRepository from "../../../attributes/v1/attributes.repository";
 import sequelize from "../../../../config/db/config";
 import UserProductFavouriteRepo from "../../../users/v1/user_product_favourite.repository";
+import { CategoryType } from "../../../../utils/enums";
 
 export class PrdouctService {
   private static instance: PrdouctService | null = null;
@@ -581,6 +582,7 @@ export class PrdouctService {
     ram?: any;
     minPrice?: any;
     maxPrice?: any;
+    categoryType?: any;
   }) {
     const schema = Joi.object({
       search: Joi.string().trim().max(255).allow("").messages({
@@ -597,6 +599,9 @@ export class PrdouctService {
       ram: Joi.number().min(1).max(200).allow(""),
       minPrice: Joi.number().min(1).allow(""),
       maxPrice: Joi.number().min(1).greater(Joi.ref("minPrice")).allow(""),
+      categoryType: Joi.string()
+        .valid(...Object.values(CategoryType))
+        .allow(""),
     });
 
     const { error } = schema.validate(query);

@@ -5,6 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const sequelize_1 = require("sequelize");
 const config_1 = __importDefault(require("../config/db/config"));
+const enums_1 = require("../utils/enums");
 class Product extends sequelize_1.Model {
 }
 Product.init({
@@ -23,6 +24,10 @@ Product.init({
     },
     description: {
         type: sequelize_1.DataTypes.TEXT,
+    },
+    categoryType: {
+        type: sequelize_1.DataTypes.STRING,
+        defaultValue: enums_1.CategoryType.LAPTOP,
     },
     descriptionAr: {
         type: sequelize_1.DataTypes.TEXT,

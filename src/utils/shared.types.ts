@@ -123,6 +123,7 @@ export interface IProduct {
   skus?: ISku[];
   createdAt?: string;
   updatedAt?: string;
+  categoryType?: string;
 }
 
 export interface MulterRequest extends Request {
