@@ -181,6 +181,7 @@ class ProductController {
             "processorId",
             "ram",
             "battery",
+            "categoryType",
         ];
         // Add favorite literal conditionally
         if (userId)

@@ -232,6 +232,7 @@ export class ProductController {
       "processorId",
       "ram",
       "battery",
+      "categoryType",
     ];
 
     // Add favorite literal conditionally
