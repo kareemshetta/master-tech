@@ -100,7 +100,30 @@ export class CartController {
     this.cartService.validateUpdateItem({ ...updateData, id });
 
     // Find the cat first
-    const cat = await this.cartService.findOneByIdOrThrowError(id);
+    const cat: any = await this.cartService.findOneByIdOrThrowError(id, {
+      include: {
+        model: Product,
+        attributes: ["id", "categoryType", "quantity"],
+      },
+    });
+
+    // console.log("cat", cat.Product.dataValues);
+
+    if (
+      cat.Product.dataValues.categoryType == CategoryType.ACCESSORY &&
+      cat.Product.dataValues.quantity! < updateData.quantity!
+    ) {
+      throw new AppError("productQuantityLessThanOrder", 422);
+    }
+
+    if (cat.Product.dataValues.categoryType == CategoryType.LAPTOP) {
+      const sku = (await this.productSkuRepo.findOneByIdOrThrowError(
+        cat.skuId!
+      )) as ISku;
+      if (sku.quantity! < updateData.quantity!) {
+        throw new AppError("productQuantityLessThanOrder", 422);
+      }
+    }
 
     // Update the cat
     const updatedCat = await cat.update(updateData);
