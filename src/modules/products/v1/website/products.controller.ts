@@ -23,6 +23,7 @@ import Screen from "../../../../models/screen.model";
 import Processor from "../../../../models/processor.model";
 import { Literal } from "sequelize/types/utils";
 import Review from "../../../../models/review.model";
+import { CategoryType } from "../../../../utils/enums";
 export class ProductController {
   private static instance: ProductController | null = null;
   private service: PrdouctService;
@@ -504,6 +505,7 @@ export class ProductController {
       where: {},
       include: [
         {
+          required: !isAcc ? true : false,
           model: Screen,
           attributes: [],
           where: {},
@@ -559,6 +561,7 @@ export class ProductController {
       where: {},
       include: [
         {
+          required: !isAcc ? true : false,
           model: Screen,
           attributes: [],
           where: {},
@@ -640,7 +643,7 @@ export class ProductController {
       options.where.processorId = { [Op.in]: processorIds.split(",") };
       countOption.where.processorId = { [Op.in]: processorIds.split(",") };
     }
-    if (screenSize) {
+    if (screenSize && !isAcc && categoryType == CategoryType.LAPTOP) {
       options.include[0].where.size = screenSize;
       countOption.include[0].where.size = screenSize;
     }

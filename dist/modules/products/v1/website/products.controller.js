@@ -21,6 +21,7 @@ const product_attributes_model_1 = __importDefault(require("../../../../models/p
 const screen_model_1 = __importDefault(require("../../../../models/screen.model"));
 const processor_model_1 = __importDefault(require("../../../../models/processor.model"));
 const review_model_1 = __importDefault(require("../../../../models/review.model"));
+const enums_1 = require("../../../../utils/enums");
 class ProductController {
     // private favouriteLiteral: string|Literal;
     constructor() {
@@ -411,6 +412,7 @@ class ProductController {
             where: {},
             include: [
                 {
+                    required: !isAcc ? true : false,
                     model: screen_model_1.default,
                     attributes: [],
                     where: {},
@@ -466,6 +468,7 @@ class ProductController {
             where: {},
             include: [
                 {
+                    required: !isAcc ? true : false,
                     model: screen_model_1.default,
                     attributes: [],
                     where: {},
@@ -545,7 +548,7 @@ class ProductController {
             options.where.processorId = { [sequelize_1.Op.in]: processorIds.split(",") };
             countOption.where.processorId = { [sequelize_1.Op.in]: processorIds.split(",") };
         }
-        if (screenSize) {
+        if (screenSize && !isAcc && categoryType == enums_1.CategoryType.LAPTOP) {
             options.include[0].where.size = screenSize;
             countOption.include[0].where.size = screenSize;
         }
