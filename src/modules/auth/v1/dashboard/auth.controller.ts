@@ -11,6 +11,7 @@ import { Request, Response } from "express";
 import { AppError } from "../../../../utils/appError";
 
 import AdminService from "../../../admins/v1/dashboard/admins.service";
+import { Op } from "sequelize";
 
 export class AuthController {
   private static instance: AuthController | null = null;
@@ -91,7 +92,30 @@ export class AuthController {
   }
 
   async update(req: any) {
-    const { id } = req.params;
+    const { id } = req.user;
+    validateUUID(id, "invalid user id");
+
+    const body = req.body as IAdmin;
+
+    this.service.validateUpdateAdmin(body);
+    if (body.email) {
+      const found = await this.service.findOne({
+        where: { email: body.email?.toLowerCase(), id: { [Op.ne]: id } },
+      });
+
+      if (found) {
+        throw new AppError("entityWithEmialExist", 409);
+      }
+    }
+
+    const admin = await this.service.findOneByIdOrThrowError(id);
+    const updated = (
+      await admin.update(body, { returning: true })
+    ).toJSON() as IAdmin;
+
+    delete updated.password;
+    return updated;
+
     // Implementation commented out in original code
   }
 

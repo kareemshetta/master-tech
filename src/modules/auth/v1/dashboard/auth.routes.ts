@@ -13,6 +13,7 @@ router.route("/login").post(asyncWrapper(view.loginUser));
 router
   .route("/get_my_profile")
   .get(asyncWrapper(authenticateAdmin), asyncWrapper(view.getOneById))
+  .put(asyncWrapper(authenticateAdmin), asyncWrapper(view.updateProfile))
   .delete(asyncWrapper(view.deleteOne));
 
 export default router;
