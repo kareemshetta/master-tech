@@ -10,7 +10,9 @@ class ProductView {
         this.getOneById = this.getOneById.bind(this);
         this.getAll = this.getAll.bind(this);
         this.update = this.update.bind(this);
+        this.updateAccessory = this.updateAccessory.bind(this);
         this.deleteOne = this.deleteOne.bind(this);
+        this.createAccessory = this.createAccessory.bind(this);
     }
     static getInstance() {
         if (!ProductView.instance) {
@@ -20,6 +22,13 @@ class ProductView {
     }
     async create(req, res) {
         const trainer = await this.controller.create(req);
+        res.send({
+            data: trainer,
+            message: req.t("responses.succes"),
+        });
+    }
+    async createAccessory(req, res) {
+        const trainer = await this.controller.createAccessory(req);
         res.send({
             data: trainer,
             message: req.t("responses.succes"),
@@ -41,6 +50,13 @@ class ProductView {
     }
     async update(req, res) {
         const trainer = await this.controller.update(req);
+        res.send({
+            data: trainer,
+            message: req.t("responses.succes"),
+        });
+    }
+    async updateAccessory(req, res) {
+        const trainer = await this.controller.updateAccessory(req);
         res.send({
             data: trainer,
             message: req.t("responses.succes"),

@@ -75,6 +75,22 @@ class ProductController {
         const product = await this.service.create(storeData);
         return product;
     }
+    async createAccessory(req) {
+        const storeData = req.body;
+        let storeId = req.user?.storeId;
+        // Validate the incoming data
+        if (storeId && storeData.storeId && storeId !== storeData.storeId) {
+            throw new appError_1.AppError("forbiden", 403);
+        }
+        if (req.user?.role !== "superAdmin")
+            storeData.storeId = storeId;
+        this.service.validateCreateAccessory(storeData);
+        await this.brandService.findOneByIdOrThrowError(storeData.brandId);
+        await this.storeService.findOneByIdOrThrowError(storeData.storeId);
+        // Create the product
+        const product = await this.service.create(storeData);
+        return product;
+    }
     async update(req) {
         const { id } = req.params;
         const storeId = req.user?.storeId;
@@ -123,6 +139,25 @@ class ProductController {
                 throw new appError_1.AppError("attNotFoundWithReplacer", 404, (0, generalFunctions_1.getNotIncludedIds)(ids, attIds).join(", "));
             }
         }
+        const updated = await this.service.update(updateData);
+        return updated;
+    }
+    async updateAccessory(req) {
+        const { id } = req.params;
+        const storeId = req.user?.storeId;
+        const updateData = req.body;
+        // Validate the update data
+        updateData.id = id;
+        this.service.validateUpdateAccessory(updateData);
+        // Find the product first
+        const product = (await this.service.findOneByIdOrThrowError(id)).toJSON();
+        if (req.user?.role !== "superAdmin" && product.storeId !== storeId) {
+            throw new appError_1.AppError("forbiden", 403);
+        }
+        if (updateData.brandId)
+            await this.brandService.findOneByIdOrThrowError(updateData.brandId);
+        if (updateData.storeId)
+            await this.storeService.findOneByIdOrThrowError(updateData.storeId);
         const updated = await this.service.update(updateData);
         return updated;
     }

@@ -86,6 +86,11 @@ export class PrdouctService {
     }
   }
 
+  public async createAccessory(data: IProduct) {
+    const product = await this.productRepo.create(data);
+    return product;
+  }
+
   public async update(data: IProduct) {
     let transaction: Transaction | null = null;
     try {
@@ -131,6 +136,22 @@ export class PrdouctService {
       if (transaction) await transaction.rollback();
       throw err;
     }
+  }
+
+  public async updateAccessory(data: IProduct) {
+    // if (data.processor?.id) {
+    //   await this.processorRepo.update(data.processor, {
+    //     transaction,
+    //     where: { id: data.processor.id },
+    //   });
+    // }
+
+    const product = await this.productRepo.update(
+      { ...data },
+      { where: { id: data.id }, returning: true }
+    );
+
+    return product;
   }
 
   public async delete(id: string) {
@@ -229,9 +250,7 @@ export class PrdouctService {
       //   "string.empty": "Category id cannot be empty.",
       //   "any.required": "Category id is required and cannot be null.",
       // }),
-      categoryType: Joi.string()
-        .valid(...Object.values(CategoryType))
-        .required(),
+      categoryType: Joi.string().valid(CategoryType.LAPTOP).required(),
 
       image: Joi.string()
         .trim()
@@ -351,7 +370,94 @@ export class PrdouctService {
     }
     return;
   }
+  public validateCreateAccessory(data: IProduct) {
+    const schema = Joi.object({
+      brandId: Joi.string().trim().uuid().required().messages({
+        "string.base": "Brand id must be a string.",
+        "string.empty": "Brand id cannot be empty.",
+        "any.required": "Brand id is required and cannot be null.",
+      }),
+      // categoryId: Joi.string().trim().uuid().required().messages({
+      //   "string.base": "Category id must be a string.",
+      //   "string.empty": "Category id cannot be empty.",
+      //   "any.required": "Category id is required and cannot be null.",
+      // }),
+      categoryType: Joi.string().valid(CategoryType.ACCESSORY).required(),
 
+      image: Joi.string()
+        .trim()
+        .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
+        .messages({
+          "string.base": "Image must be a string.",
+          "string.empty": "Image cannot be empty.",
+          "string.pattern.base":
+            "Image must have a valid file extension (jpg, jpeg, png, HEIF, svg).",
+          "any.required": "Image is required and cannot be null.",
+        })
+        .required(),
+
+      grantee: Joi.string().trim().required().messages({
+        "string.base": "Grantee must be a string.",
+        "string.empty": "Grantee cannot be empty.",
+        "any.required": "Grantee is required and cannot be null.",
+      }),
+      name: Joi.string().trim().max(255).required().messages({
+        "string.base": "name must be a string.",
+        "string.empty": "name cannot be empty.",
+        "string.max": "name cannot exceed 255 characters.",
+        "any.required": "name is required and cannot be null.",
+      }),
+      nameAr: Joi.string().trim().max(255).required().messages({
+        "string.base": "nameAr must be a string.",
+        "string.empty": "nameAr cannot be empty.",
+        "string.max": "nameAr cannot exceed 255 characters.",
+        "any.required": "nameAr is required and cannot be null.",
+      }),
+
+      description: Joi.string().trim().max(1000).allow("").messages({
+        "string.base": "Description must be a string.",
+        "string.max": "Description cannot exceed 1000 characters.",
+      }),
+      descriptionAr: Joi.string().trim().max(1000).allow("").messages({
+        "string.base": "DescriptionAr must be a string.",
+        "string.max": "DescriptionAr cannot exceed 1000 characters.",
+      }),
+      basePrice: Joi.number().required().messages({
+        "number.base": "Base price must be a number.",
+        "number.empty": "Base price cannot be empty.",
+        "any.required": "Base price is required and cannot be null.",
+      }),
+      discount: Joi.number().required().messages({
+        "number.base": "Discount must be a number.",
+        "number.empty": "Discount cannot be empty.",
+        "any.required": "Discount is required and cannot be null.",
+      }),
+      storeId: Joi.string().uuid().required().messages({
+        "string.base": "storeId must be a string.",
+        "string.empty": "storeId cannot be empty.",
+        "any.required": "storeId is required and cannot be null.",
+      }),
+      images: Joi.array().items(
+        Joi.string()
+          .trim()
+          .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
+          .messages({
+            "string.base": "Image must be a string.",
+            "string.empty": "Image cannot be empty.",
+            "string.pattern.base":
+              "Image must have a valid file extension (jpg, jpeg, png, HEIF, svg).",
+            "any.required": "Image is required and cannot be null.",
+          })
+          .required()
+      ),
+    });
+
+    const { error } = schema.validate(data);
+    if (error) {
+      throw new ValidationError(error.message);
+    }
+    return;
+  }
   public validateUpdate(data: IProduct) {
     const schema = Joi.object({
       id: Joi.string().uuid().required().messages({
@@ -425,9 +531,7 @@ export class PrdouctService {
         "string.empty": "Brand id cannot be empty.",
         "any.required": "Brand id is required and cannot be null.",
       }),
-      categoryType: Joi.string()
-        .valid(...Object.values(CategoryType))
-        .required(),
+      categoryType: Joi.string().valid(CategoryType.LAPTOP).required(),
       // categoryId: Joi.string().trim().uuid().required().messages({
       //   "string.base": "Category id must be a string.",
       //   "string.empty": "Category id cannot be empty.",
@@ -543,6 +647,123 @@ export class PrdouctService {
               "Color attribute id is required and cannot be null.",
           }),
         })
+      ),
+    });
+
+    const { error } = schema.validate(data);
+    if (error) {
+      throw new ValidationError(error.message);
+    }
+    return;
+  }
+
+  public validateUpdateAccessory(data: IProduct) {
+    const schema = Joi.object({
+      id: Joi.string().uuid().required().messages({
+        "string.base": "Id must be a string.",
+        "string.empty": "Id cannot be empty.",
+        "any.required": "Id is required and cannot be null.",
+      }),
+
+      // processor: Joi.object({
+      //   id: Joi.string().uuid().required().messages({
+      //     "string.base": "Processor id must be a string.",
+      //     "string.empty": "Processor id cannot be empty.",
+      //     "any.required": "Processor id is required and cannot be null.",
+      //   }),
+      //   type: Joi.string().required().messages({
+      //     "string.base": "Processor type must be a string.",
+      //     "string.empty": "Processor type cannot be empty.",
+      //     "any.required": "Processor type is required and cannot be null.",
+      //   }),
+      //   noOfCores: Joi.string().required().messages({
+      //     "string.base": "Number of cores must be a string.",
+      //     "string.empty": "Number of cores cannot be empty.",
+      //     "any.required": "Number of cores is required and cannot be null.",
+      //   }),
+      //   details: Joi.string().required().messages({
+      //     "string.base": "Processor details must be a string.",
+      //     "string.empty": "Processor details cannot be empty.",
+      //     "any.required": "Processor details is required and cannot be null.",
+      //   }),
+      // }),
+      brandId: Joi.string().trim().uuid().required().messages({
+        "string.base": "Brand id must be a string.",
+        "string.empty": "Brand id cannot be empty.",
+        "any.required": "Brand id is required and cannot be null.",
+      }),
+      categoryType: Joi.string().valid(CategoryType.ACCESSORY).required(),
+      // categoryId: Joi.string().trim().uuid().required().messages({
+      //   "string.base": "Category id must be a string.",
+      //   "string.empty": "Category id cannot be empty.",
+      //   "any.required": "Category id is required and cannot be null.",
+      // }),
+
+      image: Joi.string()
+        .trim()
+        .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
+        .messages({
+          "string.base": "Image must be a string.",
+          "string.empty": "Image cannot be empty.",
+          "string.pattern.base":
+            "Image must have a valid file extension (jpg, jpeg, png, HEIF, svg).",
+          "any.required": "Image is required and cannot be null.",
+        })
+        .required(),
+
+      grantee: Joi.string().trim().required().messages({
+        "string.base": "Grantee must be a string.",
+        "string.empty": "Grantee cannot be empty.",
+        "any.required": "Grantee is required and cannot be null.",
+      }),
+      name: Joi.string().trim().max(255).required().messages({
+        "string.base": "name must be a string.",
+        "string.empty": "name cannot be empty.",
+        "string.max": "name cannot exceed 255 characters.",
+        "any.required": "name is required and cannot be null.",
+      }),
+      nameAr: Joi.string().trim().max(255).required().messages({
+        "string.base": "nameAr must be a string.",
+        "string.empty": "nameAr cannot be empty.",
+        "string.max": "nameAr cannot exceed 255 characters.",
+        "any.required": "nameAr is required and cannot be null.",
+      }),
+
+      description: Joi.string().trim().max(1000).allow("").messages({
+        "string.base": "Description must be a string.",
+        "string.max": "Description cannot exceed 1000 characters.",
+      }),
+      descriptionAr: Joi.string().trim().max(1000).allow("").messages({
+        "string.base": "DescriptionAr must be a string.",
+        "string.max": "DescriptionAr cannot exceed 1000 characters.",
+      }),
+      basePrice: Joi.number().required().messages({
+        "number.base": "Base price must be a number.",
+        "number.empty": "Base price cannot be empty.",
+        "any.required": "Base price is required and cannot be null.",
+      }),
+      discount: Joi.number().min(0).required().messages({
+        "number.base": "Discount must be a number.",
+        "number.empty": "Discount cannot be empty.",
+        "any.required": "Discount is required and cannot be null.",
+      }),
+      // storeId: Joi.string().uuid().required().messages({
+      //   "string.base": "storeId must be a string.",
+      //   "string.empty": "storeId cannot be empty.",
+      //   "any.required": "storeId is required and cannot be null.",
+      // }),
+      images: Joi.array().items(
+        Joi.string()
+          .trim()
+          .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
+          .messages({
+            "string.base": "Image must be a string.",
+            "string.empty": "Image cannot be empty.",
+            "string.pattern.base":
+              "Image must have a valid file extension (jpg, jpeg, png, HEIF, svg).",
+            "any.required": "Image is required and cannot be null.",
+          })
+          .required()
       ),
     });
 

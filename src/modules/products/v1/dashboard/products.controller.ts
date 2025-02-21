@@ -99,6 +99,26 @@ export class ProductController {
     return product;
   }
 
+  public async createAccessory(req: Request) {
+    const storeData: IProduct = req.body;
+    let storeId = req.user?.storeId;
+    // Validate the incoming data
+    if (storeId && storeData.storeId && storeId !== storeData.storeId) {
+      throw new AppError("forbiden", 403);
+    }
+    if (req.user?.role !== "superAdmin") storeData.storeId = storeId;
+    this.service.validateCreateAccessory(storeData);
+
+    await this.brandService.findOneByIdOrThrowError(storeData.brandId!);
+
+    await this.storeService.findOneByIdOrThrowError(storeData.storeId!);
+
+    // Create the product
+    const product = await this.service.create(storeData);
+
+    return product;
+  }
+
   public async update(req: Request) {
     const { id } = req.params;
     const storeId = req.user?.storeId;
@@ -165,6 +185,33 @@ export class ProductController {
         );
       }
     }
+
+    const updated = await this.service.update(updateData);
+
+    return updated;
+  }
+  public async updateAccessory(req: Request) {
+    const { id } = req.params;
+    const storeId = req.user?.storeId;
+    const updateData: Partial<IProduct> = req.body;
+
+    // Validate the update data
+    updateData.id = id;
+    this.service.validateUpdateAccessory(updateData);
+
+    // Find the product first
+    const product = (
+      await this.service.findOneByIdOrThrowError(id)
+    ).toJSON() as IProduct;
+    if (req.user?.role !== "superAdmin" && product.storeId !== storeId) {
+      throw new AppError("forbiden", 403);
+    }
+
+    if (updateData.brandId)
+      await this.brandService.findOneByIdOrThrowError(updateData.brandId!);
+
+    if (updateData.storeId)
+      await this.storeService.findOneByIdOrThrowError(updateData.storeId!);
 
     const updated = await this.service.update(updateData);
 

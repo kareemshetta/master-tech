@@ -13,7 +13,9 @@ export class ProductView {
     this.getOneById = this.getOneById.bind(this);
     this.getAll = this.getAll.bind(this);
     this.update = this.update.bind(this);
+    this.updateAccessory = this.updateAccessory.bind(this);
     this.deleteOne = this.deleteOne.bind(this);
+    this.createAccessory = this.createAccessory.bind(this);
   }
 
   public static getInstance(): ProductView {
@@ -24,6 +26,14 @@ export class ProductView {
   }
   async create(req: Request, res: Response) {
     const trainer = await this.controller.create(req);
+    res.send({
+      data: trainer,
+      message: req.t("responses.succes"),
+    });
+  }
+
+  async createAccessory(req: Request, res: Response) {
+    const trainer = await this.controller.createAccessory(req);
     res.send({
       data: trainer,
       message: req.t("responses.succes"),
@@ -48,6 +58,14 @@ export class ProductView {
 
   async update(req: Request, res: Response) {
     const trainer = await this.controller.update(req);
+    res.send({
+      data: trainer,
+      message: req.t("responses.succes"),
+    });
+  }
+
+  async updateAccessory(req: Request, res: Response) {
+    const trainer = await this.controller.updateAccessory(req);
     res.send({
       data: trainer,
       message: req.t("responses.succes"),
