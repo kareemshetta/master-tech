@@ -43,13 +43,13 @@ OrderItem.belongsTo(Product, {
 
 ProductSku.hasMany(OrderItem, {
   //   as: "sku",
-  foreignKey: "skuId",
+  foreignKey: { name: "skuId", allowNull: true },
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 OrderItem.belongsTo(ProductSku, {
   //   as: "cartItem",
-  foreignKey: "skuId",
+  foreignKey: { name: "skuId", allowNull: true },
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });

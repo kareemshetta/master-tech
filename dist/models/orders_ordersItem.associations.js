@@ -41,13 +41,13 @@ orderItem_model_1.default.belongsTo(products_model_1.default, {
 });
 product_skus_model_1.ProductSku.hasMany(orderItem_model_1.default, {
     //   as: "sku",
-    foreignKey: "skuId",
+    foreignKey: { name: "skuId", allowNull: true },
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
 });
 orderItem_model_1.default.belongsTo(product_skus_model_1.ProductSku, {
     //   as: "cartItem",
-    foreignKey: "skuId",
+    foreignKey: { name: "skuId", allowNull: true },
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
 });

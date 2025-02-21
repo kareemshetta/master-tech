@@ -23,6 +23,9 @@ import { t } from "i18next";
 import ProductSkuRepository from "../../../products/v1/product.sku.repository";
 import { sendEmail } from "../../../../utils/communication-functions";
 import Product from "../../../../models/products.model";
+import PrdouctService from "../../../products/v1/dashboard/products.service";
+import ProductREpository from "../../../products/v1/products.repository";
+import { CategoryType } from "../../../../utils/enums";
 
 export class OrderService {
   private static instance: OrderService | null = null;
@@ -31,6 +34,7 @@ export class OrderService {
   private cartItemRepo: CartItemRepo;
   private cartRepo: CartRepo;
   private productSkuRepo: ProductSkuRepository;
+  private PrdouctRepo: ProductREpository;
 
   private constructor() {
     this.repo = OrderRepo.getInstance();
@@ -38,6 +42,7 @@ export class OrderService {
     this.cartItemRepo = CartItemRepo.getInstance();
     this.cartRepo = CartRepo.getInstance();
     this.productSkuRepo = ProductSkuRepository.getInstance();
+    this.PrdouctRepo = ProductREpository.getInstance();
   }
 
   public static getInstance(): OrderService {
@@ -65,7 +70,7 @@ export class OrderService {
             include: [
               {
                 model: Product,
-                attributes: ["storeId"],
+                attributes: ["storeId", "categoryType"],
               },
             ],
           },
@@ -114,29 +119,44 @@ export class OrderService {
             {
               orderId: order.id,
               productId: cartItem.productId,
-              skuId: cartItem.skuId,
+              skuId: cartItem?.skuId || null,
               quantity: cartItem.quantity,
               price: cartItem.price,
               cartId,
             },
             { transaction }
           );
-
-          const sku: any = await this.productSkuRepo.findOneById(
-            cartItem.skuId!,
-            {
-              transaction,
-              paranoid: true,
-            }
-          );
-
-          if (sku) {
-            await sku.update(
+          if (cartItem.skuId) {
+            const sku: any = await this.productSkuRepo.findOneById(
+              cartItem.skuId!,
               {
-                quantity: sku.quantity - cartItem.quantity!,
-              },
-              { transaction }
+                transaction,
+                paranoid: true,
+              }
             );
+
+            if (sku) {
+              await sku.update(
+                {
+                  quantity: sku.quantity - cartItem.quantity!,
+                },
+                { transaction }
+              );
+            }
+          }
+
+          if (cartItem.Product?.categoryType == CategoryType.ACCESSORY) {
+            const prod: any = await this.PrdouctRepo.findOneById(
+              cartItem.productId!
+            );
+            if (prod) {
+              prod.update(
+                {
+                  quantity: prod.quantity - cartItem.quantity!,
+                },
+                { transaction }
+              );
+            }
           }
         })
       );

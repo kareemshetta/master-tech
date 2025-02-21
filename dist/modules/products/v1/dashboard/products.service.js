@@ -315,6 +315,7 @@ class PrdouctService {
                 "string.empty": "Brand id cannot be empty.",
                 "any.required": "Brand id is required and cannot be null.",
             }),
+            quantity: joi_1.default.number().min(0).required(),
             // categoryId: Joi.string().trim().uuid().required().messages({
             //   "string.base": "Category id must be a string.",
             //   "string.empty": "Category id cannot be empty.",
@@ -466,6 +467,7 @@ class PrdouctService {
             //   "string.empty": "Category id cannot be empty.",
             //   "any.required": "Category id is required and cannot be null.",
             // }),
+            quantity: joi_1.default.number().min(0).required(),
             image: joi_1.default.string()
                 .trim()
                 .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)

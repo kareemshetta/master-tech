@@ -54,7 +54,7 @@ class CartService {
         const schema = joi_1.default.object({
             cartId: joi_1.default.string().uuid().required(),
             productId: joi_1.default.string().uuid().required(),
-            skuId: joi_1.default.string().uuid().required(),
+            skuId: joi_1.default.string().uuid().allow(null),
             price: joi_1.default.number().required(),
             quantity: joi_1.default.number().required(),
         });

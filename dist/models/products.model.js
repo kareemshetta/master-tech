@@ -51,5 +51,6 @@ Product.init({
         type: sequelize_1.DataTypes.INTEGER,
     },
     images: { type: sequelize_1.DataTypes.ARRAY(sequelize_1.DataTypes.STRING) },
+    quantity: { type: sequelize_1.DataTypes.INTEGER, defaultValue: 0 },
 }, { sequelize: config_1.default, tableName: "products", paranoid: true, timestamps: true });
 exports.default = Product;

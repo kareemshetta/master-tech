@@ -217,6 +217,13 @@ export class ProductController {
         ),
         "priceAfterDiscount",
       ],
+      [
+        sequelize.literal(
+          'CASE WHEN "Product"."quantity" > 0 THEN true ELSE false END'
+        ),
+        "isAvailable",
+      ],
+      "quantity",
       "brandId",
       "categoryId",
       "storeId",
@@ -231,6 +238,7 @@ export class ProductController {
 
     const product = await this.service.findOneByIdOrThrowError(id, {
       attributes: arr,
+      // logging: console.log,
       include: [
         {
           model: Screen,
@@ -264,7 +272,7 @@ export class ProductController {
             ],
             [
               sequelize.literal(
-                'CASE WHEN "quantity" > 0 THEN true ELSE false END'
+                'CASE WHEN "skus"."quantity" > 0 THEN true ELSE false END'
               ),
               "isAvailable",
             ],

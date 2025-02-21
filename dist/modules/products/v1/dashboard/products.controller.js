@@ -88,7 +88,7 @@ class ProductController {
         await this.brandService.findOneByIdOrThrowError(storeData.brandId);
         await this.storeService.findOneByIdOrThrowError(storeData.storeId);
         // Create the product
-        const product = await this.service.create(storeData);
+        const product = await this.service.createAccessory(storeData);
         return product;
     }
     async update(req) {
@@ -158,7 +158,7 @@ class ProductController {
             await this.brandService.findOneByIdOrThrowError(updateData.brandId);
         if (updateData.storeId)
             await this.storeService.findOneByIdOrThrowError(updateData.storeId);
-        const updated = await this.service.update(updateData);
+        const updated = await this.service.updateAccessory(updateData);
         return updated;
     }
     async delete(req) {
@@ -184,10 +184,16 @@ class ProductController {
                 "basePrice",
                 "discount",
                 "grantee",
+                "categoryType",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",
                 ],
+                [
+                    config_1.default.literal('CASE WHEN "Product"."quantity" > 0 THEN true ELSE false END'),
+                    "isAvailable",
+                ],
+                "quantity",
                 "brandId",
                 "categoryId",
                 "categoryType",
@@ -228,7 +234,7 @@ class ProductController {
                             "priceAfterDiscount",
                         ],
                         [
-                            config_1.default.literal('CASE WHEN "quantity" > 0 THEN true ELSE false END'),
+                            config_1.default.literal('CASE WHEN "skus"."quantity" > 0 THEN true ELSE false END'),
                             "isAvailable",
                         ],
                     ],

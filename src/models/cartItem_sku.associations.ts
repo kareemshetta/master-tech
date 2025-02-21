@@ -3,13 +3,13 @@ import { ProductSku } from "./product_skus.model";
 
 ProductSku.hasMany(CartItem, {
   //   as: "sku",
-  foreignKey: "skuId",
+  foreignKey: { name: "skuId", allowNull: true },
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });
 CartItem.belongsTo(ProductSku, {
   //   as: "cartItem",
-  foreignKey: "skuId",
+  foreignKey: { name: "skuId", allowNull: true },
   onDelete: "CASCADE",
   onUpdate: "CASCADE",
 });

@@ -16,6 +16,8 @@ const config_1 = __importDefault(require("../../../../config/db/config"));
 const product_sku_repository_1 = __importDefault(require("../../../products/v1/product.sku.repository"));
 const communication_functions_1 = require("../../../../utils/communication-functions");
 const products_model_1 = __importDefault(require("../../../../models/products.model"));
+const products_repository_1 = __importDefault(require("../../../products/v1/products.repository"));
+const enums_1 = require("../../../../utils/enums");
 class OrderService {
     constructor() {
         this.repo = orders_repository_1.default.getInstance();
@@ -23,6 +25,7 @@ class OrderService {
         this.cartItemRepo = cartItem_repository_1.default.getInstance();
         this.cartRepo = carts_repository_1.default.getInstance();
         this.productSkuRepo = product_sku_repository_1.default.getInstance();
+        this.PrdouctRepo = products_repository_1.default.getInstance();
     }
     static getInstance() {
         if (!OrderService.instance) {
@@ -47,7 +50,7 @@ class OrderService {
                     include: [
                         {
                             model: products_model_1.default,
-                            attributes: ["storeId"],
+                            attributes: ["storeId", "categoryType"],
                         },
                     ],
                 },
@@ -81,19 +84,29 @@ class OrderService {
                 await this.orderItemrepo.create({
                     orderId: order.id,
                     productId: cartItem.productId,
-                    skuId: cartItem.skuId,
+                    skuId: cartItem?.skuId || null,
                     quantity: cartItem.quantity,
                     price: cartItem.price,
                     cartId,
                 }, { transaction });
-                const sku = await this.productSkuRepo.findOneById(cartItem.skuId, {
-                    transaction,
-                    paranoid: true,
-                });
-                if (sku) {
-                    await sku.update({
-                        quantity: sku.quantity - cartItem.quantity,
-                    }, { transaction });
+                if (cartItem.skuId) {
+                    const sku = await this.productSkuRepo.findOneById(cartItem.skuId, {
+                        transaction,
+                        paranoid: true,
+                    });
+                    if (sku) {
+                        await sku.update({
+                            quantity: sku.quantity - cartItem.quantity,
+                        }, { transaction });
+                    }
+                }
+                if (cartItem.Product?.categoryType == enums_1.CategoryType.ACCESSORY) {
+                    const prod = await this.PrdouctRepo.findOneById(cartItem.productId);
+                    if (prod) {
+                        prod.update({
+                            quantity: prod.quantity - cartItem.quantity,
+                        }, { transaction });
+                    }
                 }
             }));
             await this.cartItemRepo.delete({

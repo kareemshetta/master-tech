@@ -7,13 +7,13 @@ const cartItem_model_1 = __importDefault(require("./cartItem.model"));
 const product_skus_model_1 = require("./product_skus.model");
 product_skus_model_1.ProductSku.hasMany(cartItem_model_1.default, {
     //   as: "sku",
-    foreignKey: "skuId",
+    foreignKey: { name: "skuId", allowNull: true },
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
 });
 cartItem_model_1.default.belongsTo(product_skus_model_1.ProductSku, {
     //   as: "cartItem",
-    foreignKey: "skuId",
+    foreignKey: { name: "skuId", allowNull: true },
     onDelete: "CASCADE",
     onUpdate: "CASCADE",
 });

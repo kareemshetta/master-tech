@@ -82,7 +82,7 @@ export class CartService {
     const schema = Joi.object({
       cartId: Joi.string().uuid().required(),
       productId: Joi.string().uuid().required(),
-      skuId: Joi.string().uuid().required(),
+      skuId: Joi.string().uuid().allow(null),
       price: Joi.number().required(),
       quantity: Joi.number().required(),
     });

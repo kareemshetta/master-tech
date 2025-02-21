@@ -48,6 +48,7 @@ Product.init(
     },
 
     images: { type: DataTypes.ARRAY(DataTypes.STRING) },
+    quantity: { type: DataTypes.INTEGER, defaultValue: 0 },
   },
   { sequelize, tableName: "products", paranoid: true, timestamps: true }
 );

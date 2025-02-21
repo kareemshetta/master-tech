@@ -168,6 +168,11 @@ class ProductController {
                 config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                 "priceAfterDiscount",
             ],
+            [
+                config_1.default.literal('CASE WHEN "Product"."quantity" > 0 THEN true ELSE false END'),
+                "isAvailable",
+            ],
+            "quantity",
             "brandId",
             "categoryId",
             "storeId",
@@ -181,6 +186,7 @@ class ProductController {
             arr.push(this.getFavouriteLiteral(userId));
         const product = await this.service.findOneByIdOrThrowError(id, {
             attributes: arr,
+            // logging: console.log,
             include: [
                 {
                     model: screen_model_1.default,
@@ -210,7 +216,7 @@ class ProductController {
                             "priceAfterDiscount",
                         ],
                         [
-                            config_1.default.literal('CASE WHEN "quantity" > 0 THEN true ELSE false END'),
+                            config_1.default.literal('CASE WHEN "skus"."quantity" > 0 THEN true ELSE false END'),
                             "isAvailable",
                         ],
                     ],
