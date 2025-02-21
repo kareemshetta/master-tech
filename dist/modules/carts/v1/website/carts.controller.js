@@ -14,10 +14,13 @@ const products_service_1 = __importDefault(require("../../../products/v1/dashboa
 const appError_1 = require("../../../../utils/appError");
 const config_1 = __importDefault(require("../../../../config/db/config"));
 const stores_model_1 = __importDefault(require("../../../../models/stores.model"));
+const enums_1 = require("../../../../utils/enums");
+const product_sku_repository_1 = __importDefault(require("../../../products/v1/product.sku.repository"));
 class CartController {
     constructor() {
         this.cartService = carts_service_1.default.getInstance();
         this.productService = products_service_1.default.getInstance();
+        this.productSkuRepo = product_sku_repository_1.default.getInstance();
     }
     static getInstance() {
         if (!CartController.instance) {
@@ -32,7 +35,7 @@ class CartController {
         // Validate the incoming data
         this.cartService.validateCreateItem(storeData);
         const cartProduct = (await this.productService.findOneByIdOrThrowError(storeData.productId, {
-            attributes: ["id", "storeId"],
+            attributes: ["id", "storeId", "categoryType", "quantity"],
         })).toJSON();
         const foundCart = (await this.cartService.getCart({
             where: { id: cart?.id },
@@ -47,6 +50,16 @@ class CartController {
         if (foundCart?.cart_items?.length &&
             foundCart.cart_items[0]?.Product?.storeId !== cartProduct.storeId) {
             throw new appError_1.AppError("cartItemsMustBeFromSameStore", 403);
+        }
+        if (cartProduct.categoryType == enums_1.CategoryType.ACCESSORY &&
+            cartProduct.quantity < storeData.quantity) {
+            throw new appError_1.AppError("productQuantityLessThanOrder", 422);
+        }
+        if (cartProduct.categoryType == enums_1.CategoryType.LAPTOP) {
+            const sku = (await this.productSkuRepo.findOneByIdOrThrowError(storeData.skuId));
+            if (sku.quantity < storeData.quantity) {
+                throw new appError_1.AppError("productQuantityLessThanOrder", 422);
+            }
         }
         // Create the cat
         const cat = await this.cartService.createCartItem(storeData);

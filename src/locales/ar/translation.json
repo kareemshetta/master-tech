@@ -18,7 +18,8 @@
       "cartIsEmpty":"السلة فارغة",
       "cityHasRegions":"هذه المدينة لديها منطقات",
       "ordersItemsMustBeFromSameStore":"الطلبات يجب ان تكون من نفس المتجر",
-       "cartItemsMustBeFromSameStore":"العناصر في السلة يجب ان تكون من نفس المتجر"
+       "cartItemsMustBeFromSameStore":"العناصر في السلة يجب ان تكون من نفس المتجر",
+        "productQuantityLessThanOrder":"كميه المنتج اقل من الطلب"
   },
 
   "responses":{

@@ -2,6 +2,7 @@ import {
   ICart,
   ICartItem,
   IProduct,
+  ISku,
   Iuser,
 } from "../../../../utils/shared.types";
 import CartService from "./carts.service";
@@ -17,14 +18,18 @@ import { AppError } from "../../../../utils/appError";
 import sequelize from "../../../../config/db/config";
 import { log } from "console";
 import Store from "../../../../models/stores.model";
+import { CategoryType } from "../../../../utils/enums";
+import ProductSkuRepository from "../../../products/v1/product.sku.repository";
 export class CartController {
   private static instance: CartController | null = null;
   private cartService: CartService;
   private productService: PrdouctService;
+  private productSkuRepo: ProductSkuRepository;
 
   private constructor() {
     this.cartService = CartService.getInstance();
     this.productService = PrdouctService.getInstance();
+    this.productSkuRepo = ProductSkuRepository.getInstance();
   }
 
   public static getInstance(): CartController {
@@ -43,7 +48,7 @@ export class CartController {
     this.cartService.validateCreateItem(storeData);
     const cartProduct = (
       await this.productService.findOneByIdOrThrowError(storeData.productId!, {
-        attributes: ["id", "storeId"],
+        attributes: ["id", "storeId", "categoryType", "quantity"],
       })
     ).toJSON() as IProduct;
     const foundCart = (
@@ -64,6 +69,22 @@ export class CartController {
       foundCart.cart_items[0]?.Product?.storeId !== cartProduct.storeId
     ) {
       throw new AppError("cartItemsMustBeFromSameStore", 403);
+    }
+
+    if (
+      cartProduct.categoryType == CategoryType.ACCESSORY &&
+      cartProduct.quantity! < storeData.quantity!
+    ) {
+      throw new AppError("productQuantityLessThanOrder", 422);
+    }
+
+    if (cartProduct.categoryType == CategoryType.LAPTOP) {
+      const sku = (await this.productSkuRepo.findOneByIdOrThrowError(
+        storeData.skuId!
+      )) as ISku;
+      if (sku.quantity! < storeData.quantity!) {
+        throw new AppError("productQuantityLessThanOrder", 422);
+      }
     }
     // Create the cat
     const cat = await this.cartService.createCartItem(storeData);

@@ -21,7 +21,8 @@
       "cityHasRegions":"this city has regions",
       "ordersItemsMustBeFromSameStore":"orders items must be from same store",
       "cartItemsMustBeFromSameStore":"cart items must be from same store",
-      "processError":"process error can't be deleted there are product assigned"
+      "processError":"process error can't be deleted there are product assigned",
+      "productQuantityLessThanOrder":"product quantity is less than order"
       
   }
   , "responses":{

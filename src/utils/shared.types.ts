@@ -104,6 +104,7 @@ export interface ISku {
   storage?: IAttributes;
   createdAt?: string;
   updatedAt?: string;
+  quantity?: number;
 }
 
 export interface IProduct {
@@ -124,6 +125,7 @@ export interface IProduct {
   createdAt?: string;
   updatedAt?: string;
   categoryType?: string;
+  quantity?: number;
 }
 
 export interface MulterRequest extends Request {
