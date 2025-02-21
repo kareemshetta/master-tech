@@ -71,7 +71,23 @@ class CartController {
         // Validate the update data
         this.cartService.validateUpdateItem({ ...updateData, id });
         // Find the cat first
-        const cat = await this.cartService.findOneByIdOrThrowError(id);
+        const cat = await this.cartService.findOneByIdOrThrowError(id, {
+            include: {
+                model: products_model_1.default,
+                attributes: ["id", "categoryType", "quantity"],
+            },
+        });
+        // console.log("cat", cat.Product.dataValues);
+        if (cat.Product.dataValues.categoryType == enums_1.CategoryType.ACCESSORY &&
+            cat.Product.dataValues.quantity < updateData.quantity) {
+            throw new appError_1.AppError("productQuantityLessThanOrder", 422);
+        }
+        if (cat.Product.dataValues.categoryType == enums_1.CategoryType.LAPTOP) {
+            const sku = (await this.productSkuRepo.findOneByIdOrThrowError(cat.skuId));
+            if (sku.quantity < updateData.quantity) {
+                throw new appError_1.AppError("productQuantityLessThanOrder", 422);
+            }
+        }
         // Update the cat
         const updatedCat = await cat.update(updateData);
         return updatedCat;
