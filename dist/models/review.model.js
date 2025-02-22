@@ -52,12 +52,19 @@ Review.init({
     modelName: "reviews",
     paranoid: true,
     timestamps: true,
-    // indexes: [
-    //   {
-    //     unique: true,
-    //     fields: ["userId", "productId"],
-    //     name: "unique_user_product_review",
-    //   },
-    // ],
+    indexes: [
+        {
+            fields: ["productId"],
+            name: "productId_reviews",
+        },
+        {
+            fields: ["userId"],
+            name: "userId_reviews",
+        },
+        {
+            fields: ["rating"],
+            name: "rating_reviews",
+        },
+    ],
 });
 exports.default = Review;

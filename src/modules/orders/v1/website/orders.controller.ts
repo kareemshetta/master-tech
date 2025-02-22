@@ -94,13 +94,15 @@ export class OrderController {
                 `${nameColumn}`,
                 `${descriptionColumn}`,
                 "image",
+                "storeId",
+                "categoryType",
               ],
-              include: [
-                {
-                  model: Category,
-                  attributes: ["id", `${nameColumn}`],
-                },
-              ],
+              // include: [
+              //   {
+              //     model: Category,
+              //     attributes: ["id", `${nameColumn}`],
+              //   },
+              // ],
             },
             { model: ProductSku, attributes: ["id", "sku"] },
           ],
@@ -149,13 +151,15 @@ export class OrderController {
                 `${nameColumn}`,
                 `${descriptionColumn}`,
                 "image",
+                "storeId",
+                "categoryType",
               ],
-              include: [
-                {
-                  model: Category,
-                  attributes: ["id", `${nameColumn}`],
-                },
-              ],
+              // include: [
+              //   {
+              //     model: Category,
+              //     attributes: ["id", `${nameColumn}`],
+              //   },
+              // ],
             },
             { model: ProductSku, attributes: ["id", "price", "sku"] },
           ],

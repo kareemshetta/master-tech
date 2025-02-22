@@ -9,7 +9,6 @@ const handle_sort_pagination_1 = require("../../../../utils/handle-sort-paginati
 const orderItem_model_1 = __importDefault(require("../../../../models/orderItem.model"));
 const products_model_1 = __importDefault(require("../../../../models/products.model"));
 const product_skus_model_1 = require("../../../../models/product_skus.model");
-const categories_model_1 = __importDefault(require("../../../../models/categories.model"));
 class OrderController {
     constructor() {
         this.service = orders_service_1.default.getInstance();
@@ -80,13 +79,15 @@ class OrderController {
                                 `${nameColumn}`,
                                 `${descriptionColumn}`,
                                 "image",
+                                "storeId",
+                                "categoryType",
                             ],
-                            include: [
-                                {
-                                    model: categories_model_1.default,
-                                    attributes: ["id", `${nameColumn}`],
-                                },
-                            ],
+                            // include: [
+                            //   {
+                            //     model: Category,
+                            //     attributes: ["id", `${nameColumn}`],
+                            //   },
+                            // ],
                         },
                         { model: product_skus_model_1.ProductSku, attributes: ["id", "sku"] },
                     ],
@@ -132,13 +133,15 @@ class OrderController {
                                 `${nameColumn}`,
                                 `${descriptionColumn}`,
                                 "image",
+                                "storeId",
+                                "categoryType",
                             ],
-                            include: [
-                                {
-                                    model: categories_model_1.default,
-                                    attributes: ["id", `${nameColumn}`],
-                                },
-                            ],
+                            // include: [
+                            //   {
+                            //     model: Category,
+                            //     attributes: ["id", `${nameColumn}`],
+                            //   },
+                            // ],
                         },
                         { model: product_skus_model_1.ProductSku, attributes: ["id", "price", "sku"] },
                     ],

@@ -47,5 +47,9 @@ UserFavorite.init({
     tableName: "userFavorites",
     timestamps: true,
     paranoid: true,
+    indexes: [
+        { name: "favourite_userId_idx", fields: ["userId"] },
+        { name: "favourite_productId_idx", fields: ["productId"] },
+    ],
 });
 exports.default = UserFavorite;
