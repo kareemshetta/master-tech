@@ -127,7 +127,7 @@ export class OrderService {
             { transaction }
           );
           if (cartItem.skuId) {
-            const sku: any = await this.productSkuRepo.findOneById(
+            const sku: any = await this.productSkuRepo.findOneByIdOrThrowError(
               cartItem.skuId!,
               {
                 transaction,
@@ -136,6 +136,10 @@ export class OrderService {
             );
 
             if (sku) {
+              console.log("sku", cartItem.quantity!, sku.quantity);
+              if (sku.quantity < cartItem.quantity!) {
+                throw new AppError("productQuantityLessThanOrder", 409);
+              }
               await sku.update(
                 {
                   quantity: sku.quantity - cartItem.quantity!,
@@ -146,10 +150,14 @@ export class OrderService {
           }
 
           if (cartItem.Product?.categoryType == CategoryType.ACCESSORY) {
-            const prod: any = await this.PrdouctRepo.findOneById(
+            const prod: any = await this.PrdouctRepo.findOneByIdOrThrowError(
               cartItem.productId!
             );
             if (prod) {
+              if (prod.quantity < cartItem.quantity!) {
+                throw new AppError("productQuantityLessThanOrder", 409);
+              }
+
               prod.update(
                 {
                   quantity: prod.quantity - cartItem.quantity!,

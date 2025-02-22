@@ -90,19 +90,26 @@ class OrderService {
                     cartId,
                 }, { transaction });
                 if (cartItem.skuId) {
-                    const sku = await this.productSkuRepo.findOneById(cartItem.skuId, {
+                    const sku = await this.productSkuRepo.findOneByIdOrThrowError(cartItem.skuId, {
                         transaction,
                         paranoid: true,
                     });
                     if (sku) {
+                        console.log("sku", cartItem.quantity, sku.quantity);
+                        if (sku.quantity < cartItem.quantity) {
+                            throw new appError_1.AppError("productQuantityLessThanOrder", 409);
+                        }
                         await sku.update({
                             quantity: sku.quantity - cartItem.quantity,
                         }, { transaction });
                     }
                 }
                 if (cartItem.Product?.categoryType == enums_1.CategoryType.ACCESSORY) {
-                    const prod = await this.PrdouctRepo.findOneById(cartItem.productId);
+                    const prod = await this.PrdouctRepo.findOneByIdOrThrowError(cartItem.productId);
                     if (prod) {
+                        if (prod.quantity < cartItem.quantity) {
+                            throw new appError_1.AppError("productQuantityLessThanOrder", 409);
+                        }
                         prod.update({
                             quantity: prod.quantity - cartItem.quantity,
                         }, { transaction });

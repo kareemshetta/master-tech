@@ -467,7 +467,6 @@ class PrdouctService {
             //   "string.empty": "Category id cannot be empty.",
             //   "any.required": "Category id is required and cannot be null.",
             // }),
-            quantity: joi_1.default.number().min(0).required(),
             image: joi_1.default.string()
                 .trim()
                 .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
@@ -583,39 +582,12 @@ class PrdouctService {
                 "string.empty": "Id cannot be empty.",
                 "any.required": "Id is required and cannot be null.",
             }),
-            // processor: Joi.object({
-            //   id: Joi.string().uuid().required().messages({
-            //     "string.base": "Processor id must be a string.",
-            //     "string.empty": "Processor id cannot be empty.",
-            //     "any.required": "Processor id is required and cannot be null.",
-            //   }),
-            //   type: Joi.string().required().messages({
-            //     "string.base": "Processor type must be a string.",
-            //     "string.empty": "Processor type cannot be empty.",
-            //     "any.required": "Processor type is required and cannot be null.",
-            //   }),
-            //   noOfCores: Joi.string().required().messages({
-            //     "string.base": "Number of cores must be a string.",
-            //     "string.empty": "Number of cores cannot be empty.",
-            //     "any.required": "Number of cores is required and cannot be null.",
-            //   }),
-            //   details: Joi.string().required().messages({
-            //     "string.base": "Processor details must be a string.",
-            //     "string.empty": "Processor details cannot be empty.",
-            //     "any.required": "Processor details is required and cannot be null.",
-            //   }),
-            // }),
             brandId: joi_1.default.string().trim().uuid().required().messages({
                 "string.base": "Brand id must be a string.",
                 "string.empty": "Brand id cannot be empty.",
                 "any.required": "Brand id is required and cannot be null.",
             }),
             categoryType: joi_1.default.string().valid(enums_1.CategoryType.ACCESSORY).required(),
-            // categoryId: Joi.string().trim().uuid().required().messages({
-            //   "string.base": "Category id must be a string.",
-            //   "string.empty": "Category id cannot be empty.",
-            //   "any.required": "Category id is required and cannot be null.",
-            // }),
             image: joi_1.default.string()
                 .trim()
                 .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
@@ -661,11 +633,6 @@ class PrdouctService {
                 "number.empty": "Discount cannot be empty.",
                 "any.required": "Discount is required and cannot be null.",
             }),
-            // storeId: Joi.string().uuid().required().messages({
-            //   "string.base": "storeId must be a string.",
-            //   "string.empty": "storeId cannot be empty.",
-            //   "any.required": "storeId is required and cannot be null.",
-            // }),
             images: joi_1.default.array().items(joi_1.default.string()
                 .trim()
                 .regex(/\.(jpg|jpeg|png|HEIF|svg)$/i)
@@ -676,6 +643,7 @@ class PrdouctService {
                 "any.required": "Image is required and cannot be null.",
             })
                 .required()),
+            quantity: joi_1.default.number().min(0).required(),
         });
         const { error } = schema.validate(data);
         if (error) {

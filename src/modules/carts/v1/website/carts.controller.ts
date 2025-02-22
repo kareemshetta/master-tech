@@ -51,6 +51,7 @@ export class CartController {
         attributes: ["id", "storeId", "categoryType", "quantity"],
       })
     ).toJSON() as IProduct;
+
     const foundCart = (
       await this.cartService.getCart({
         where: { id: cart?.id },
@@ -59,6 +60,7 @@ export class CartController {
             model: CartItem,
             attributes: ["id"],
             include: [{ model: Product, attributes: ["storeId"] }],
+            limit: 1,
           },
         ],
       })
@@ -71,25 +73,56 @@ export class CartController {
       throw new AppError("cartItemsMustBeFromSameStore", 403);
     }
 
-    if (
-      cartProduct.categoryType == CategoryType.ACCESSORY &&
-      cartProduct.quantity! < storeData.quantity!
-    ) {
-      throw new AppError("productQuantityLessThanOrder", 422);
-    }
+    const cartItem: any = await this.cartService.findOne({
+      attributes: ["id", "quantity", "price", "skuId"],
+      where: { cartId: cart?.id, productId: storeData.productId },
+    });
+    // check if the product exists on the cart
 
-    if (cartProduct.categoryType == CategoryType.LAPTOP) {
-      const sku = (await this.productSkuRepo.findOneByIdOrThrowError(
-        storeData.skuId!
-      )) as ISku;
-      if (sku.quantity! < storeData.quantity!) {
-        throw new AppError("productQuantityLessThanOrder", 422);
+    if (!cartItem) {
+      if (cartProduct.categoryType == CategoryType.ACCESSORY) {
+        if (!cartItem && cartProduct.quantity! < storeData.quantity!) {
+          throw new AppError("productQuantityLessThanOrder", 409);
+        }
+      }
+
+      if (cartProduct.categoryType == CategoryType.LAPTOP) {
+        const sku = (await this.productSkuRepo.findOneByIdOrThrowError(
+          storeData.skuId!
+        )) as ISku;
+        if (sku.quantity! < storeData.quantity!) {
+          throw new AppError("productQuantityLessThanOrder", 409);
+        }
+      }
+      // Create the cat
+      const cat = await this.cartService.createCartItem(storeData);
+
+      return cat;
+    } else {
+      if (cartProduct.categoryType == CategoryType.ACCESSORY) {
+        if (cartItem.quantity! + storeData.quantity! > cartProduct.quantity!) {
+          throw new AppError("productQuantityLessThanOrder", 409);
+        }
+
+        const updatedCat = await cartItem.update({
+          quantity: cartItem.quantity! + storeData.quantity!,
+        });
+        return updatedCat;
+      }
+
+      if (cartProduct.categoryType == CategoryType.LAPTOP) {
+        const sku = (await this.productSkuRepo.findOneByIdOrThrowError(
+          storeData.skuId!
+        )) as ISku;
+        if (cartItem.quantity! + storeData.quantity! > sku.quantity!) {
+          throw new AppError("productQuantityLessThanOrder", 409);
+        }
+        const updatedCat = await cartItem.update({
+          quantity: cartItem.quantity! + storeData.quantity!,
+        });
+        return updatedCat;
       }
     }
-    // Create the cat
-    const cat = await this.cartService.createCartItem(storeData);
-
-    return cat;
   }
 
   public async update(req: Request) {
