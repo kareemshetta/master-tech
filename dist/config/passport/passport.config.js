@@ -33,7 +33,7 @@ passport_1.default.use("jwt", new passport_jwt_1.Strategy(jwtOptions, async (pay
         return done(null, user);
     }
     catch (error) {
-        const err = new appError_1.AppError("serverError", 500);
+        const err = new appError_1.AppError("unAuthorized", 401);
         (0, console_1.log)(err);
         //   authError.status = 500;
         //   authError.code = "AUTH_FAILED";

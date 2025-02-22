@@ -39,7 +39,7 @@ passport.use(
 
       return done(null, user);
     } catch (error) {
-      const err = new AppError("serverError", 500);
+      const err = new AppError("unAuthorized", 401);
       log(err);
       //   authError.status = 500;
       //   authError.code = "AUTH_FAILED";

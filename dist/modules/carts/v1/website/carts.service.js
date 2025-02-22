@@ -56,7 +56,7 @@ class CartService {
             productId: joi_1.default.string().uuid().required(),
             skuId: joi_1.default.string().uuid().allow(null),
             price: joi_1.default.number().required(),
-            quantity: joi_1.default.number().required(),
+            quantity: joi_1.default.number().min(1).required(),
         });
         const { error } = schema.validate(data);
         if (error) {
@@ -68,7 +68,7 @@ class CartService {
         const schema = joi_1.default.object({
             id: joi_1.default.string().uuid().required(),
             price: joi_1.default.number().required(),
-            quantity: joi_1.default.number().required(),
+            quantity: joi_1.default.number().min(1).required(),
         });
         const { error } = schema.validate(data);
         if (error) {

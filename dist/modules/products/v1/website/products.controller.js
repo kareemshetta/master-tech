@@ -390,9 +390,25 @@ class ProductController {
                 [config_1.default.literal(`"Product"."${nameColumn}"`), "name"],
                 [config_1.default.literal(`"Product"."${descriptionColumn}"`), "description"],
                 [
-                    config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("reviews.rating")), 0), 2),
+                    config_1.default.literal(`(
+          SELECT ROUND(COALESCE(AVG(rating), 0), 2)
+          FROM "reviews"
+          WHERE "reviews"."productId" = "Product"."id"
+        )`),
                     "averageRating",
                 ],
+                // [
+                //   sequelize.fn(
+                //     "ROUND",
+                //     sequelize.fn(
+                //       "COALESCE",
+                //       sequelize.fn("AVG", sequelize.col("reviews.rating")),
+                //       0
+                //     ),
+                //     2
+                //   ),
+                //   "averageRating",
+                // ],
                 "grantee",
                 "basePrice",
                 "battery",
@@ -402,18 +418,18 @@ class ProductController {
                 "image",
                 "discount",
                 "categoryType",
+                "createdAt",
                 [
                     config_1.default.literal('ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'),
                     "priceAfterDiscount",
                 ],
             ],
-            offset,
-            limit,
+            logging: console.log,
             order: [[orderBy, order]],
             where: {},
             include: [
                 {
-                    required: !isAcc ? true : false,
+                    required: categoryType && categoryType == enums_1.CategoryType.LAPTOP && screenSize,
                     model: screen_model_1.default,
                     attributes: [],
                     where: {},
@@ -436,52 +452,71 @@ class ProductController {
                 //     // [sequelize.literal(`"${descriptionColumn}"`), "description"],
                 //   ],
                 // },
-                { model: review_model_1.default, attributes: [] },
-                {
-                    required: !isAcc ? true : false,
-                    model: product_skus_model_1.ProductSku,
-                    attributes: ["id"],
-                    as: "skus",
-                    include: [
-                        {
-                            required: !isAcc ? true : false,
-                            model: product_attributes_model_1.default,
-                            attributes: ["id", "type", "value"],
-                            where: {},
-                            as: "storage",
-                        },
-                    ],
-                },
+                // { model: Review, attributes: [], required: false },
+                // {
+                //   required:
+                //     categoryType && categoryType == CategoryType.LAPTOP && storageId,
+                //   model: ProductSku,
+                //   attributes: [],
+                //   as: "skus",
+                //   include: [
+                //     {
+                //       required:
+                //         categoryType &&
+                //         categoryType == CategoryType.LAPTOP &&
+                //         storageId,
+                //       model: ProductAttribute,
+                //       attributes: [],
+                //       where: {},
+                //       as: "storage",
+                //     },
+                //   ],
+                // },
             ],
-            group: [
-                "Product.id",
-                "store.id",
-                // "category.id",
-                "skus.id",
-                "skus->storage.id",
-            ],
-            subQuery: false,
-        };
-        const countOption = {
+            // group: [
+            //   "Product.id",
+            //   "store.id",
+            //   // "category.id",
+            //   "skus.id",
+            //   "skus->storage.id",
+            // ],
+            distinct: true,
             offset,
             limit,
+        };
+        const countOption = {
             order: [[orderBy, order]],
+            logging: console.log,
+            // distinct: true,
             where: {},
             include: [
                 {
-                    required: !isAcc ? true : false,
+                    required: categoryType && categoryType == enums_1.CategoryType.LAPTOP && screenSize,
                     model: screen_model_1.default,
                     attributes: [],
                     where: {},
                 },
                 {
+                    model: stores_model_1.default,
+                    attributes: [
+                        "id",
+                        [config_1.default.literal(`store."${nameColumn}"`), "name"],
+                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+                        "image",
+                    ],
+                    as: "store",
+                },
+                // { model: Review, attributes: [], required: false },
+                {
                     model: product_skus_model_1.ProductSku,
-                    required: !isAcc ? true : false,
+                    required: categoryType && categoryType == enums_1.CategoryType.LAPTOP && storageId,
                     attributes: [],
                     as: "skus",
                     include: [
                         {
-                            required: !isAcc ? true : false,
+                            required: categoryType &&
+                                categoryType == enums_1.CategoryType.LAPTOP &&
+                                storageId,
                             model: product_attributes_model_1.default,
                             attributes: [],
                             where: {},
@@ -490,6 +525,7 @@ class ProductController {
                     ],
                 },
             ],
+            distinct: true,
         };
         if (storeId) {
             options.where.storeId = storeId;
@@ -502,7 +538,7 @@ class ProductController {
         if (userId)
             options.attributes.push([
                 config_1.default.literal(`
-    CASE 
+    CASE
       WHEN EXISTS (
         SELECT 1
         FROM "userFavorites" AS "Favourite"
@@ -538,8 +574,22 @@ class ProductController {
             countOption.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
         }
         if (storageId) {
-            options.include[3].include[0].where.id = storageId;
-            countOption.include[1].include[0].where.id = storageId;
+            const storageFilter = config_1.default.literal(`EXISTS (
+        SELECT 1 FROM "product_skus" AS "skus"
+        INNER JOIN "product_attributes" AS "storage"
+          ON "skus"."storageAttributeId" = "storage"."id"
+        WHERE "skus"."productId" = "Product"."id"
+          AND "storage"."id" = '${storageId}'
+          AND "skus"."deletedAt" IS NULL
+          AND "storage"."deletedAt" IS NULL
+        LIMIT 1
+      )`);
+            options.where = {
+                ...options.where,
+                [sequelize_1.Op.and]: storageFilter,
+            };
+            // options.where["$skus.storage.id$"] = storageId;
+            // countOption.include[2].include[0].where.id = storageId;
         }
         if (processorIds) {
             processorIds = processorIds.toString();
@@ -549,7 +599,7 @@ class ProductController {
             options.where.processorId = { [sequelize_1.Op.in]: processorIds.split(",") };
             countOption.where.processorId = { [sequelize_1.Op.in]: processorIds.split(",") };
         }
-        if (screenSize && !isAcc && categoryType == enums_1.CategoryType.LAPTOP) {
+        if (screenSize && categoryType == enums_1.CategoryType.LAPTOP) {
             options.include[0].where.size = screenSize;
             countOption.include[0].where.size = screenSize;
         }
@@ -564,9 +614,9 @@ class ProductController {
             options.where.name = searchOp;
             countOption.where.name = searchOp;
         }
-        const date = await this.service.getAllWithoutCount(options);
-        const count = await this.service.count(countOption);
-        return { rows: date, count };
+        const date = await this.service.getAll(options);
+        // const count = await this.service.count(countOption);
+        return date;
     }
     async getAllTopRated(req) {
         // Calculate offset for pagination
@@ -593,7 +643,7 @@ class ProductController {
                     config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("reviews.rating")), 0), 2),
                     "averageRating",
                 ],
-                // [sequelize.fn("COUNT", sequelize.col("reviews.id")), "totalReviews"],
+                [config_1.default.fn("COUNT", config_1.default.col("reviews.id")), "totalReviews"],
                 "basePrice",
                 "battery",
                 "ram",
@@ -610,7 +660,13 @@ class ProductController {
             ],
             offset,
             limit,
-            order: [[orderBy, order]],
+            order: [
+                [
+                    config_1.default.fn("ROUND", config_1.default.fn("COALESCE", config_1.default.fn("AVG", config_1.default.col("reviews.rating")), 0), 2),
+                    "DESC",
+                ],
+                [config_1.default.fn("COUNT", config_1.default.col("reviews.id")), "DESC"],
+            ],
             where: {},
             include: [
                 { model: screen_model_1.default, attributes: [], where: {} },

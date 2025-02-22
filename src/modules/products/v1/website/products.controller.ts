@@ -473,17 +473,25 @@ export class ProductController {
         [sequelize.literal(`"Product"."${nameColumn}"`), "name"],
         [sequelize.literal(`"Product"."${descriptionColumn}"`), "description"],
         [
-          sequelize.fn(
-            "ROUND",
-            sequelize.fn(
-              "COALESCE",
-              sequelize.fn("AVG", sequelize.col("reviews.rating")),
-              0
-            ),
-            2
-          ),
+          sequelize.literal(`(
+          SELECT ROUND(COALESCE(AVG(rating), 0), 2)
+          FROM "reviews"
+          WHERE "reviews"."productId" = "Product"."id"
+        )`),
           "averageRating",
         ],
+        // [
+        //   sequelize.fn(
+        //     "ROUND",
+        //     sequelize.fn(
+        //       "COALESCE",
+        //       sequelize.fn("AVG", sequelize.col("reviews.rating")),
+        //       0
+        //     ),
+        //     2
+        //   ),
+        //   "averageRating",
+        // ],
         "grantee",
         "basePrice",
         "battery",
@@ -493,6 +501,7 @@ export class ProductController {
         "image",
         "discount",
         "categoryType",
+        "createdAt",
         [
           sequelize.literal(
             'ROUND(CAST("basePrice" AS DECIMAL) * (1 - (CAST("discount" AS DECIMAL) / 100)), 2)'
@@ -500,13 +509,14 @@ export class ProductController {
           "priceAfterDiscount",
         ],
       ],
-      offset,
-      limit,
+
+      logging: console.log,
       order: [[orderBy, order]],
       where: {},
       include: [
         {
-          required: !isAcc ? true : false,
+          required:
+            categoryType && categoryType == CategoryType.LAPTOP && screenSize,
           model: Screen,
           attributes: [],
           where: {},
@@ -529,52 +539,74 @@ export class ProductController {
         //     // [sequelize.literal(`"${descriptionColumn}"`), "description"],
         //   ],
         // },
-        { model: Review, attributes: [] },
-        {
-          required: !isAcc ? true : false,
-          model: ProductSku,
-          attributes: ["id"],
-          as: "skus",
-          include: [
-            {
-              required: !isAcc ? true : false,
-              model: ProductAttribute,
-              attributes: ["id", "type", "value"],
-              where: {},
-              as: "storage",
-            },
-          ],
-        },
+        // { model: Review, attributes: [], required: false },
+        // {
+        //   required:
+        //     categoryType && categoryType == CategoryType.LAPTOP && storageId,
+        //   model: ProductSku,
+        //   attributes: [],
+        //   as: "skus",
+        //   include: [
+        //     {
+        //       required:
+        //         categoryType &&
+        //         categoryType == CategoryType.LAPTOP &&
+        //         storageId,
+        //       model: ProductAttribute,
+        //       attributes: [],
+        //       where: {},
+        //       as: "storage",
+        //     },
+        //   ],
+        // },
       ],
-      group: [
-        "Product.id",
-        "store.id",
-        // "category.id",
-        "skus.id",
-        "skus->storage.id",
-      ],
-      subQuery: false,
-    };
-    const countOption: any = {
+      // group: [
+      //   "Product.id",
+      //   "store.id",
+      //   // "category.id",
+      //   "skus.id",
+      //   "skus->storage.id",
+      // ],
+      distinct: true,
       offset,
       limit,
+    };
+    const countOption: any = {
       order: [[orderBy, order]],
+      logging: console.log,
+      // distinct: true,
       where: {},
       include: [
         {
-          required: !isAcc ? true : false,
+          required:
+            categoryType && categoryType == CategoryType.LAPTOP && screenSize,
           model: Screen,
           attributes: [],
           where: {},
         },
         {
+          model: Store,
+          attributes: [
+            "id",
+            [sequelize.literal(`store."${nameColumn}"`), "name"],
+            // [sequelize.literal(`"${descriptionColumn}"`), "description"],
+            "image",
+          ],
+          as: "store",
+        },
+        // { model: Review, attributes: [], required: false },
+        {
           model: ProductSku,
-          required: !isAcc ? true : false,
+          required:
+            categoryType && categoryType == CategoryType.LAPTOP && storageId,
           attributes: [],
           as: "skus",
           include: [
             {
-              required: !isAcc ? true : false,
+              required:
+                categoryType &&
+                categoryType == CategoryType.LAPTOP &&
+                storageId,
               model: ProductAttribute,
               attributes: [],
               where: {},
@@ -583,6 +615,7 @@ export class ProductController {
           ],
         },
       ],
+      distinct: true,
     };
 
     if (storeId) {
@@ -597,7 +630,7 @@ export class ProductController {
     if (userId)
       options.attributes.push([
         sequelize.literal(`
-    CASE 
+    CASE
       WHEN EXISTS (
         SELECT 1
         FROM "userFavorites" AS "Favourite"
@@ -633,8 +666,22 @@ export class ProductController {
       countOption.where.brandId = { [Op.in]: brandIds.split(",") };
     }
     if (storageId) {
-      options.include[3].include[0].where.id = storageId;
-      countOption.include[1].include[0].where.id = storageId;
+      const storageFilter = sequelize.literal(`EXISTS (
+        SELECT 1 FROM "product_skus" AS "skus"
+        INNER JOIN "product_attributes" AS "storage"
+          ON "skus"."storageAttributeId" = "storage"."id"
+        WHERE "skus"."productId" = "Product"."id"
+          AND "storage"."id" = '${storageId}'
+          AND "skus"."deletedAt" IS NULL
+          AND "storage"."deletedAt" IS NULL
+        LIMIT 1
+      )`);
+      options.where = {
+        ...options.where,
+        [Op.and]: storageFilter,
+      };
+      // options.where["$skus.storage.id$"] = storageId;
+      // countOption.include[2].include[0].where.id = storageId;
     }
     if (processorIds) {
       processorIds = processorIds.toString();
@@ -644,7 +691,7 @@ export class ProductController {
       options.where.processorId = { [Op.in]: processorIds.split(",") };
       countOption.where.processorId = { [Op.in]: processorIds.split(",") };
     }
-    if (screenSize && !isAcc && categoryType == CategoryType.LAPTOP) {
+    if (screenSize && categoryType == CategoryType.LAPTOP) {
       options.include[0].where.size = screenSize;
       countOption.include[0].where.size = screenSize;
     }
@@ -675,10 +722,10 @@ export class ProductController {
       countOption.where.name = searchOp;
     }
 
-    const date = await this.service.getAllWithoutCount(options);
-    const count = await this.service.count(countOption);
+    const date = await this.service.getAll(options);
+    // const count = await this.service.count(countOption);
 
-    return { rows: date, count };
+    return date;
   }
 
   public async getAllTopRated(req: Request) {
@@ -726,7 +773,7 @@ export class ProductController {
           ),
           "averageRating",
         ],
-        // [sequelize.fn("COUNT", sequelize.col("reviews.id")), "totalReviews"],
+        [sequelize.fn("COUNT", sequelize.col("reviews.id")), "totalReviews"],
         "basePrice",
         "battery",
         "ram",
@@ -745,7 +792,21 @@ export class ProductController {
       ],
       offset,
       limit,
-      order: [[orderBy, order]],
+      order: [
+        [
+          sequelize.fn(
+            "ROUND",
+            sequelize.fn(
+              "COALESCE",
+              sequelize.fn("AVG", sequelize.col("reviews.rating")),
+              0
+            ),
+            2
+          ),
+          "DESC",
+        ],
+        [sequelize.fn("COUNT", sequelize.col("reviews.id")), "DESC"],
+      ],
       where: {},
       include: [
         { model: Screen, attributes: [], where: {} },

@@ -84,7 +84,7 @@ export class CartService {
       productId: Joi.string().uuid().required(),
       skuId: Joi.string().uuid().allow(null),
       price: Joi.number().required(),
-      quantity: Joi.number().required(),
+      quantity: Joi.number().min(1).required(),
     });
     const { error } = schema.validate(data);
     if (error) {
@@ -98,7 +98,7 @@ export class CartService {
       id: Joi.string().uuid().required(),
 
       price: Joi.number().required(),
-      quantity: Joi.number().required(),
+      quantity: Joi.number().min(1).required(),
     });
     const { error } = schema.validate(data);
     if (error) {
