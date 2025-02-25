@@ -122,6 +122,7 @@ export class AuthController {
               "id",
               [sequelize.col(`"${nameColumn}"`), "name"],
               [sequelize.col(`"${descriptionColumn}"`), "description"],
+              "categoryType",
             ],
             through: { attributes: [] },
           },
@@ -240,6 +241,7 @@ export class AuthController {
               "image",
               "discount",
               "basePrice",
+              "categoryType",
               [
                 sequelize.literal(
                   'ROUND(CAST("Products"."basePrice" AS DECIMAL) * (1 - (CAST("Products"."discount" AS DECIMAL) / 100)), 2)'

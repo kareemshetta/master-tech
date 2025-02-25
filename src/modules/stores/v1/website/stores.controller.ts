@@ -43,6 +43,16 @@ export class StoreController {
         "location",
         "image",
         "phoneNumber",
+        [
+          sequelize.literal(`(
+            SELECT CASE WHEN EXISTS (
+              SELECT 1 FROM "products" 
+              WHERE "products"."storeId" = "stores"."id" 
+              AND "products"."discount" > 0
+            ) THEN true ELSE false END
+          )`),
+          "hasDiscount",
+        ],
       ],
       include: [
         {
@@ -116,6 +126,16 @@ export class StoreController {
         "phoneNumber",
         "location",
         "image",
+        [
+          sequelize.literal(`(
+            SELECT CASE WHEN EXISTS (
+              SELECT 1 FROM "products" 
+              WHERE "products"."storeId" = "stores"."id" 
+              AND "products"."discount" > 0
+            ) THEN true ELSE false END
+          )`),
+          "hasDiscount",
+        ],
       ],
       offset,
       limit,
@@ -258,6 +278,16 @@ export class StoreController {
         "id",
         [sequelize.col(`stores.${nameColumn}`), "name"], // Fix ambiguity by explicitly referencing "stores"
         [sequelize.col(`stores.${descriptionColumn}`), "description"],
+        [
+          sequelize.literal(`(
+            SELECT CASE WHEN EXISTS (
+              SELECT 1 FROM "products" 
+              WHERE "products"."storeId" = "stores"."id" 
+              AND "products"."discount" > 0
+            ) THEN true ELSE false END
+          )`),
+          "hasDiscount",
+        ],
         "phoneNumber",
         "location",
         "image",
