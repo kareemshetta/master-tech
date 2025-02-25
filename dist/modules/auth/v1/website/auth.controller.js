@@ -97,6 +97,7 @@ class AuthController {
                         "id",
                         [config_1.default.col(`"${nameColumn}"`), "name"],
                         [config_1.default.col(`"${descriptionColumn}"`), "description"],
+                        "categoryType",
                     ],
                     through: { attributes: [] },
                 },
@@ -198,6 +199,7 @@ class AuthController {
                         "image",
                         "discount",
                         "basePrice",
+                        "categoryType",
                         [
                             config_1.default.literal('ROUND(CAST("Products"."basePrice" AS DECIMAL) * (1 - (CAST("Products"."discount" AS DECIMAL) / 100)), 2)'),
                             "priceAfterDiscount",

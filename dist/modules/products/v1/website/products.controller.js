@@ -371,11 +371,12 @@ class ProductController {
         const { limit, offset, order, orderBy } = (0, handle_sort_pagination_1.handlePaginationSort)(req.query);
         let { search, maxPrice, minPrice, brandIds, storeId, 
         // categoryId,
-        categoryType, storageId, processorIds, battery, ram, screenSize, isAcc, } = req.query;
+        categoryType, storageId, processorIds, battery, ram, screenSize, hasDiscount, isAcc, } = req.query;
         const lng = req.language;
         const userId = req.user?.id;
         const nameColumn = lng === "ar" ? "nameAr" : "name";
         const descriptionColumn = lng === "ar" ? "descriptionAr" : "description";
+        let screenFlage = false;
         this.service.validateGetAllStoresQuery({
             search,
             maxPrice,
@@ -429,7 +430,7 @@ class ProductController {
             where: {},
             include: [
                 {
-                    required: categoryType && categoryType == enums_1.CategoryType.LAPTOP && screenSize,
+                    required: screenFlage,
                     model: screen_model_1.default,
                     attributes: [],
                     where: {},
@@ -484,56 +485,16 @@ class ProductController {
             offset,
             limit,
         };
-        const countOption = {
-            order: [[orderBy, order]],
-            logging: console.log,
-            // distinct: true,
-            where: {},
-            include: [
-                {
-                    required: categoryType && categoryType == enums_1.CategoryType.LAPTOP && screenSize,
-                    model: screen_model_1.default,
-                    attributes: [],
-                    where: {},
-                },
-                {
-                    model: stores_model_1.default,
-                    attributes: [
-                        "id",
-                        [config_1.default.literal(`store."${nameColumn}"`), "name"],
-                        // [sequelize.literal(`"${descriptionColumn}"`), "description"],
-                        "image",
-                    ],
-                    as: "store",
-                },
-                // { model: Review, attributes: [], required: false },
-                {
-                    model: product_skus_model_1.ProductSku,
-                    required: categoryType && categoryType == enums_1.CategoryType.LAPTOP && storageId,
-                    attributes: [],
-                    as: "skus",
-                    include: [
-                        {
-                            required: categoryType &&
-                                categoryType == enums_1.CategoryType.LAPTOP &&
-                                storageId,
-                            model: product_attributes_model_1.default,
-                            attributes: [],
-                            where: {},
-                            as: "storage",
-                        },
-                    ],
-                },
-            ],
-            distinct: true,
-        };
         if (storeId) {
             options.where.storeId = storeId;
-            countOption.where.storeId = storeId;
         }
         if (categoryType) {
             options.where.categoryType = categoryType;
-            countOption.where.categoryType = categoryType;
+        }
+        if (hasDiscount) {
+            options.where.discount = {
+                [sequelize_1.Op.gt]: 0,
+            };
         }
         if (userId)
             options.attributes.push([
@@ -555,26 +516,19 @@ class ProductController {
             options.where.basePrice = {
                 [sequelize_1.Op.between]: [Number(minPrice), Number(maxPrice)],
             };
-            countOption.where.basePrice = {
-                [sequelize_1.Op.between]: [Number(minPrice), Number(maxPrice)],
-            };
         }
         if (battery) {
             options.where.battery = { [sequelize_1.Op.gte]: Number(battery) };
-            countOption.where.battery = { [sequelize_1.Op.gte]: Number(battery) };
         }
         if (ram) {
             options.where.ram = Number(ram);
-            countOption.where.ram = Number(ram);
         }
         if (brandIds) {
             brandIds = brandIds.toString();
             this.service.validateBrandsIds({ brandIds: brandIds.split(",") });
             options.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
-            countOption.where.brandId = { [sequelize_1.Op.in]: brandIds.split(",") };
-        }
-        if (storageId) {
-            const storageFilter = config_1.default.literal(`EXISTS (
+            if (storageId) {
+                const storageFilter = config_1.default.literal(`EXISTS (
         SELECT 1 FROM "product_skus" AS "skus"
         INNER JOIN "product_attributes" AS "storage"
           ON "skus"."storageAttributeId" = "storage"."id"
@@ -584,12 +538,11 @@ class ProductController {
           AND "storage"."deletedAt" IS NULL
         LIMIT 1
       )`);
-            options.where = {
-                ...options.where,
-                [sequelize_1.Op.and]: storageFilter,
-            };
-            // options.where["$skus.storage.id$"] = storageId;
-            // countOption.include[2].include[0].where.id = storageId;
+                options.where = {
+                    ...options.where,
+                    [sequelize_1.Op.and]: storageFilter,
+                };
+            }
         }
         if (processorIds) {
             processorIds = processorIds.toString();
@@ -597,11 +550,10 @@ class ProductController {
                 processorIds: processorIds.split(","),
             });
             options.where.processorId = { [sequelize_1.Op.in]: processorIds.split(",") };
-            countOption.where.processorId = { [sequelize_1.Op.in]: processorIds.split(",") };
         }
         if (screenSize && categoryType == enums_1.CategoryType.LAPTOP) {
+            screenFlage = true;
             options.include[0].where.size = screenSize;
-            countOption.include[0].where.size = screenSize;
         }
         if (search) {
             search = search.toString().replace(/\+/g, "").trim();
@@ -612,7 +564,6 @@ class ProductController {
                 ],
             };
             options.where.name = searchOp;
-            countOption.where.name = searchOp;
         }
         const date = await this.service.getAll(options);
         // const count = await this.service.count(countOption);

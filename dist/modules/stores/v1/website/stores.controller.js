@@ -36,6 +36,16 @@ class StoreController {
                 "location",
                 "image",
                 "phoneNumber",
+                [
+                    config_1.default.literal(`(
+            SELECT CASE WHEN EXISTS (
+              SELECT 1 FROM "products" 
+              WHERE "products"."storeId" = "stores"."id" 
+              AND "products"."discount" > 0
+            ) THEN true ELSE false END
+          )`),
+                    "hasDiscount",
+                ],
             ],
             include: [
                 {
@@ -97,6 +107,16 @@ class StoreController {
                 "phoneNumber",
                 "location",
                 "image",
+                [
+                    config_1.default.literal(`(
+            SELECT CASE WHEN EXISTS (
+              SELECT 1 FROM "products" 
+              WHERE "products"."storeId" = "stores"."id" 
+              AND "products"."discount" > 0
+            ) THEN true ELSE false END
+          )`),
+                    "hasDiscount",
+                ],
             ],
             offset,
             limit,
@@ -201,6 +221,16 @@ class StoreController {
                 "id",
                 [config_1.default.col(`stores.${nameColumn}`), "name"], // Fix ambiguity by explicitly referencing "stores"
                 [config_1.default.col(`stores.${descriptionColumn}`), "description"],
+                [
+                    config_1.default.literal(`(
+            SELECT CASE WHEN EXISTS (
+              SELECT 1 FROM "products" 
+              WHERE "products"."storeId" = "stores"."id" 
+              AND "products"."discount" > 0
+            ) THEN true ELSE false END
+          )`),
+                    "hasDiscount",
+                ],
                 "phoneNumber",
                 "location",
                 "image",
