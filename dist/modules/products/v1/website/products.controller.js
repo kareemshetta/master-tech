@@ -620,7 +620,6 @@ class ProductController {
             ],
             where: {},
             include: [
-                { model: screen_model_1.default, attributes: [], where: {} },
                 {
                     model: stores_model_1.default,
                     attributes: [
@@ -654,7 +653,7 @@ class ProductController {
                 [config_1.default.fn("COUNT", config_1.default.col("reviews.id")), "DESC"],
             ],
             where: {},
-            include: [{ model: screen_model_1.default, attributes: [], where: {} }],
+            include: [],
         };
         if (storeId) {
             options.where.storeId = storeId;

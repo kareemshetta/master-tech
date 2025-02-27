@@ -757,7 +757,6 @@ export class ProductController {
       ],
       where: {},
       include: [
-        { model: Screen, attributes: [], where: {} },
         {
           model: Store,
           attributes: [
@@ -799,7 +798,7 @@ export class ProductController {
         [sequelize.fn("COUNT", sequelize.col("reviews.id")), "DESC"],
       ],
       where: {},
-      include: [{ model: Screen, attributes: [], where: {} }],
+      include: [],
     };
 
     if (storeId) {
